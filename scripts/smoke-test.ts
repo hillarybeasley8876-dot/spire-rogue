@@ -1148,6 +1148,26 @@ assert(stackRun.combat!.enemies[0].hp === 84, "mark and bleed should stack into 
 assert(stackRun.combat!.enemies[0].powers.mark === 2, "mark should lose 1 stack after an attack");
 assert(stackRun.combat!.enemies[0].powers.bleed === 3, "bleed should lose 1 stack after triggering");
 
+let damageFormulaRun = createInitialRun(11230, "map", "standard");
+damageFormulaRun = enterNode(damageFormulaRun, getAvailableNodeIds(damageFormulaRun)[0]);
+const formulaEnemy = damageFormulaRun.combat!.enemies[0];
+for (const enemy of damageFormulaRun.combat!.enemies.slice(1)) {
+  enemy.hp = 0;
+}
+formulaEnemy.hp = 100;
+formulaEnemy.maxHp = 100;
+formulaEnemy.block = 0;
+formulaEnemy.powers.mark = 2;
+formulaEnemy.powers.vulnerable = 1;
+damageFormulaRun.combat!.playerPowers.strength = 2;
+const formulaStrike = makeCardInstance("strike");
+damageFormulaRun.combat!.hand = [formulaStrike];
+damageFormulaRun.combat!.energy = 3;
+damageFormulaRun = playCard(damageFormulaRun, formulaStrike.uid, formulaEnemy.uid);
+assert(damageFormulaRun.combat!.enemies[0].hp === 82, "damage should apply strength, then mark, then vulnerable");
+assert(damageFormulaRun.combat!.enemies[0].powers.mark === 1, "formula attack should consume one mark stack");
+assert(damageFormulaRun.combat!.playerPowers.combo === 1, "attack card should grant combo before card effects");
+
 let comboRun = createInitialRun(11224, "map", "standard");
 comboRun = enterNode(comboRun, getAvailableNodeIds(comboRun)[0]);
 const comboEnemy = comboRun.combat!.enemies[0];

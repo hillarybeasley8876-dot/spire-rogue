@@ -56,8 +56,10 @@ import {
 } from "./game/engine";
 import type {
   CardInstance,
+  ActionTarget,
   BoonId,
   CardDef,
+  CardEffect,
   CardType,
   DifficultyKey,
   EnemyMove,
@@ -978,19 +980,20 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
                 className={`route-option node-tone--${node.type} map-zone--${mapNodeZone(node)}`}
                 type="button"
                 onClick={() => onEnter(node.id)}
+                title={`${NODE_HINTS[node.type]} · ${routeStructureLabel(node)} · ${routeSignalLabel(node, run)}`}
               >
                 <NodeIcon type={node.type} size={17} />
-                <strong>{NODE_LABELS[node.type]}</strong>
-                <span>{node.id === "boss" ? `第 ${run.act ?? 1} 幕顶层` : `第 ${node.floor + 1} 层 · ${node.lane + 1} 道`}</span>
+                <div className="route-option__main">
+                  <strong>{NODE_LABELS[node.type]}</strong>
+                  <span>{node.id === "boss" ? `第 ${run.act ?? 1} 幕顶层` : `第 ${node.floor + 1} 层 · ${node.lane + 1} 道`}</span>
+                </div>
                 <div className="route-option__chips">
                   <small className={`route-option__zone map-zone--${mapNodeZone(node)}`}>{MAP_ZONE_LABELS[mapNodeZone(node)]}</small>
                   <small className={`route-option__route route-kind--${mapNodeRouteKind(node)}`}>
                     {MAP_ROUTE_KIND_LABELS[mapNodeRouteKind(node)]}
                   </small>
                 </div>
-                <em>{NODE_HINTS[node.type]}</em>
-                <small>{routePreviewLabel(node, nodeById)}</small>
-                <small className="route-option__structure">{routeStructureLabel(node)}</small>
+                <small className="route-option__next">{routePreviewLabel(node, nodeById)}</small>
                 <small className="route-option__signal">{routeSignalLabel(node, run)}</small>
               </button>
             ))}
@@ -1044,15 +1047,15 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
                   }
                   const isCompletedEdge = Boolean(node.completed && child.completed);
                   const isAvailableEdge = Boolean(node.completed && available.has(child.id));
+                  const isPreviewEdge = Boolean(available.has(node.id) && !node.completed);
                   return (
-                    <line
+                    <path
                       key={`${node.id}-${child.id}`}
-                      x1={node.x}
-                      y1={node.y}
-                      x2={child.x}
-                      y2={child.y}
-                      className={`map-line map-zone--${mapNodeZone(child)} ${node.completed ? "map-line--active" : ""} ${
-                        isAvailableEdge ? "map-line--available" : ""
+                      d={mapEdgePath(node, child)}
+                      className={`map-line map-zone--${mapNodeZone(child)} ${
+                        node.completed || isPreviewEdge ? "map-line--active" : ""
+                      } ${isAvailableEdge || isPreviewEdge ? "map-line--available" : ""} ${
+                        isPreviewEdge ? "map-line--preview" : ""
                       } ${isCompletedEdge ? "map-line--completed" : ""}`}
                     />
                   );
@@ -1236,6 +1239,16 @@ function routePreviewLabel(node: MapNode, nodeById: Map<string, MapNode>): strin
     .filter((type) => counts[type] > 0)
     .map((type) => `${NODE_LABELS[type]}${counts[type] > 1 ? `x${counts[type]}` : ""}`)
     .join(" / ")}`;
+}
+
+function mapEdgePath(node: MapNode, child: MapNode): string {
+  const midY = Number(((node.y + child.y) / 2).toFixed(2));
+  const startX = Number(node.x.toFixed(2));
+  const startY = Number(node.y.toFixed(2));
+  const endX = Number(child.x.toFixed(2));
+  const endY = Number(child.y.toFixed(2));
+  const elbow = Math.abs(startX - endX) < 0.8 ? "" : ` H ${endX}`;
+  return `M ${startX} ${startY} V ${midY}${elbow} V ${endY}`;
 }
 
 function routeStructureLabel(node: MapNode): string {
@@ -1571,6 +1584,7 @@ function CombatScreen({
             <CardView
               key={card.uid}
               card={card}
+              run={run}
               disabled={!canPlayCard(run, card)}
               disabledReason={cardPlayPenalty(run, card)}
               selected={selectedCardUid === card.uid}
@@ -1938,6 +1952,7 @@ function MechanicPanel({
         <MechanicMeter label="金属化" value={combat.playerPowers.platedArmor ?? 0} text="回合初" />
       </div>
       <MechanicChainPanel playerPowers={combat.playerPowers} enemyTotals={enemyTotals} cardsPlayed={combat.cardsPlayedThisTurn} />
+      <MechanicAuditPanel combat={combat} enemyTotals={enemyTotals} selectedCard={selectedCard} />
       <CatalystInsightPanel insight={catalystInsight} />
       {hintPowers.length > 0 && (
         <div className="mechanic-hints">
@@ -2184,6 +2199,45 @@ function MechanicChainPanel({
             ))}
           </span>
         </div>
+      ))}
+    </div>
+  );
+}
+
+function MechanicAuditPanel({
+  combat,
+  enemyTotals,
+  selectedCard,
+}: {
+  combat: NonNullable<RunState["combat"]>;
+  enemyTotals: PowerMap;
+  selectedCard?: CardInstance;
+}) {
+  const detailLines = selectedCard ? cardMechanicDetails(selectedCard, { phase: "combat", combat } as RunState).slice(1, 4) : [];
+  const rows = [
+    {
+      label: "攻击叠加",
+      value: `基础 + 力量 ${combat.playerPowers.strength ?? 0} + 破绽 ${enemyTotals.mark ?? 0}，再算虚弱/易伤`,
+    },
+    {
+      label: "防守叠加",
+      value: `基础 + 敏捷 ${combat.playerPowers.dexterity ?? 0}${(combat.playerPowers.frail ?? 0) > 0 ? "，脆弱 x0.75" : ""}，金属化 ${combat.playerPowers.platedArmor ?? 0} 回合初生效`,
+    },
+    {
+      label: "触发顺序",
+      value: "出牌计数 -> 连击/蓄能 -> 卡牌效果 -> 生命伤害触发流血/电弧/金属化",
+    },
+    ...detailLines.map((line, index) => ({ label: index === 0 ? "当前牌" : "校验", value: line })),
+  ];
+
+  return (
+    <div className="mechanic-audit">
+      <strong>叠加验证</strong>
+      {rows.slice(0, 5).map((row) => (
+        <span key={`${row.label}-${row.value}`}>
+          <b>{row.label}</b>
+          {row.value}
+        </span>
       ))}
     </div>
   );
@@ -2460,6 +2514,10 @@ function summarizeCardAction(run: RunState, card: CardInstance): ActionSummary {
   const playerPowers: PowerMap = { ...combat.playerPowers };
   const playedCards = combat.cardsPlayedThisTurn + 1;
 
+  if (def.type === "Attack") {
+    addSummaryPower(summary.selfPowers, "combo", 1);
+    playerPowers.combo = (playerPowers.combo ?? 0) + 1;
+  }
   if (def.type === "Skill") {
     addSummaryPower(summary.selfPowers, "charge", 1);
     playerPowers.charge = (playerPowers.charge ?? 0) + 1;
@@ -3469,12 +3527,14 @@ function EndScreen({
 
 function CardView({
   card,
+  run,
   disabled,
   disabledReason,
   selected,
   onClick,
 }: {
   card: CardInstance;
+  run?: RunState;
   disabled?: boolean;
   disabledReason?: string;
   selected?: boolean;
@@ -3485,6 +3545,8 @@ function CardView({
   const tags = cardMechanicTags(card);
   const visualClass = cardVisualClass(def);
   const targetLabel = ACTION_TARGET_LABELS[level.target];
+  const details = cardMechanicDetails(card, run);
+  const mechanicTitle = details.length > 0 ? `机制验证\n${details.join("\n")}` : level.text;
   return (
     <button
       className={`game-card game-card--${def.type.toLowerCase()} game-card--rarity-${def.rarity} ${visualClass} ${
@@ -3492,6 +3554,7 @@ function CardView({
       } ${disabledReason ? "is-penalty" : ""}`}
       type="button"
       disabled={disabled}
+      title={mechanicTitle}
       onClick={onClick}
     >
       <div className="game-card__top">
@@ -3510,6 +3573,7 @@ function CardView({
         <span className={`game-card__target game-card__target--${level.target}`}>{targetLabel}</span>
       </div>
       <p>{level.text}</p>
+      <CardMechanicDetail details={details} />
       {tags.length > 0 && (
         <div className="game-card__tags">
           {tags.map((tag) => (
@@ -3519,6 +3583,243 @@ function CardView({
       )}
     </button>
   );
+}
+
+function CardMechanicDetail({ details }: { details: string[] }) {
+  if (details.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="game-card__detail" aria-hidden="true">
+      <strong>机制验证</strong>
+      {details.slice(0, 5).map((detail) => (
+        <span key={detail}>{detail}</span>
+      ))}
+    </div>
+  );
+}
+
+function cardMechanicDetails(card: CardInstance, run?: RunState): string[] {
+  const def = getCardDef(card.cardId);
+  const level = getCardLevel(card);
+  const combat = run?.phase === "combat" ? run.combat : undefined;
+  const details: string[] = [];
+
+  if (combat) {
+    details.push(`费用 ${level.cost} / 当前能量 ${combat.energy}`);
+  } else {
+    details.push(`费用 ${level.cost} · ${CARD_TYPE_LABELS[def.type]}`);
+  }
+
+  if (def.type === "Attack") {
+    const combo = (combat?.playerPowers.combo ?? 0) + 1;
+    details.push(`攻击牌先获得 1 连击；打出后连击约 ${combo}`);
+  }
+  if (def.type === "Skill") {
+    const charge = (combat?.playerPowers.charge ?? 0) + 1;
+    details.push(`技能牌先获得 1 蓄能；打出后蓄能约 ${charge}`);
+  }
+  if (level.unplayable) {
+    details.push("状态牌不可主动打出，通常在回合结束或抽到时生效");
+  }
+
+  const livePreview = combat ? cardLivePreviewLine(run!, card) : undefined;
+  if (livePreview) {
+    details.push(livePreview);
+  }
+
+  for (const effect of level.effects) {
+    const line = cardEffectDetail(effect, card, run);
+    if (line && !details.includes(line)) {
+      details.push(line);
+    }
+    if (details.length >= 7) {
+      break;
+    }
+  }
+
+  return details;
+}
+
+function cardLivePreviewLine(run: RunState, card: CardInstance): string | undefined {
+  const combat = run.combat;
+  if (!combat) {
+    return undefined;
+  }
+  const level = getCardLevel(card);
+  const living = combat.enemies.filter((enemy) => enemy.hp > 0);
+  if (living.length === 0) {
+    return undefined;
+  }
+
+  if (level.target === "enemy") {
+    const enemy = living[0];
+    const preview = previewCardOnEnemy(run, card, enemy);
+    if (!preview) {
+      return undefined;
+    }
+    return previewLine(`${enemy.name}`, preview);
+  }
+
+  if (level.target === "allEnemies") {
+    const total = living
+      .map((enemy) => previewCardOnEnemy(run, card, enemy))
+      .filter((preview): preview is TargetPreview => Boolean(preview))
+      .reduce<TargetPreview>(
+        (acc, preview) => ({
+          damage: acc.damage + preview.damage,
+          blockLoss: acc.blockLoss + preview.blockLoss,
+          sparkArc: acc.sparkArc + preview.sparkArc,
+          lethal: acc.lethal || preview.lethal,
+          powerAdds: mergePowerAdds(acc.powerAdds, preview.powerAdds),
+        }),
+        { damage: 0, blockLoss: 0, powerAdds: {}, sparkArc: 0, lethal: false },
+      );
+    return previewLine("全体", total);
+  }
+
+  const summary = summarizeCardAction(run, card);
+  const parts = [
+    summary.block > 0 ? `格挡 +${summary.block}` : "",
+    summary.draw > 0 ? `抽 ${summary.draw}` : "",
+    summary.energy > 0 ? `能量 +${summary.energy}` : "",
+    summary.heal > 0 ? `回复 ${summary.heal}` : "",
+  ].filter(Boolean);
+  const selfPowers = Object.entries(summary.selfPowers).filter(([, value]) => (value ?? 0) > 0) as [PowerKey, number][];
+  for (const [power, value] of selfPowers.slice(0, 2)) {
+    parts.push(`${POWER_LABELS[power]} +${value}`);
+  }
+  return parts.length > 0 ? `当前预估：${parts.join(" / ")}` : undefined;
+}
+
+function previewLine(label: string, preview: TargetPreview): string | undefined {
+  const powerEntries = Object.entries(preview.powerAdds).filter(([, value]) => (value ?? 0) > 0) as [PowerKey, number][];
+  const parts = [
+    preview.damage > 0 ? `生命 -${preview.damage}` : "",
+    preview.blockLoss > 0 ? `破盾 ${preview.blockLoss}` : "",
+    preview.sparkArc > 0 ? `电弧 ${preview.sparkArc}` : "",
+    preview.lethal ? "击破" : "",
+  ].filter(Boolean);
+  for (const [power, value] of powerEntries.slice(0, 2)) {
+    parts.push(`${POWER_LABELS[power]} +${value}`);
+  }
+  return parts.length > 0 ? `${label}预估：${parts.join(" / ")}` : undefined;
+}
+
+function mergePowerAdds(
+  left: Partial<Record<PowerKey, number>>,
+  right: Partial<Record<PowerKey, number>>,
+): Partial<Record<PowerKey, number>> {
+  const merged = { ...left };
+  for (const [power, value] of Object.entries(right) as [PowerKey, number][]) {
+    merged[power] = (merged[power] ?? 0) + value;
+  }
+  return merged;
+}
+
+function cardEffectDetail(effect: CardEffect, card: CardInstance, run?: RunState): string | undefined {
+  const def = getCardDef(card.cardId);
+  const combat = run?.phase === "combat" ? run.combat : undefined;
+  const firstEnemy = combat?.enemies.find((enemy) => enemy.hp > 0);
+  const playerPowers = combat?.playerPowers ?? {};
+  const targetPowers = firstEnemy?.powers ?? {};
+
+  if (effect.type === "damage") {
+    const hits = effect.hits && effect.hits > 1 ? ` x${effect.hits}` : "";
+    const strength = combat ? ` + 力量 ${playerPowers.strength ?? 0}` : " + 力量";
+    return `伤害：基础 ${effect.amount}${hits}${strength}，破绽加伤后再吃易伤/虚弱`;
+  }
+  if (effect.type === "damageFromBlock") {
+    const current = combat ? Math.floor(combat.playerBlock * effect.multiplier) : undefined;
+    return current !== undefined ? `盾击：当前格挡 ${combat!.playerBlock} x${effect.multiplier} = ${current}` : `盾击：当前格挡 x${effect.multiplier}`;
+  }
+  if (effect.type === "damagePerAttackPlayed") {
+    const attacks = combat ? combat.attacksPlayedThisTurn + (def.type === "Attack" ? 1 : 0) : 1;
+    return `连击伤害：本回合攻击 ${attacks} x ${effect.amount} = ${attacks * effect.amount}`;
+  }
+  if (effect.type === "damagePerPower") {
+    const powers = effect.powerTarget === "self" ? playerPowers : targetPowers;
+    const available = powers[effect.power] ?? 0;
+    const stacks = Math.max(effect.minimum ?? 0, available);
+    const target = effect.powerTarget === "self" ? "自身" : "目标";
+    return `${POWER_LABELS[effect.power]}爆发：${target}${POWER_LABELS[effect.power]} ${available}${effect.minimum ? `，最低 ${effect.minimum}` : ""} -> ${stacks * effect.amount} 伤害${effect.consume ? "，结算后消耗" : ""}`;
+  }
+  if (effect.type === "spendPowerDamage") {
+    const available = playerPowers[effect.power] ?? 0;
+    const spent = Math.min(available, effect.consume ?? available);
+    const stacks = Math.max(effect.minimum ?? 0, spent);
+    return `消耗爆发：消耗 ${POWER_LABELS[effect.power]} ${spent}${effect.minimum ? `，最低 ${effect.minimum}` : ""} -> ${stacks * effect.amount} 伤害`;
+  }
+  if (effect.type === "block") {
+    const block = combat ? estimateBlock(playerPowers, effect.amount) : effect.amount;
+    return `格挡：基础 ${effect.amount}${combat ? ` + 敏捷 ${playerPowers.dexterity ?? 0}` : " + 敏捷"}${(playerPowers.frail ?? 0) > 0 ? "，脆弱 x0.75" : ""} = ${block}`;
+  }
+  if (effect.type === "blockPerPower") {
+    const available = playerPowers[effect.power] ?? 0;
+    const spent = Math.min(available, effect.consume ?? available);
+    const stacks = Math.max(effect.minimum ?? 0, spent);
+    const rawBlock = effect.amount * stacks;
+    const block = combat ? estimateBlock(playerPowers, rawBlock) : rawBlock;
+    return `${POWER_LABELS[effect.power]}格挡：可用 ${available}，消耗 ${spent} -> 格挡 ${block}`;
+  }
+  if (effect.type === "blockPerExhaustedCard") {
+    const stacks = combat ? Math.max(effect.minimum ?? 0, Math.min(combat.exhaustPile.length, effect.cap ?? combat.exhaustPile.length)) : (effect.minimum ?? 0);
+    return `消耗堆格挡：消耗堆 ${combat?.exhaustPile.length ?? 0} 张，计 ${stacks} 层`;
+  }
+  if (effect.type === "gainPowerPerPower") {
+    const available = playerPowers[effect.sourcePower] ?? 0;
+    const stacks = Math.max(effect.minimum ?? 0, Math.min(available, effect.cap ?? available));
+    return `共振：${POWER_LABELS[effect.sourcePower]} ${available} -> ${POWER_LABELS[effect.gainedPower]} +${stacks * effect.amount}`;
+  }
+  if (effect.type === "gainPowerPerCardPlayed") {
+    const played = combat ? combat.cardsPlayedThisTurn + 1 : 1;
+    const stacks = Math.max(effect.minimum ?? 0, Math.min(played, effect.cap ?? played));
+    return `连锁：本回合第 ${played} 张 -> ${POWER_LABELS[effect.power]} +${stacks * effect.amount}`;
+  }
+  if (effect.type === "cleansePower") {
+    const available = playerPowers[effect.power] ?? 0;
+    const removed = Math.min(available, effect.amount);
+    return `散热：移除 ${POWER_LABELS[effect.power]} ${removed}/${effect.amount}${effect.gainEnergyPerStack ? `，每层能量 +${effect.gainEnergyPerStack}` : ""}`;
+  }
+  if (effect.type === "applyPower") {
+    return `施加：${effectTargetLabel(effect.target)} ${POWER_LABELS[effect.power]} ${effect.amount > 0 ? "+" : ""}${effect.amount}`;
+  }
+  if (effect.type === "amplifyPower") {
+    const current = effect.target === "self" ? (playerPowers[effect.power] ?? 0) : (targetPowers[effect.power] ?? 0);
+    const gained = estimateAmplifiedPower(current, effect.multiplier, effect.minimum);
+    return `催化：${effectTargetLabel(effect.target)} ${POWER_LABELS[effect.power]} x${effect.multiplier}，当前约 +${gained}`;
+  }
+  if (effect.type === "draw") return `抽牌：抽 ${effect.amount} 张`;
+  if (effect.type === "gainEnergy") return `能量：获得 ${effect.amount}`;
+  if (effect.type === "heal") return `回复：恢复 ${effect.amount} 生命`;
+  if (effect.type === "cleanseDebuffs") return "净化：移除自身负面状态";
+  if (effect.type === "createCard") return `生成：${CARDS[effect.cardId]?.name ?? effect.cardId} -> ${destinationLabel(effect.destination)}`;
+  if (effect.type === "returnFromDiscard") return `回收：从弃牌堆取回 ${effect.amount} 张${effect.cardType ? CARD_TYPE_LABELS[effect.cardType] : ""}牌`;
+  if (effect.type === "exhaustCards") {
+    const count = combat ? estimateExhaustCount(combat, effect) : effect.amount;
+    return `消耗：${exhaustZoneLabel(effect.zone)} ${count}/${effect.amount} 张${effect.gainEnergyPerCard ? "，按张给能量" : ""}`;
+  }
+  return undefined;
+}
+
+function effectTargetLabel(target: ActionTarget | "enemy" | "allEnemies" | "self"): string {
+  if (target === "enemy") return "目标";
+  if (target === "allEnemies") return "全体敌人";
+  if (target === "self") return "自身";
+  return "无目标";
+}
+
+function destinationLabel(destination: "hand" | "draw" | "discard"): string {
+  if (destination === "hand") return "手牌";
+  if (destination === "draw") return "抽牌堆顶";
+  return "弃牌堆";
+}
+
+function exhaustZoneLabel(zone: "hand" | "discard" | "handAndDiscard"): string {
+  if (zone === "hand") return "手牌";
+  if (zone === "discard") return "弃牌堆";
+  return "手牌/弃牌";
 }
 
 function cardPlayPenalty(run: RunState, card: CardInstance): string | undefined {
@@ -4178,7 +4479,12 @@ function PowerBadges({ powers }: { powers: PowerMap }) {
   return (
     <div className="power-row">
       {entries.map(([power, value]) => (
-        <span key={power} className={`power power--${power} ${value >= 5 ? "is-stacked" : ""}`} title={POWER_HINTS[power]}>
+        <span
+          key={power}
+          className={`power power--${power} ${value >= 5 ? "is-stacked" : ""}`}
+          title={POWER_HINTS[power]}
+          data-hint={POWER_HINTS[power]}
+        >
           {POWER_LABELS[power]} {value}
         </span>
       ))}
