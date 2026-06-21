@@ -63,7 +63,7 @@ const MAX_LOG_LINES = 9;
 const MAX_HAND_SIZE = 10;
 const FINAL_ACT = 2;
 const ACT_MAP_SEED_STEP = 8191;
-const MAP_ROUTE_FLOORS = 9;
+const MAP_ROUTE_FLOORS = 10;
 const MAP_VIRTUAL_LANES = 5;
 const INVALID_CARD_DEF: CardDef = {
   id: "invalid_card",
@@ -3998,8 +3998,8 @@ function randomMapFloorCounts(roll: () => number): number[] {
       counts.push(r < 0.25 ? 2 : r < 0.7 ? 3 : 4);
     }
   }
-  // 中段保证一个宽层(4)和一个窄口(2)，制造分叉-汇合节奏
-  const midFloors = MAP_ROUTE_FLOORS - 2; // 可调整的中段层数
+  // 中段保证宽层(4)和两个窄口(2)，制造分叉-汇合-收窄的节奏
+  const midFloors = MAP_ROUTE_FLOORS - 2;
   const wideFloor = 1 + Math.floor(roll() * Math.max(1, Math.floor(midFloors / 2)));
   counts[wideFloor] = 4;
   let chokeFloor = wideFloor + 2 + Math.floor(roll() * 2);
@@ -4010,6 +4010,14 @@ function randomMapFloorCounts(roll: () => number): number[] {
     chokeFloor = Math.min(MAP_ROUTE_FLOORS - 2, wideFloor + 1);
   }
   counts[chokeFloor] = 2;
+  // 第二个窄口，与第一个隔开
+  let secondChoke = chokeFloor + 2;
+  if (secondChoke >= MAP_ROUTE_FLOORS - 1) {
+    secondChoke = Math.max(1, chokeFloor - 2);
+  }
+  if (secondChoke !== wideFloor && secondChoke !== chokeFloor) {
+    counts[secondChoke] = 2;
+  }
   return counts;
 }
 

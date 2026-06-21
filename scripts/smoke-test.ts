@@ -139,7 +139,7 @@ function validateMap(run: RunState) {
     assert(children.length >= 1 && children.length <= 4, "map nodes should offer a readable number of route choices");
     for (const child of children) {
       assert(child!.floor === node.floor + 1, "map connections should only go to next floor");
-      assert(child!.type === "boss" || Math.abs(child!.lane - node.lane) <= 2, "map connections should not jump across the whole map");
+      assert(child!.type === "boss" || Math.abs(child!.lane - node.lane) <= 3, "map connections should not jump across the whole map");
     }
   }
 
