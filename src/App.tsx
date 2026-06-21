@@ -56,6 +56,7 @@ import {
 import type {
   CardInstance,
   BoonId,
+  CardDef,
   CardType,
   DifficultyKey,
   EnemyMove,
@@ -924,6 +925,11 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
 
         <div className="map-scroll">
           <div className="map-canvas">
+            <div className="map-art-layers" aria-hidden="true">
+              <span className="map-art-layer map-art-layer--rift" />
+              <span className="map-art-layer map-art-layer--islands" />
+              <span className="map-art-layer map-art-layer--stars" />
+            </div>
             <div className="map-zone-bands" aria-hidden="true">
               {mapIntel.zoneBands.map((band) => (
                 <span
@@ -1264,6 +1270,14 @@ function CombatScreen({
   return (
     <section className="combat-layout">
       <div className="combat-main">
+        <div className="combat-setpiece" aria-hidden="true">
+          <span className="combat-setpiece__moon" />
+          <span className="combat-setpiece__spire" />
+          <span className="combat-setpiece__bridge" />
+          <span className="combat-setpiece__fog combat-setpiece__fog--one" />
+          <span className="combat-setpiece__fog combat-setpiece__fog--two" />
+          <span className="combat-setpiece__runes" />
+        </div>
         <div className="combat-heading">
           <div>
             <p>遭遇</p>
@@ -1409,11 +1423,12 @@ function EnemyCard({
   const dead = enemy.hp <= 0;
   const intentText = intentSummary(enemy.intent);
   const hasVisiblePreview = Boolean(preview && (targetable || preview.damage > 0 || Object.keys(preview.powerAdds).length > 0));
+  const tier = ENEMIES[enemy.defId]?.tier ?? "normal";
   return (
     <button
-      className={`enemy-card ${targetable ? "is-targetable" : ""} ${hasVisiblePreview ? "has-preview" : ""} ${
-        dead ? "is-dead" : ""
-      }`}
+      className={`enemy-card enemy-card--${spriteTone(enemy.defId)} enemy-card--tier-${tier} ${
+        targetable ? "is-targetable" : ""
+      } ${hasVisiblePreview ? "has-preview" : ""} ${dead ? "is-dead" : ""}`}
       type="button"
       disabled={dead || !targetable}
       onClick={onClick}
@@ -3207,9 +3222,12 @@ function CardView({
   const def = getCardDef(card.cardId);
   const level = getCardLevel(card);
   const tags = cardMechanicTags(card);
+  const visualClass = cardVisualClass(def);
   return (
     <button
-      className={`game-card game-card--${def.type.toLowerCase()} ${selected ? "is-selected" : ""}`}
+      className={`game-card game-card--${def.type.toLowerCase()} game-card--rarity-${def.rarity} ${visualClass} ${
+        selected ? "is-selected" : ""
+      }`}
       type="button"
       disabled={disabled}
       onClick={onClick}
@@ -3235,6 +3253,19 @@ function CardView({
       )}
     </button>
   );
+}
+
+function cardVisualClass(def: CardDef): string {
+  const tags = def.tags ?? [];
+  if (def.type === "Status") return "game-card--art-glitch";
+  if (tags.some((tag) => ["毒", "毒雾", "中毒"].includes(tag))) return "game-card--art-venom";
+  if (tags.some((tag) => ["流血", "自伤"].includes(tag))) return "game-card--art-blood";
+  if (tags.some((tag) => ["蓄能", "电弧", "过载", "散热"].includes(tag))) return "game-card--art-spark";
+  if (tags.some((tag) => ["连击", "节奏", "终结"].includes(tag))) return "game-card--art-rhythm";
+  if (tags.some((tag) => ["格挡", "金属化", "护甲"].includes(tag))) return "game-card--art-guard";
+  if (tags.some((tag) => ["破绽", "标记"].includes(tag))) return "game-card--art-mark";
+  if (def.type === "Power") return "game-card--art-sigil";
+  return "game-card--art-edge";
 }
 
 interface DeckSummary {
