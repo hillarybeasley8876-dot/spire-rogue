@@ -113,11 +113,13 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "starter",
     base: {
+      target: "enemy",
       cost: 1,
       text: "造成 6 点伤害。",
       effects: [{ type: "damage", amount: 6, target: "enemy" }],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "造成 9 点伤害。",
       effects: [{ type: "damage", amount: 9, target: "enemy" }],
@@ -129,11 +131,13 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "starter",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 5 点格挡。",
       effects: [{ type: "block", amount: 5 }],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 8 点格挡。",
       effects: [{ type: "block", amount: 8 }],
@@ -145,6 +149,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "starter",
     base: {
+      target: "enemy",
       cost: 2,
       text: "造成 8 点伤害。施加 2 层易伤。",
       effects: [
@@ -153,6 +158,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "enemy",
       cost: 2,
       text: "造成 10 点伤害。施加 3 层易伤。",
       effects: [
@@ -167,6 +173,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "common",
     base: {
+      target: "enemy",
       cost: 1,
       text: "造成 5 点伤害。抽 1 张牌。",
       effects: [
@@ -175,6 +182,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "造成 8 点伤害。抽 1 张牌。",
       effects: [
@@ -189,6 +197,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "common",
     base: {
+      target: "enemy",
       cost: 1,
       text: "获得 5 点格挡。造成 5 点伤害。",
       effects: [
@@ -197,6 +206,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "获得 7 点格挡。造成 7 点伤害。",
       effects: [
@@ -211,11 +221,13 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "common",
     base: {
+      target: "allEnemies",
       cost: 1,
       text: "对所有敌人造成 7 点伤害。",
       effects: [{ type: "damage", amount: 7, target: "allEnemies" }],
     },
     upgraded: {
+      target: "allEnemies",
       cost: 1,
       text: "对所有敌人造成 10 点伤害。",
       effects: [{ type: "damage", amount: 10, target: "allEnemies" }],
@@ -227,6 +239,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "common",
     base: {
+      target: "enemy",
       cost: 1,
       text: "造成 6 点伤害。施加 1 层虚弱。",
       effects: [
@@ -235,6 +248,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "造成 8 点伤害。施加 2 层虚弱。",
       effects: [
@@ -249,6 +263,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "common",
     base: {
+      target: "enemy",
       cost: 1,
       text: "造成 5 点伤害。施加 3 层流血。",
       effects: [
@@ -257,6 +272,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "造成 7 点伤害。施加 5 层流血。",
       effects: [
@@ -271,6 +287,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "common",
     base: {
+      target: "enemy",
       cost: 1,
       text: "施加 3 层破绽。抽 1 张牌。",
       effects: [
@@ -279,6 +296,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "施加 4 层破绽。抽 2 张牌。",
       effects: [
@@ -293,6 +311,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "common",
     base: {
+      target: "enemy",
       cost: 1,
       text: "造成 4 点伤害。施加 2 层破绽。",
       effects: [
@@ -301,6 +320,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "造成 6 点伤害。施加 3 层破绽。",
       effects: [
@@ -315,6 +335,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "common",
     base: {
+      target: "enemy",
       cost: 1,
       text: "造成 4 点伤害。施加 3 层中毒。",
       effects: [
@@ -323,6 +344,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "造成 6 点伤害。施加 5 层中毒。",
       effects: [
@@ -337,6 +359,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "common",
     base: {
+      target: "enemy",
       cost: 1,
       text: "造成 5 点伤害。施加 1 层电弧。",
       effects: [
@@ -345,6 +368,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "造成 7 点伤害。施加 2 层电弧。",
       effects: [
@@ -359,6 +383,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "allEnemies",
       cost: 1,
       text: "获得 6 点格挡。对所有敌人施加 1 层电弧。",
       effects: [
@@ -367,6 +392,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "allEnemies",
       cost: 1,
       text: "获得 8 点格挡。对所有敌人施加 2 层电弧。",
       effects: [
@@ -381,6 +407,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "common",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 7 点格挡。抽 1 张牌。",
       effects: [
@@ -389,6 +416,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 10 点格挡。抽 1 张牌。",
       effects: [
@@ -403,6 +431,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "common",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 6 点格挡。净化自身所有负面状态。",
       effects: [
@@ -411,6 +440,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 9 点格挡。净化自身所有负面状态。抽 1 张牌。",
       effects: [
@@ -426,6 +456,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "common",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 4 点格挡。获得 1 层蓄能。",
       effects: [
@@ -434,6 +465,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 7 点格挡。获得 2 层蓄能。",
       effects: [
@@ -448,11 +480,13 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "uncommon",
     base: {
+      target: "enemy",
       cost: 1,
       text: "造成 4 点伤害 2 次。",
       effects: [{ type: "damage", amount: 4, hits: 2, target: "enemy" }],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "造成 6 点伤害 2 次。",
       effects: [{ type: "damage", amount: 6, hits: 2, target: "enemy" }],
@@ -464,11 +498,13 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "uncommon",
     base: {
+      target: "allEnemies",
       cost: 2,
       text: "对所有敌人造成 5 点伤害 2 次。",
       effects: [{ type: "damage", amount: 5, hits: 2, target: "allEnemies" }],
     },
     upgraded: {
+      target: "allEnemies",
       cost: 2,
       text: "对所有敌人造成 7 点伤害 2 次。",
       effects: [{ type: "damage", amount: 7, hits: 2, target: "allEnemies" }],
@@ -480,11 +516,13 @@ export const CARDS: Record<string, CardDef> = {
     type: "Power",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 2 点力量。",
       effects: [{ type: "applyPower", power: "strength", amount: 2, target: "self" }],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 3 点力量。",
       effects: [{ type: "applyPower", power: "strength", amount: 3, target: "self" }],
@@ -496,11 +534,13 @@ export const CARDS: Record<string, CardDef> = {
     type: "Power",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 2 点敏捷。",
       effects: [{ type: "applyPower", power: "dexterity", amount: 2, target: "self" }],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 3 点敏捷。",
       effects: [{ type: "applyPower", power: "dexterity", amount: 3, target: "self" }],
@@ -512,6 +552,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Power",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 1 点敏捷。获得 2 层金属化。",
       effects: [
@@ -520,6 +561,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 1 点敏捷。获得 3 层金属化。",
       effects: [
@@ -534,6 +576,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "rare",
     base: {
+      target: "self",
       cost: 0,
       text: "获得 1 点能量。抽 2 张牌。消耗。",
       exhaust: true,
@@ -543,6 +586,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 0,
       text: "获得 2 点能量。抽 2 张牌。消耗。",
       exhaust: true,
@@ -558,11 +602,13 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 4 层再生。",
       effects: [{ type: "applyPower", power: "regen", amount: 4, target: "self" }],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 6 层再生。",
       effects: [{ type: "applyPower", power: "regen", amount: 6, target: "self" }],
@@ -574,6 +620,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "rare",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 9 点格挡。将 1 张防御加入手牌。消耗。",
       exhaust: true,
@@ -583,6 +630,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 13 点格挡。将 1 张防御+加入手牌。消耗。",
       exhaust: true,
@@ -598,6 +646,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "common",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 5 点格挡。从弃牌堆回收最多 1 张非状态牌到手牌。",
       effects: [
@@ -606,6 +655,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 8 点格挡。从弃牌堆回收最多 2 张非状态牌到手牌。",
       effects: [
@@ -620,6 +670,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "从弃牌堆回收最多 1 张攻击牌到手牌。获得 1 层连击。",
       effects: [
@@ -628,6 +679,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 0,
       text: "从弃牌堆回收最多 1 张攻击牌到手牌。获得 2 层连击。",
       effects: [
@@ -642,6 +694,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 7 点格挡。从弃牌堆回收最多 1 张技能牌到手牌。",
       effects: [
@@ -650,6 +703,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 10 点格挡。从弃牌堆回收最多 2 张技能牌到手牌。",
       effects: [
@@ -664,6 +718,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "uncommon",
     base: {
+      target: "enemy",
       cost: 1,
       text: "造成 7 点伤害。施加 2 层破绽。",
       effects: [
@@ -672,6 +727,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "造成 9 点伤害。施加 3 层破绽。",
       effects: [
@@ -686,6 +742,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "common",
     base: {
+      target: "enemy",
       cost: 1,
       text: "造成 5 点伤害。施加 2 层中毒和 1 层流血。",
       effects: [
@@ -695,6 +752,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "造成 7 点伤害。施加 3 层中毒和 2 层流血。",
       effects: [
@@ -710,6 +768,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Power",
     rarity: "rare",
     base: {
+      target: "self",
       cost: 2,
       text: "获得 2 层金属化和 2 层蓄能。",
       effects: [
@@ -718,6 +777,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 3 层金属化和 3 层蓄能。",
       effects: [
@@ -732,6 +792,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "common",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 5 点格挡。消耗最多 2 层蓄能，每层额外获得 1 点格挡。",
       effects: [
@@ -740,6 +801,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 7 点格挡。消耗最多 3 层蓄能，每层额外获得 2 点格挡。",
       effects: [
@@ -754,6 +816,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "uncommon",
     base: {
+      target: "enemy",
       cost: 1,
       text: "施加 1 层破绽。消耗所有连击，每层造成 3 点伤害，至少按 1 层计算。",
       effects: [
@@ -762,6 +825,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "施加 2 层破绽。消耗所有连击，每层造成 4 点伤害，至少按 1 层计算。",
       effects: [
@@ -776,6 +840,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Power",
     rarity: "rare",
     base: {
+      target: "allEnemies",
       cost: 2,
       text: "获得 1 层蓄能。对所有敌人施加 2 层中毒和 1 层电弧。",
       effects: [
@@ -785,6 +850,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "allEnemies",
       cost: 1,
       text: "获得 2 层蓄能。对所有敌人施加 3 层中毒和 2 层电弧。",
       effects: [
@@ -800,6 +866,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "enemy",
       cost: 1,
       text: "施加 2 层破绽，然后使目标破绽层数翻倍。",
       effects: [
@@ -808,6 +875,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "施加 3 层破绽，然后使目标破绽层数翻倍。抽 1 张牌。",
       effects: [
@@ -823,6 +891,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "rare",
     base: {
+      target: "enemy",
       cost: 1,
       text: "使一个敌人的中毒和流血层数翻倍。消耗。",
       exhaust: true,
@@ -832,6 +901,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "allEnemies",
       cost: 1,
       text: "使所有敌人的中毒和流血层数翻倍。消耗。",
       exhaust: true,
@@ -847,6 +917,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "uncommon",
     base: {
+      target: "allEnemies",
       cost: 1,
       text: "对所有敌人造成 4 点伤害。使所有敌人的电弧层数翻倍，至少增加 1 层。",
       effects: [
@@ -855,6 +926,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "allEnemies",
       cost: 1,
       text: "对所有敌人造成 6 点伤害。使所有敌人的电弧层数翻倍，至少增加 2 层。",
       effects: [
@@ -869,11 +941,13 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "common",
     base: {
+      target: "enemy",
       cost: 1,
       text: "造成等同于当前格挡的伤害。",
       effects: [{ type: "damageFromBlock", multiplier: 1, target: "enemy" }],
     },
     upgraded: {
+      target: "enemy",
       cost: 0,
       text: "造成等同于当前格挡的伤害。",
       effects: [{ type: "damageFromBlock", multiplier: 1, target: "enemy" }],
@@ -885,11 +959,13 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "uncommon",
     base: {
+      target: "enemy",
       cost: 1,
       text: "消耗所有连击。每层连击造成 6 点伤害。",
       effects: [{ type: "damagePerPower", amount: 6, power: "combo", powerTarget: "self", target: "enemy", consume: true }],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "消耗所有连击。每层连击造成 8 点伤害。",
       effects: [{ type: "damagePerPower", amount: 8, power: "combo", powerTarget: "self", target: "enemy", consume: true }],
@@ -901,11 +977,13 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "allEnemies",
       cost: 2,
       text: "对所有敌人施加 4 层中毒。",
       effects: [{ type: "applyPower", power: "poison", amount: 4, target: "allEnemies" }],
     },
     upgraded: {
+      target: "allEnemies",
       cost: 2,
       text: "对所有敌人施加 7 层中毒。",
       effects: [{ type: "applyPower", power: "poison", amount: 7, target: "allEnemies" }],
@@ -917,11 +995,13 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "rare",
     base: {
+      target: "allEnemies",
       cost: 2,
       text: "对所有敌人每层流血造成 2 点伤害。",
       effects: [{ type: "damagePerPower", amount: 2, power: "bleed", powerTarget: "enemy", target: "allEnemies" }],
     },
     upgraded: {
+      target: "allEnemies",
       cost: 2,
       text: "对所有敌人每层流血造成 3 点伤害。",
       effects: [{ type: "damagePerPower", amount: 3, power: "bleed", powerTarget: "enemy", target: "allEnemies" }],
@@ -933,6 +1013,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "allEnemies",
       cost: 2,
       text: "对所有敌人施加 3 层流血。抽 1 张牌。",
       effects: [
@@ -941,6 +1022,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "allEnemies",
       cost: 2,
       text: "对所有敌人施加 4 层流血。抽 1 张牌。",
       effects: [
@@ -955,6 +1037,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "uncommon",
     base: {
+      target: "allEnemies",
       cost: 1,
       text: "对所有敌人造成 3 点伤害。消耗最多 3 层蓄能，每层额外造成 3 点伤害。",
       effects: [
@@ -963,6 +1046,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "allEnemies",
       cost: 1,
       text: "对所有敌人造成 5 点伤害。消耗最多 4 层蓄能，每层额外造成 4 点伤害。",
       effects: [
@@ -977,6 +1061,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "common",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 1 层蓄能。抽 1 张牌。",
       effects: [
@@ -985,6 +1070,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 2 层蓄能。抽 1 张牌。",
       effects: [
@@ -999,6 +1085,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 5 点格挡。消耗最多 3 层蓄能，每层额外获得 2 点格挡。",
       effects: [
@@ -1007,6 +1094,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 7 点格挡。消耗最多 4 层蓄能，每层额外获得 3 点格挡。",
       effects: [
@@ -1021,6 +1109,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Power",
     rarity: "rare",
     base: {
+      target: "allEnemies",
       cost: 2,
       text: "获得 2 层蓄能。对所有敌人施加 2 层电弧。",
       effects: [
@@ -1029,6 +1118,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "allEnemies",
       cost: 1,
       text: "获得 3 层蓄能。对所有敌人施加 3 层电弧。",
       effects: [
@@ -1043,6 +1133,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Power",
     rarity: "uncommon",
     base: {
+      target: "allEnemies",
       cost: 1,
       text: "获得 1 层蓄能。对所有敌人施加 1 层电弧。",
       effects: [
@@ -1051,6 +1142,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "allEnemies",
       cost: 1,
       text: "获得 2 层蓄能。对所有敌人施加 2 层电弧。",
       effects: [
@@ -1065,6 +1157,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Power",
     rarity: "uncommon",
     base: {
+      target: "allEnemies",
       cost: 1,
       text: "获得 1 点敏捷。对所有敌人施加 3 层中毒。",
       effects: [
@@ -1073,6 +1166,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "allEnemies",
       cost: 1,
       text: "获得 1 点敏捷。对所有敌人施加 5 层中毒。",
       effects: [
@@ -1087,6 +1181,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Power",
     rarity: "rare",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 2 层连击。获得 1 层蓄能。",
       effects: [
@@ -1095,6 +1190,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 3 层连击。获得 2 层蓄能。",
       effects: [
@@ -1109,6 +1205,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Power",
     rarity: "rare",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 2 点力量。自身获得 2 层流血。",
       effects: [
@@ -1117,6 +1214,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 3 点力量。自身获得 1 层流血。",
       effects: [
@@ -1131,12 +1229,14 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "common",
     base: {
+      target: "self",
       cost: 1,
       text: "保留。获得 9 点格挡。",
       retain: true,
       effects: [{ type: "block", amount: 9 }],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "保留。获得 12 点格挡。抽 1 张牌。",
       retain: true,
@@ -1152,6 +1252,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 7 点格挡。获得 2 层金属化。",
       effects: [
@@ -1160,6 +1261,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 10 点格挡。获得 3 层金属化。",
       effects: [
@@ -1174,6 +1276,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 0,
       text: "获得 2 层连击。抽 1 张牌。消耗。",
       exhaust: true,
@@ -1183,6 +1286,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 0,
       text: "获得 3 层连击。抽 1 张牌。消耗。",
       exhaust: true,
@@ -1198,6 +1302,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 6 点格挡。按自身连击层数获得等量蓄能，最多计算 4 层，至少 1 层。",
       effects: [
@@ -1206,6 +1311,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 9 点格挡。按自身连击层数获得等量蓄能，最多计算 5 层，至少 1 层。",
       effects: [
@@ -1220,6 +1326,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 5 点格挡。本回合每打出 1 张牌，获得 1 层蓄能，最多计算 4 张。",
       effects: [
@@ -1228,6 +1335,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 8 点格挡。本回合每打出 1 张牌，获得 1 层蓄能，最多计算 5 张，并获得 1 层连击。",
       effects: [
@@ -1243,6 +1351,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "rare",
     base: {
+      target: "self",
       cost: 0,
       text: "获得 1 点能量、2 层蓄能，抽 1 张牌。自身获得 2 层流血。消耗。",
       exhaust: true,
@@ -1254,6 +1363,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 0,
       text: "获得 1 点能量、3 层蓄能，抽 1 张牌。自身获得 1 层流血。消耗。",
       exhaust: true,
@@ -1271,6 +1381,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 5 点格挡。移除自身最多 2 层流血；每移除 1 层，获得 4 点格挡和 1 层蓄能。",
       effects: [
@@ -1285,6 +1396,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 7 点格挡。移除自身最多 3 层流血；每移除 1 层，获得 5 点格挡和 1 层蓄能。",
       effects: [
@@ -1305,11 +1417,13 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "消耗手牌中最多 2 张状态牌。每消耗 1 张，获得 6 点格挡。",
       effects: [{ type: "exhaustCards", amount: 2, zone: "hand", cardType: "Status", gainBlockPerCard: 6 }],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "消耗手牌中最多 3 张状态牌。每消耗 1 张，获得 8 点格挡并抽 1 张牌。",
       effects: [
@@ -1323,6 +1437,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "消耗手牌和弃牌堆中最多 2 张状态牌。每消耗 1 张，获得 4 点格挡和 1 层蓄能。抽 1 张牌。",
       effects: [
@@ -1338,6 +1453,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "消耗手牌和弃牌堆中最多 3 张状态牌。每消耗 1 张，获得 5 点格挡和 1 层蓄能。抽 2 张牌。",
       effects: [
@@ -1359,6 +1475,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Power",
     rarity: "rare",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 2 层蓄能。将 1 张伤口加入弃牌堆。抽 1 张牌。",
       effects: [
@@ -1368,6 +1485,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 3 层蓄能。将 1 张伤口加入弃牌堆。抽 2 张牌。",
       effects: [
@@ -1383,6 +1501,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 4 点格挡。消耗堆每有 1 张牌，额外获得 2 点格挡，最多计算 5 张。",
       effects: [
@@ -1391,6 +1510,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 6 点格挡。消耗堆每有 1 张牌，额外获得 3 点格挡，最多计算 6 张。",
       effects: [
@@ -1405,12 +1525,14 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "rare",
     base: {
+      target: "self",
       cost: 0,
       text: "抽 3 张牌。消耗。",
       exhaust: true,
       effects: [{ type: "draw", amount: 3 }],
     },
     upgraded: {
+      target: "self",
       cost: 0,
       text: "抽 4 张牌。消耗。",
       exhaust: true,
@@ -1423,6 +1545,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "common",
     base: {
+      target: "self",
       cost: 1,
       text: "获得 6 点格挡。按自身金属化层数，每层额外获得 2 点格挡，至少按 1 层计算。",
       effects: [
@@ -1431,6 +1554,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "获得 8 点格挡。按自身金属化层数，每层额外获得 3 点格挡，至少按 1 层计算。",
       effects: [
@@ -1445,6 +1569,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Attack",
     rarity: "uncommon",
     base: {
+      target: "enemy",
       cost: 1,
       text: "造成 6 点伤害。消耗最多 2 层蓄能，每层追加 5 点伤害。",
       effects: [
@@ -1453,6 +1578,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "enemy",
       cost: 1,
       text: "造成 8 点伤害。消耗最多 3 层蓄能，每层追加 6 点伤害。",
       effects: [
@@ -1467,6 +1593,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "allEnemies",
       cost: 1,
       text: "获得 8 点格挡。消耗最多 2 层蓄能，每层对所有敌人造成 4 点伤害。",
       effects: [
@@ -1475,6 +1602,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "allEnemies",
       cost: 1,
       text: "获得 11 点格挡。消耗最多 3 层蓄能，每层对所有敌人造成 5 点伤害。",
       effects: [
@@ -1489,6 +1617,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Power",
     rarity: "rare",
     base: {
+      target: "self",
       cost: 2,
       text: "获得 2 层金属化、2 层尖刺和 2 层蓄能。",
       effects: [
@@ -1498,6 +1627,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 2,
       text: "获得 3 层金属化、3 层尖刺和 3 层蓄能。",
       effects: [
@@ -1513,6 +1643,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "uncommon",
     base: {
+      target: "self",
       cost: 1,
       text: "保留。获得 4 点格挡。从弃牌堆回收最多 1 张非状态牌。",
       retain: true,
@@ -1522,6 +1653,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 1,
       text: "保留。获得 7 点格挡。从弃牌堆回收最多 1 张非状态牌。抽 1 张牌。",
       retain: true,
@@ -1538,6 +1670,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Skill",
     rarity: "rare",
     base: {
+      target: "self",
       cost: 0,
       text: "获得 1 点能量。抽 1 张牌。从弃牌堆回收最多 1 张非状态牌。消耗。",
       exhaust: true,
@@ -1548,6 +1681,7 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
     upgraded: {
+      target: "self",
       cost: 0,
       text: "获得 1 点能量。抽 2 张牌。从弃牌堆回收最多 1 张非状态牌。消耗。",
       exhaust: true,
@@ -1564,12 +1698,14 @@ export const CARDS: Record<string, CardDef> = {
     type: "Status",
     rarity: "status",
     base: {
+      target: "none",
       cost: 1,
       text: "消耗。",
       exhaust: true,
       effects: [],
     },
     upgraded: {
+      target: "none",
       cost: 1,
       text: "消耗。",
       exhaust: true,
@@ -1582,12 +1718,14 @@ export const CARDS: Record<string, CardDef> = {
     type: "Status",
     rarity: "status",
     base: {
+      target: "none",
       cost: 0,
       text: "无法打出。",
       unplayable: true,
       effects: [],
     },
     upgraded: {
+      target: "none",
       cost: 0,
       text: "无法打出。",
       unplayable: true,
@@ -1600,6 +1738,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Status",
     rarity: "status",
     base: {
+      target: "none",
       cost: 0,
       text: "无法打出。虚无。",
       unplayable: true,
@@ -1607,6 +1746,7 @@ export const CARDS: Record<string, CardDef> = {
       effects: [],
     },
     upgraded: {
+      target: "none",
       cost: 0,
       text: "无法打出。虚无。",
       unplayable: true,
@@ -1620,6 +1760,7 @@ export const CARDS: Record<string, CardDef> = {
     type: "Status",
     rarity: "status",
     base: {
+      target: "none",
       cost: 0,
       text: "无法打出。回合结束时受到 2 点伤害。",
       unplayable: true,
@@ -1627,6 +1768,7 @@ export const CARDS: Record<string, CardDef> = {
       effects: [],
     },
     upgraded: {
+      target: "none",
       cost: 0,
       text: "无法打出。回合结束时受到 4 点伤害。",
       unplayable: true,

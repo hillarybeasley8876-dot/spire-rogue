@@ -18,6 +18,7 @@ import {
   enterNode,
   getAvailableNodeIds,
   getCurrentEvent,
+  getCardTarget,
   makeCardInstance,
   makePotionInstance,
   playCard,
@@ -36,7 +37,7 @@ import {
   saveRun,
   type StorageLike,
 } from "../src/game/persistence";
-import type { MapNode, NodeType, RunState } from "../src/game/types";
+import type { ActionTarget, CardLevel, MapNode, NodeType, RunState } from "../src/game/types";
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
@@ -46,6 +47,23 @@ function assert(condition: unknown, message: string): asserts condition {
 
 function effectTargetsClickedEnemy(effect: { target?: unknown }): boolean {
   return effect.target === "enemy";
+}
+
+function effectTargetsAllEnemies(effect: { target?: unknown }): boolean {
+  return effect.target === "allEnemies";
+}
+
+function inferActionTarget(level: CardLevel): ActionTarget {
+  if (level.effects.some(effectTargetsClickedEnemy)) {
+    return "enemy";
+  }
+  if (level.effects.some(effectTargetsAllEnemies)) {
+    return "allEnemies";
+  }
+  if (level.unplayable || level.effects.length === 0) {
+    return "none";
+  }
+  return "self";
 }
 
 class MemoryStorage implements StorageLike {
@@ -286,6 +304,8 @@ for (const cardId of REWARD_CARD_IDS) {
   assert(CARDS[cardId], `reward card ${cardId} should exist`);
 }
 for (const card of Object.values(CARDS)) {
+  assert(card.base.target === inferActionTarget(card.base), `${card.id} base target should match its level effects`);
+  assert(card.upgraded.target === inferActionTarget(card.upgraded), `${card.id} upgraded target should match its level effects`);
   assert(
     cardNeedsTarget(makeCardInstance(card.id)) === card.base.effects.some(effectTargetsClickedEnemy),
     `${card.id} base target helper should match its effects`,
@@ -359,6 +379,9 @@ assert(!potionNeedsTarget(makePotionInstance("explosive_potion")), "all-enemy po
 assert(!potionNeedsTarget(makePotionInstance("recall_potion")), "self potions should not require a clicked target");
 assert(!potionNeedsTarget(makePotionInstance("missing_potion")), "missing potion target helper should fail closed");
 assert(cardNeedsTarget(makeCardInstance("blood_catalyst")), "single-target amplification cards should require a target");
+assert(!cardNeedsTarget(makeCardInstance("blood_catalyst", true)), "upgraded all-enemy amplification cards should not require a target");
+assert(getCardTarget(makeCardInstance("defend")) === "self", "defend should explicitly target self");
+assert(getCardTarget(makeCardInstance("strike")) === "enemy", "strike should explicitly target a single enemy");
 assert(!cardNeedsTarget(makeCardInstance("missing_card")), "missing card target helper should fail closed");
 for (const boonId of BOON_POOL) {
   assert(BOONS[boonId], `boon ${boonId} should exist`);
@@ -776,6 +799,27 @@ assert(invalidCardCombatRun.phase === "combat", "playing a missing combat card s
 assert(invalidCardCombatRun.message?.includes("不能打出"), "playing a missing combat card should explain it is unplayable");
 invalidCardCombatRun = endTurn(invalidCardCombatRun);
 assert(invalidCardCombatRun.phase === "combat", "ending a turn with a missing combat card should not crash");
+
+let illegalCardTargetRun = createInitialRun(12350, "map", "standard");
+illegalCardTargetRun = enterNode(illegalCardTargetRun, getAvailableNodeIds(illegalCardTargetRun)[0]);
+const illegalDefend = makeCardInstance("defend");
+illegalCardTargetRun.combat!.hand = [illegalDefend];
+illegalCardTargetRun.combat!.energy = 3;
+const illegalCardEnemyUid = livingEnemyUid(illegalCardTargetRun);
+const illegalCardBlockBefore = illegalCardTargetRun.combat!.playerBlock;
+illegalCardTargetRun = playCard(illegalCardTargetRun, illegalDefend.uid, illegalCardEnemyUid);
+assert(illegalCardTargetRun.combat!.playerBlock === illegalCardBlockBefore, "self cards should not resolve when an enemy target is forced");
+assert(illegalCardTargetRun.combat!.hand.some((card) => card.uid === illegalDefend.uid), "rejected self card should stay in hand");
+assert(illegalCardTargetRun.message?.includes("不需要选择敌人目标"), "rejected self card should explain the target rule");
+
+let illegalPotionTargetRun = createInitialRun(12351, "map", "standard");
+illegalPotionTargetRun = enterNode(illegalPotionTargetRun, getAvailableNodeIds(illegalPotionTargetRun)[0]);
+illegalPotionTargetRun.player.potions = [makePotionInstance("energy_potion")];
+const illegalPotion = illegalPotionTargetRun.player.potions[0];
+const illegalPotionEnemyUid = livingEnemyUid(illegalPotionTargetRun);
+illegalPotionTargetRun = usePotion(illegalPotionTargetRun, illegalPotion.uid, illegalPotionEnemyUid);
+assert(illegalPotionTargetRun.player.potions.length === 1, "self potions should not be consumed when an enemy target is forced");
+assert(illegalPotionTargetRun.message?.includes("不需要选择敌人目标"), "rejected self potion should explain the target rule");
 
 const strike = firstPlayableCard(run, "strike");
 run = playCard(run, strike.uid, livingEnemyUid(run));

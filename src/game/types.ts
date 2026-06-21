@@ -15,6 +15,8 @@ export type MapRouteKind = "start" | "branch" | "converge" | "choke" | "crossroa
 export type CardType = "Attack" | "Skill" | "Power" | "Status";
 export type Rarity = "starter" | "common" | "uncommon" | "rare" | "boss" | "status";
 export type DifficultyKey = "story" | "standard" | "hard" | "nightmare";
+export type ActionTarget = "none" | "self" | "enemy" | "allEnemies";
+export type CardTarget = ActionTarget;
 
 export interface DifficultyConfig {
   id: DifficultyKey;
@@ -142,6 +144,7 @@ export type CardEffect =
     };
 
 export interface CardLevel {
+  target: CardTarget;
   cost: number;
   text: string;
   effects: CardEffect[];
@@ -331,7 +334,7 @@ export interface BoonDef {
   text: string;
 }
 
-export type PotionTarget = "none" | "enemy" | "allEnemies" | "self";
+export type PotionTarget = ActionTarget;
 
 export type PotionEffect =
   | {

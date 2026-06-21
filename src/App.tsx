@@ -41,6 +41,7 @@ import {
   getAvailableNodeIds,
   getCardDef,
   getCardLevel,
+  getCardTarget,
   getCurrentEvent,
   leaveShop,
   potionNeedsTarget,
@@ -79,6 +80,13 @@ const CARD_TYPE_LABELS = {
   Skill: "技能",
   Power: "能力",
   Status: "状态",
+};
+
+const ACTION_TARGET_LABELS = {
+  enemy: "目标：敌人",
+  allEnemies: "目标：全体",
+  self: "目标：自身",
+  none: "目标：无",
 };
 
 const BUILD_TAG_PRIORITY = [
@@ -346,17 +354,21 @@ function App() {
   }
 
   function handleEnemyClick(enemy: EnemyState) {
-    if (selectedPotionUid && enemy.hp > 0) {
-      setRun((current) => usePotion(current, selectedPotionUid, enemy.uid));
+    const selectedPotionForTarget = selectedPotionUid
+      ? run.player.potions.find((potion) => potion.uid === selectedPotionUid)
+      : undefined;
+    if (selectedPotionForTarget && potionNeedsTarget(selectedPotionForTarget) && enemy.hp > 0) {
+      setRun((current) => usePotion(current, selectedPotionForTarget.uid, enemy.uid));
       setSelectedPotionUid(undefined);
       setSelectedCardUid(undefined);
       return;
     }
 
-    if (!selectedCardUid || enemy.hp <= 0) {
+    const selectedCardForTarget = selectedCardUid ? run.combat?.hand.find((card) => card.uid === selectedCardUid) : undefined;
+    if (!selectedCardForTarget || !cardNeedsTarget(selectedCardForTarget) || enemy.hp <= 0) {
       return;
     }
-    setRun((current) => playCard(current, selectedCardUid, enemy.uid));
+    setRun((current) => playCard(current, selectedCardForTarget.uid, enemy.uid));
     setSelectedCardUid(undefined);
     setSelectedPotionUid(undefined);
   }
@@ -1300,7 +1312,8 @@ function CombatScreen({
 }) {
   const combat = run.combat!;
   const selectedCardDef = selectedCard ? CARDS[selectedCard.cardId] : undefined;
-  const selectedNeedsTarget = Boolean(selectedCard && selectedCardDef && cardNeedsTarget(selectedCard));
+  const selectedCardTarget = selectedCard ? getCardTarget(selectedCard) : undefined;
+  const selectedNeedsTarget = selectedCardTarget === "enemy";
   const selectedPotionDef = selectedPotion ? POTIONS[selectedPotion.potionId] : undefined;
   const selectedPotionNeedsTarget = Boolean(selectedPotion && selectedPotionDef && potionNeedsTarget(selectedPotion));
   const incoming = estimateIncomingDamage(run);
@@ -3319,6 +3332,7 @@ function CardView({
   const level = getCardLevel(card);
   const tags = cardMechanicTags(card);
   const visualClass = cardVisualClass(def);
+  const targetLabel = ACTION_TARGET_LABELS[level.target];
   return (
     <button
       className={`game-card game-card--${def.type.toLowerCase()} game-card--rarity-${def.rarity} ${visualClass} ${
@@ -3338,7 +3352,10 @@ function CardView({
         {def.type === "Power" && <Flame size={38} />}
         {def.type === "Status" && <Sparkles size={38} />}
       </div>
-      <span className="game-card__type">{CARD_TYPE_LABELS[def.type]}</span>
+      <div className="game-card__meta">
+        <span className="game-card__type">{CARD_TYPE_LABELS[def.type]}</span>
+        <span className={`game-card__target game-card__target--${level.target}`}>{targetLabel}</span>
+      </div>
       <p>{level.text}</p>
       {tags.length > 0 && (
         <div className="game-card__tags">

@@ -1787,10 +1787,11 @@ button {
   content: "";
   pointer-events: none;
   background:
-    radial-gradient(circle at 50% 20%, rgba(91, 210, 191, 0.16), transparent 33%),
-    linear-gradient(180deg, rgba(15, 19, 24, 0.5), rgba(15, 19, 24, 0.9)),
+    radial-gradient(circle at 50% 10%, rgba(255, 224, 163, 0.12), transparent 28%),
+    radial-gradient(circle at 18% 72%, rgba(91, 210, 191, 0.1), transparent 24%),
+    linear-gradient(180deg, rgba(11, 15, 19, 0.62), rgba(11, 15, 19, 0.94)),
     var(--rift-bg-url) center / cover;
-  opacity: 0.22;
+  opacity: 0.28;
 }
 
 .map-panel::after {
@@ -1801,9 +1802,9 @@ button {
   border: 1px solid rgba(255, 224, 163, 0.09);
   border-radius: 8px;
   background:
-    linear-gradient(90deg, rgba(91, 210, 191, 0.05), transparent 24%, transparent 76%, rgba(240, 109, 89, 0.05)),
-    repeating-linear-gradient(90deg, transparent 0 44px, rgba(255, 255, 255, 0.018) 44px 45px);
-  opacity: 0.8;
+    linear-gradient(90deg, rgba(0, 0, 0, 0.28), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.32)),
+    linear-gradient(180deg, rgba(255, 224, 163, 0.06), transparent 28%, transparent 72%, rgba(91, 210, 191, 0.05));
+  opacity: 0.9;
 }
 
 .map-panel > * {
@@ -2082,16 +2083,18 @@ button {
   position: relative;
   height: clamp(660px, 72vh, 760px);
   min-width: 680px;
-  border: 1px solid rgba(91, 210, 191, 0.2);
+  border: 1px solid rgba(255, 224, 163, 0.18);
   border-radius: 8px;
   background:
-    radial-gradient(circle at 50% 14%, rgba(91, 210, 191, 0.2), transparent 34%),
-    linear-gradient(180deg, rgba(5, 9, 13, 0.35), rgba(5, 9, 13, 0.86)),
+    radial-gradient(ellipse at 50% 8%, rgba(255, 224, 163, 0.22), transparent 30%),
+    radial-gradient(ellipse at 50% 96%, rgba(240, 109, 89, 0.16), transparent 26%),
+    linear-gradient(180deg, rgba(9, 13, 17, 0.45), rgba(6, 9, 12, 0.9)),
     var(--rift-bg-url) center / cover,
     rgba(0, 0, 0, 0.18);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.035),
-    inset 0 -80px 90px rgba(0, 0, 0, 0.58);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.045),
+    inset 0 0 80px rgba(0, 0, 0, 0.28),
+    inset 0 -100px 110px rgba(0, 0, 0, 0.62);
   overflow: hidden;
 }
 
@@ -2110,22 +2113,22 @@ button {
 
 .map-art-layer--rift {
   background:
-    radial-gradient(ellipse at 50% 9%, rgba(157, 245, 229, 0.28), transparent 22%),
-    radial-gradient(ellipse at 48% 12%, transparent 0 11%, rgba(157, 245, 229, 0.24) 12% 13%, transparent 14%),
-    linear-gradient(90deg, transparent 0 47%, rgba(157, 245, 229, 0.1) 48% 50%, transparent 51%);
-  opacity: 0.82;
+    radial-gradient(ellipse at 50% 8%, rgba(255, 224, 163, 0.22), transparent 20%),
+    radial-gradient(ellipse at 50% 12%, transparent 0 12%, rgba(157, 245, 229, 0.18) 13% 14%, transparent 15%),
+    linear-gradient(90deg, transparent 0 46%, rgba(157, 245, 229, 0.08) 49% 51%, transparent 54%);
+  opacity: 0.7;
   mix-blend-mode: screen;
 }
 
 .map-art-layer--islands {
   background:
-    radial-gradient(ellipse at 26% 24%, rgba(0, 0, 0, 0.36) 0 4%, transparent 4.3%),
-    radial-gradient(ellipse at 73% 18%, rgba(0, 0, 0, 0.32) 0 3.4%, transparent 3.8%),
-    radial-gradient(ellipse at 16% 58%, rgba(0, 0, 0, 0.26) 0 5%, transparent 5.3%),
-    radial-gradient(ellipse at 84% 62%, rgba(0, 0, 0, 0.28) 0 4.2%, transparent 4.6%),
+    radial-gradient(ellipse at 25% 24%, rgba(0, 0, 0, 0.35) 0 4.4%, transparent 4.8%),
+    radial-gradient(ellipse at 73% 18%, rgba(0, 0, 0, 0.3) 0 3.6%, transparent 4%),
+    radial-gradient(ellipse at 17% 58%, rgba(0, 0, 0, 0.24) 0 5.4%, transparent 5.8%),
+    radial-gradient(ellipse at 84% 62%, rgba(0, 0, 0, 0.26) 0 4.5%, transparent 4.9%),
     linear-gradient(180deg, transparent 0 74%, rgba(240, 109, 89, 0.1) 84%, transparent 100%);
   filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.36));
-  opacity: 0.78;
+  opacity: 0.62;
 }
 
 .map-art-layer--stars {
@@ -2134,9 +2137,8 @@ button {
     radial-gradient(circle at 35% 9%, rgba(157, 245, 229, 0.48) 0 1px, transparent 2px),
     radial-gradient(circle at 68% 13%, rgba(255, 224, 163, 0.52) 0 1px, transparent 2px),
     radial-gradient(circle at 82% 36%, rgba(217, 182, 255, 0.46) 0 1px, transparent 2px),
-    radial-gradient(circle at 12% 44%, rgba(157, 245, 229, 0.42) 0 1px, transparent 2px),
-    repeating-linear-gradient(115deg, transparent 0 58px, rgba(157, 245, 229, 0.045) 58px 59px, transparent 59px 116px);
-  opacity: 0.72;
+    radial-gradient(circle at 12% 44%, rgba(157, 245, 229, 0.42) 0 1px, transparent 2px);
+  opacity: 0.55;
   animation: map-star-drift 9s linear infinite;
 }
 
@@ -2185,9 +2187,9 @@ button {
   border-top: 1px solid rgba(var(--zone-rgb, 157, 245, 229), 0.14);
   border-bottom: 1px solid rgba(var(--zone-rgb, 157, 245, 229), 0.08);
   background:
-    linear-gradient(90deg, rgba(var(--zone-rgb, 157, 245, 229), 0.12), transparent 30%, transparent 72%, rgba(var(--zone-rgb, 157, 245, 229), 0.08)),
-    repeating-linear-gradient(90deg, transparent 0 52px, rgba(var(--zone-rgb, 157, 245, 229), 0.035) 52px 53px);
-  opacity: 0.54;
+    radial-gradient(ellipse at 50% 50%, rgba(var(--zone-rgb, 157, 245, 229), 0.13), transparent 62%),
+    linear-gradient(90deg, rgba(var(--zone-rgb, 157, 245, 229), 0.1), transparent 30%, transparent 72%, rgba(var(--zone-rgb, 157, 245, 229), 0.08));
+  opacity: 0.44;
 }
 
 .map-zone-band b {
@@ -2235,8 +2237,9 @@ button {
 
 .map-canvas::before {
   background:
-    repeating-linear-gradient(0deg, transparent 0 12px, rgba(255, 255, 255, 0.025) 12px 13px),
-    radial-gradient(circle at 50% 76%, rgba(240, 109, 89, 0.16), transparent 30%);
+    radial-gradient(ellipse at 50% 58%, transparent 0 42%, rgba(255, 224, 163, 0.055) 43% 44%, transparent 45%),
+    radial-gradient(ellipse at 50% 58%, transparent 0 60%, rgba(157, 245, 229, 0.045) 61% 62%, transparent 63%),
+    radial-gradient(circle at 50% 76%, rgba(240, 109, 89, 0.13), transparent 30%);
   mix-blend-mode: screen;
 }
 
@@ -2259,9 +2262,10 @@ button {
 }
 
 .map-line {
-  stroke: rgba(157, 245, 229, 0.18);
-  stroke-width: 0.55;
-  filter: drop-shadow(0 0 3px rgba(91, 210, 191, 0.16));
+  stroke: rgba(157, 245, 229, 0.2);
+  stroke-width: 0.72;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(91, 210, 191, 0.18));
 }
 
 .map-line[class*="map-zone--"] {
@@ -2270,19 +2274,19 @@ button {
 
 .map-line--active {
   stroke: rgba(240, 190, 85, 0.56);
-  stroke-width: 0.8;
+  stroke-width: 1;
 }
 
 .map-line--available {
   stroke: rgba(255, 224, 163, 0.92);
-  stroke-dasharray: 1.8 1.1;
-  stroke-width: 1.05;
+  stroke-dasharray: 2.1 1.05;
+  stroke-width: 1.24;
   filter: drop-shadow(0 0 6px rgba(240, 190, 85, 0.38));
 }
 
 .map-line--completed {
   stroke: rgba(91, 210, 191, 0.72);
-  stroke-width: 0.95;
+  stroke-width: 1.1;
   filter: drop-shadow(0 0 5px rgba(91, 210, 191, 0.32));
 }
 
@@ -2290,19 +2294,22 @@ button {
   position: absolute;
   z-index: 3;
   display: grid;
-  width: clamp(66px, 7vw, 78px);
-  height: 48px;
+  grid-template-rows: 22px 1fr;
+  width: clamp(60px, 6vw, 70px);
+  height: 58px;
   place-items: center;
-  padding: 6px;
+  padding: 7px 6px 6px;
   color: var(--text);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035)),
-    rgba(9, 14, 18, 0.78);
+    radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.18), transparent 38%),
+    linear-gradient(180deg, rgba(var(--zone-rgb, 157, 245, 229), 0.2), rgba(255, 255, 255, 0.04)),
+    rgba(8, 12, 15, 0.86);
   box-shadow:
-    0 10px 24px rgba(0, 0, 0, 0.34),
-    inset 0 -3px 0 rgba(0, 0, 0, 0.22);
+    0 14px 24px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -5px 0 rgba(0, 0, 0, 0.22);
   cursor: default;
   opacity: 0.52;
   transform: translate(-50%, -50%);
@@ -2319,23 +2326,33 @@ button {
 
 .map-node[class*="route-kind--"] {
   box-shadow:
-    0 0 0 1px rgba(var(--route-rgb, 157, 245, 229), 0.1),
-    0 10px 24px rgba(0, 0, 0, 0.34),
-    inset 0 -3px 0 rgba(0, 0, 0, 0.22);
+    0 0 0 1px rgba(var(--route-rgb, 157, 245, 229), 0.18),
+    0 14px 24px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -5px 0 rgba(0, 0, 0, 0.22);
 }
 
 .map-node span {
-  font-size: 12px;
-  font-weight: 800;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 950;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-node > svg {
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.26)) drop-shadow(0 0 8px rgba(var(--zone-rgb, 157, 245, 229), 0.18));
 }
 
 .map-node__route {
   position: absolute;
-  top: 3px;
-  right: 3px;
+  top: -6px;
+  right: -6px;
   display: grid;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   place-items: center;
   color: #101216;
   border: 1px solid rgba(255, 255, 255, 0.35);
@@ -2348,23 +2365,26 @@ button {
 
 .map-node::before {
   position: absolute;
-  inset: 5px;
+  inset: 4px;
   z-index: -1;
   content: "";
-  border-radius: 6px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent);
-  clip-path: polygon(0 0, 100% 0, 100% 72%, 78% 100%, 0 100%);
+  border-radius: 13px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent),
+    rgba(0, 0, 0, 0.08);
 }
 
 .map-node.is-available {
   cursor: pointer;
   opacity: 1;
   box-shadow:
-    0 0 0 1px rgba(var(--route-rgb, 255, 224, 163), 0.5),
-    0 0 0 1px rgba(var(--zone-rgb, 255, 224, 163), 0.42),
+    0 0 0 1px rgba(var(--route-rgb, 255, 224, 163), 0.6),
+    0 0 0 1px rgba(var(--zone-rgb, 255, 224, 163), 0.5),
     0 0 0 3px rgba(240, 190, 85, 0.15),
-    0 0 22px rgba(var(--zone-rgb, 240, 190, 85), 0.2),
-    0 16px 24px rgba(0, 0, 0, 0.24);
+    0 0 26px rgba(var(--zone-rgb, 240, 190, 85), 0.25),
+    0 18px 28px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -5px 0 rgba(0, 0, 0, 0.22);
   animation: available-node-pulse 1.8s ease-in-out infinite;
 }
 
@@ -2373,11 +2393,12 @@ button {
 }
 
 .map-node.is-completed {
-  opacity: 0.72;
-  filter: saturate(0.6);
+  opacity: 0.78;
+  filter: saturate(0.72);
   box-shadow:
     0 0 0 2px rgba(91, 210, 191, 0.11),
-    0 10px 20px rgba(0, 0, 0, 0.26);
+    0 10px 20px rgba(0, 0, 0, 0.26),
+    inset 0 -5px 0 rgba(0, 0, 0, 0.2);
 }
 
 .node-tone--fight {
@@ -5066,14 +5087,52 @@ button {
   animation: status-card-scan 1200ms steps(4, end) infinite;
 }
 
-.game-card__type {
-  align-self: flex-start;
+.game-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  min-height: 24px;
+}
+
+.game-card__type,
+.game-card__target {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 22px;
   padding: 4px 8px;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.24);
   color: rgba(255, 255, 255, 0.86);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.game-card__target {
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.game-card__target--enemy {
+  color: #ffd1cb;
+  border-color: rgba(240, 109, 89, 0.32);
+}
+
+.game-card__target--allEnemies {
+  color: #ffe0a3;
+  border-color: rgba(216, 160, 59, 0.32);
+}
+
+.game-card__target--self {
+  color: #d5f2ed;
+  border-color: rgba(91, 210, 191, 0.3);
+}
+
+.game-card__target--none {
+  color: #c7cdd2;
 }
 
 .game-card p {
@@ -5982,13 +6041,13 @@ button {
   }
 
   .map-node {
-    width: 62px;
-    height: 46px;
+    width: 58px;
+    height: 54px;
     padding: 4px;
   }
 
   .map-node span {
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .section-heading,

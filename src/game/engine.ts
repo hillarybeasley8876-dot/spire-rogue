@@ -71,12 +71,14 @@ const INVALID_CARD_DEF: CardDef = {
   type: "Status",
   rarity: "status",
   base: {
+    target: "none",
     cost: 0,
     text: "这张牌来自旧数据，无法打出。",
     unplayable: true,
     effects: [],
   },
   upgraded: {
+    target: "none",
     cost: 0,
     text: "这张牌来自旧数据，无法打出。",
     unplayable: true,
@@ -131,6 +133,10 @@ export function getCardLevel(card: CardInstance): CardLevel {
   return card.upgraded ? def.upgraded : def.base;
 }
 
+export function getCardTarget(card: CardInstance) {
+  return getCardLevel(card).target;
+}
+
 function cardAppliesSelfPower(card: CardInstance, power: PowerKey): boolean {
   return getCardLevel(card).effects.some(
     (effect) => effect.type === "applyPower" && effect.target === "self" && effect.power === power && effect.amount > 0,
@@ -146,11 +152,7 @@ export function makeCardInstance(cardId: string, upgraded = false): CardInstance
 }
 
 export function cardNeedsTarget(card: CardInstance): boolean {
-  return getCardLevel(card).effects.some(effectTargetsSingleEnemy);
-}
-
-function effectTargetsSingleEnemy(effect: CardEffect | PotionEffect): boolean {
-  return "target" in effect && effect.target === "enemy";
+  return getCardTarget(card) === "enemy";
 }
 
 export function canPlayCard(run: RunState, card: CardInstance): boolean {
@@ -171,7 +173,7 @@ export function makePotionInstance(potionId: string): PotionInstance {
 }
 
 export function potionNeedsTarget(potion: PotionInstance): boolean {
-  return Boolean(POTIONS[potion.potionId]?.effects.some(effectTargetsSingleEnemy));
+  return POTIONS[potion.potionId]?.target === "enemy";
 }
 
 export function getAvailableNodeIds(run: RunState): string[] {
@@ -266,6 +268,7 @@ export function playCard(run: RunState, cardUid: string, targetUid?: string): Ru
   const card = combat.hand[handIndex];
   const def = getCardDef(card.cardId);
   const level = getCardLevel(card);
+  const targetMode = getCardTarget(card);
 
   if (level.unplayable) {
     return withMessage(run, "这张牌不能打出。");
@@ -276,11 +279,13 @@ export function playCard(run: RunState, cardUid: string, targetUid?: string): Ru
   }
 
   let target: EnemyState | undefined;
-  if (cardNeedsTarget(card)) {
+  if (targetMode === "enemy") {
     target = combat.enemies.find((enemy) => enemy.uid === targetUid && enemy.hp > 0);
     if (!target) {
       return withMessage(run, "请选择一个有效目标。");
     }
+  } else if (targetUid) {
+    return withMessage(run, `${def.name} 不需要选择敌人目标。`);
   }
 
   combat.hand.splice(handIndex, 1);
@@ -360,11 +365,13 @@ export function usePotion(run: RunState, potionUid: string, targetUid?: string):
   }
   let target: EnemyState | undefined;
 
-  if (potionNeedsTarget(potion)) {
+  if (def.target === "enemy") {
     target = combat.enemies.find((enemy) => enemy.uid === targetUid && enemy.hp > 0);
     if (!target) {
       return withMessage(run, "请选择一个药水目标。");
     }
+  } else if (targetUid) {
+    return withMessage(run, `${def.name} 不需要选择敌人目标。`);
   }
 
   next.player.potions.splice(potionIndex, 1);
