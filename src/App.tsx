@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Award,
   BookOpen,
@@ -223,6 +223,27 @@ interface TargetPreview {
   powerAdds: Partial<Record<PowerKey, number>>;
   sparkArc: number;
   lethal: boolean;
+}
+
+type CombatFloatKind = "damage" | "blockLoss" | "blockGain" | "heal" | "ko";
+
+interface CombatFloat {
+  id: number;
+  kind: CombatFloatKind;
+  value: number;
+}
+
+interface CombatActionFlash {
+  id: number;
+  tone: "card" | "potion";
+  label: string;
+}
+
+let combatFxSequence = 0;
+
+function nextCombatFxId(): number {
+  combatFxSequence += 1;
+  return combatFxSequence;
 }
 
 interface ActionSummary {
@@ -1335,6 +1356,91 @@ function CombatScreen({
       ]),
     );
   }, [combat.enemies, run, selectedCard, selectedCardDef, selectedPotion, selectedPotionDef]);
+  const playerVitalsRef = useRef({ hp: run.player.hp, block: combat.playerBlock });
+  const actionTraceRef = useRef({
+    turn: combat.turn,
+    cardsPlayed: combat.cardsPlayedThisTurn,
+    logLength: combat.log.length,
+    lastLog: combat.log[combat.log.length - 1] ?? "",
+  });
+  const [playerFx, setPlayerFx] = useState<CombatFloat>();
+  const [actionFlash, setActionFlash] = useState<CombatActionFlash>();
+
+  useEffect(() => {
+    const previous = playerVitalsRef.current;
+    const damage = previous.hp - run.player.hp;
+    const healing = run.player.hp - previous.hp;
+    const blockGain = combat.playerBlock - previous.block;
+    const blockLoss = previous.block - combat.playerBlock;
+    let nextFx: CombatFloat | undefined;
+
+    if (damage > 0) {
+      nextFx = { id: nextCombatFxId(), kind: "damage", value: damage };
+    } else if (healing > 0) {
+      nextFx = { id: nextCombatFxId(), kind: "heal", value: healing };
+    } else if (blockGain > 0) {
+      nextFx = { id: nextCombatFxId(), kind: "blockGain", value: blockGain };
+    } else if (blockLoss > 0) {
+      nextFx = { id: nextCombatFxId(), kind: "blockLoss", value: blockLoss };
+    }
+
+    playerVitalsRef.current = { hp: run.player.hp, block: combat.playerBlock };
+    if (!nextFx) {
+      return;
+    }
+
+    setPlayerFx(nextFx);
+    const timer = window.setTimeout(() => {
+      setPlayerFx((current) => (current?.id === nextFx?.id ? undefined : current));
+    }, 760);
+    return () => window.clearTimeout(timer);
+  }, [combat.playerBlock, run.player.hp]);
+
+  useEffect(() => {
+    const previous = actionTraceRef.current;
+    const latestLog = combat.log[combat.log.length - 1] ?? "";
+    const newLogs = previous.logLength <= combat.log.length ? combat.log.slice(previous.logLength) : combat.log;
+    const candidateLogs = newLogs.length > 0 ? newLogs : combat.log;
+    const nextTrace = {
+      turn: combat.turn,
+      cardsPlayed: combat.cardsPlayedThisTurn,
+      logLength: combat.log.length,
+      lastLog: latestLog,
+    };
+    let nextFlash: CombatActionFlash | undefined;
+
+    if (combat.cardsPlayedThisTurn > previous.cardsPlayed) {
+      const cardLog = [...candidateLogs].reverse().find((line) => line.startsWith("打出"));
+      nextFlash = {
+        id: nextCombatFxId(),
+        tone: "card",
+        label: cardLog ? cardLog.replace(/^打出\s*/, "打出：") : "打出卡牌",
+      };
+    } else if (combat.log.length !== previous.logLength || latestLog !== previous.lastLog) {
+      const potionLog = [...candidateLogs].reverse().find((line) => line.startsWith("使用"));
+      if (!potionLog) {
+        actionTraceRef.current = nextTrace;
+        return;
+      }
+      nextFlash = {
+        id: nextCombatFxId(),
+        tone: "potion",
+        label: potionLog.replace(/^使用\s*/, "使用："),
+      };
+    }
+
+    actionTraceRef.current = nextTrace;
+    if (!nextFlash) {
+      return;
+    }
+
+    setActionFlash(nextFlash);
+    const timer = window.setTimeout(() => {
+      setActionFlash((current) => (current?.id === nextFlash?.id ? undefined : current));
+    }, 840);
+    return () => window.clearTimeout(timer);
+  }, [combat.cardsPlayedThisTurn, combat.log, combat.turn]);
+  const playerFxClass = playerFx ? `has-combat-fx is-${combatFloatClass(playerFx.kind)}` : "";
 
   return (
     <section className="combat-layout">
@@ -1365,6 +1471,13 @@ function CombatScreen({
             </div>
           </div>
         </div>
+
+        {actionFlash && (
+          <div key={actionFlash.id} className={`combat-action-flash combat-action-flash--${actionFlash.tone}`} aria-live="polite">
+            {actionFlash.tone === "card" ? <Sparkles size={15} /> : <FlaskConical size={15} />}
+            <span>{actionFlash.label}</span>
+          </div>
+        )}
 
         <div className="enemy-row">
           {combat.enemies.map((enemy) => (
@@ -1405,7 +1518,8 @@ function CombatScreen({
         )}
 
         <div className="player-board">
-          <div className="player-core">
+          <div className={`player-core ${playerFxClass}`}>
+            <CombatFloatText fx={playerFx} />
             <div className="player-core__identity">
               <PixelSprite
                 kind="player"
@@ -1458,6 +1572,7 @@ function CombatScreen({
               key={card.uid}
               card={card}
               disabled={!canPlayCard(run, card)}
+              disabledReason={cardPlayPenalty(run, card)}
               selected={selectedCardUid === card.uid}
               onClick={() => onCardClick(card)}
             />
@@ -1534,15 +1649,50 @@ function EnemyCard({
   const intentText = intentSummary(enemy.intent);
   const hasVisiblePreview = Boolean(preview && (targetable || preview.damage > 0 || Object.keys(preview.powerAdds).length > 0));
   const tier = ENEMIES[enemy.defId]?.tier ?? "normal";
+  const previousVitalsRef = useRef({ hp: enemy.hp, block: enemy.block });
+  const [combatFx, setCombatFx] = useState<CombatFloat>();
+
+  useEffect(() => {
+    const previous = previousVitalsRef.current;
+    const damage = previous.hp - enemy.hp;
+    const healing = enemy.hp - previous.hp;
+    const blockLoss = previous.block - enemy.block;
+    const blockGain = enemy.block - previous.block;
+    let nextFx: CombatFloat | undefined;
+
+    if (damage > 0) {
+      nextFx = { id: nextCombatFxId(), kind: enemy.hp <= 0 ? "ko" : "damage", value: damage };
+    } else if (healing > 0) {
+      nextFx = { id: nextCombatFxId(), kind: "heal", value: healing };
+    } else if (blockLoss > 0) {
+      nextFx = { id: nextCombatFxId(), kind: "blockLoss", value: blockLoss };
+    } else if (blockGain > 0) {
+      nextFx = { id: nextCombatFxId(), kind: "blockGain", value: blockGain };
+    }
+
+    previousVitalsRef.current = { hp: enemy.hp, block: enemy.block };
+    if (!nextFx) {
+      return;
+    }
+
+    setCombatFx(nextFx);
+    const timer = window.setTimeout(() => {
+      setCombatFx((current) => (current?.id === nextFx?.id ? undefined : current));
+    }, 760);
+    return () => window.clearTimeout(timer);
+  }, [enemy.block, enemy.hp]);
+  const combatFxClass = combatFx ? `has-combat-fx is-${combatFloatClass(combatFx.kind)}` : "";
+
   return (
     <button
       className={`enemy-card enemy-card--${spriteTone(enemy.defId)} enemy-card--tier-${tier} ${
         targetable ? "is-targetable" : ""
-      } ${hasVisiblePreview ? "has-preview" : ""} ${dead ? "is-dead" : ""}`}
+      } ${hasVisiblePreview ? "has-preview" : ""} ${dead ? "is-dead" : ""} ${combatFxClass}`}
       type="button"
       disabled={dead || !targetable}
       onClick={onClick}
     >
+      <CombatFloatText fx={combatFx} />
       <PixelSprite
         kind="enemy"
         variant={enemy.defId}
@@ -3320,11 +3470,13 @@ function EndScreen({
 function CardView({
   card,
   disabled,
+  disabledReason,
   selected,
   onClick,
 }: {
   card: CardInstance;
   disabled?: boolean;
+  disabledReason?: string;
   selected?: boolean;
   onClick?: () => void;
 }) {
@@ -3337,7 +3489,7 @@ function CardView({
     <button
       className={`game-card game-card--${def.type.toLowerCase()} game-card--rarity-${def.rarity} ${visualClass} ${
         selected ? "is-selected" : ""
-      }`}
+      } ${disabledReason ? "is-penalty" : ""}`}
       type="button"
       disabled={disabled}
       onClick={onClick}
@@ -3346,6 +3498,7 @@ function CardView({
         <span className="game-card__cost">{level.cost}</span>
         <strong>{def.name}{card.upgraded ? "+" : ""}</strong>
       </div>
+      {disabledReason && <span className="game-card__penalty">{disabledReason}</span>}
       <div className="game-card__art">
         {def.type === "Attack" && <Sword size={38} />}
         {def.type === "Skill" && <Shield size={38} />}
@@ -3366,6 +3519,20 @@ function CardView({
       )}
     </button>
   );
+}
+
+function cardPlayPenalty(run: RunState, card: CardInstance): string | undefined {
+  const level = getCardLevel(card);
+  if (level.unplayable) {
+    return "不可打出";
+  }
+  if (!run.combat || run.phase !== "combat") {
+    return "非战斗";
+  }
+  if (run.combat.energy < level.cost) {
+    return "能量不足";
+  }
+  return undefined;
 }
 
 function cardVisualClass(def: CardDef): string {
@@ -4067,6 +4234,32 @@ function HealthBar({ current, max }: { current: number; max: number }) {
       </strong>
     </div>
   );
+}
+
+function CombatFloatText({ fx }: { fx?: CombatFloat }) {
+  if (!fx) {
+    return null;
+  }
+
+  return (
+    <span key={fx.id} className={`combat-float combat-float--${combatFloatClass(fx.kind)}`} aria-hidden="true">
+      {combatFloatLabel(fx)}
+    </span>
+  );
+}
+
+function combatFloatClass(kind: CombatFloatKind): string {
+  if (kind === "blockLoss") return "block-loss";
+  if (kind === "blockGain") return "block-gain";
+  return kind;
+}
+
+function combatFloatLabel(fx: CombatFloat): string {
+  if (fx.kind === "ko") return "击破";
+  if (fx.kind === "damage") return `-${fx.value}`;
+  if (fx.kind === "heal") return `+${fx.value}`;
+  if (fx.kind === "blockGain") return `护盾 +${fx.value}`;
+  return `护盾 -${fx.value}`;
 }
 
 function PileCount({ label, value }: { label: string; value: number }) {
