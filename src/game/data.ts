@@ -1,0 +1,3470 @@
+import type {
+  BoonId,
+  BoonDef,
+  CardDef,
+  DifficultyConfig,
+  DifficultyKey,
+  EncounterDef,
+  EnemyDef,
+  PotionDef,
+  PowerKey,
+  RelicDef,
+} from "./types";
+
+export const DIFFICULTIES: Record<DifficultyKey, DifficultyConfig> = {
+  story: {
+    id: "story",
+    name: "探索",
+    tagline: "轻压力",
+    text: "敌人更脆，伤害更低，适合熟悉卡牌和路线。",
+    startingHp: 88,
+    startingGold: 135,
+    enemyHpMultiplier: 0.7,
+    enemyDamageMultiplier: 0.56,
+    enemyBlockMultiplier: 0.75,
+    rewardGoldMultiplier: 1.26,
+    shopPriceMultiplier: 0.84,
+    rewardUpgradeBonus: 0.08,
+  },
+  standard: {
+    id: "standard",
+    name: "标准",
+    tagline: "默认体验",
+    text: "按当前原型的基准曲线推进，容错适中。",
+    startingHp: 82,
+    startingGold: 115,
+    enemyHpMultiplier: 0.81,
+    enemyDamageMultiplier: 0.67,
+    enemyBlockMultiplier: 0.88,
+    rewardGoldMultiplier: 1.1,
+    shopPriceMultiplier: 0.95,
+    rewardUpgradeBonus: 0.04,
+  },
+  hard: {
+    id: "hard",
+    name: "进阶",
+    tagline: "路线会咬人",
+    text: "敌人生命和伤害提高，金币略少，需要更主动地构筑。",
+    startingHp: 80,
+    startingGold: 108,
+    enemyHpMultiplier: 0.86,
+    enemyDamageMultiplier: 0.745,
+    enemyBlockMultiplier: 0.95,
+    rewardGoldMultiplier: 1.06,
+    shopPriceMultiplier: 0.99,
+    rewardUpgradeBonus: 0.02,
+  },
+  nightmare: {
+    id: "nightmare",
+    name: "噩梦",
+    tagline: "测试强度",
+    text: "敌人明显更硬更疼，资源更紧，精英路线需要谨慎。",
+    startingHp: 76,
+    startingGold: 100,
+    enemyHpMultiplier: 0.98,
+    enemyDamageMultiplier: 0.84,
+    enemyBlockMultiplier: 1.04,
+    rewardGoldMultiplier: 1,
+    shopPriceMultiplier: 1.04,
+    rewardUpgradeBonus: -0.01,
+  },
+};
+
+export const POWER_LABELS: Record<PowerKey, string> = {
+  strength: "力量",
+  dexterity: "敏捷",
+  vulnerable: "易伤",
+  weak: "虚弱",
+  frail: "脆弱",
+  poison: "中毒",
+  regen: "再生",
+  thorns: "尖刺",
+  ritual: "仪式",
+  bleed: "流血",
+  mark: "破绽",
+  platedArmor: "金属化",
+  combo: "连击",
+  charge: "蓄能",
+  spark: "电弧",
+};
+
+export const POWER_HINTS: Record<PowerKey, string> = {
+  strength: "攻击造成的伤害提高。",
+  dexterity: "获得格挡时提高数值。",
+  vulnerable: "受到的攻击伤害提高 50%。",
+  weak: "造成的攻击伤害降低 25%。",
+  frail: "获得的格挡降低 25%。",
+  poison: "回合开始时失去生命，然后层数降低。",
+  regen: "回合开始时治疗生命，然后层数降低。",
+  thorns: "被攻击时反伤攻击者。",
+  ritual: "敌人回合结束后获得力量。",
+  bleed: "受到攻击生命伤害后额外失去生命，然后层数降低。",
+  mark: "被攻击时按层数受到额外伤害，然后降低 1 层。",
+  platedArmor: "回合开始时获得等量格挡；受到生命伤害后降低 1 层。",
+  combo: "本回合攻击牌累积的连击，回合结束清空。",
+  charge: "可被部分卡牌消耗，用来追加伤害或格挡。",
+  spark: "受到攻击生命伤害后向全体敌人弹射等同层数的伤害，然后降低 1 层。",
+};
+
+export const CARDS: Record<string, CardDef> = {
+  strike: {
+    id: "strike",
+    name: "打击",
+    type: "Attack",
+    rarity: "starter",
+    base: {
+      cost: 1,
+      text: "造成 6 点伤害。",
+      effects: [{ type: "damage", amount: 6, target: "enemy" }],
+    },
+    upgraded: {
+      cost: 1,
+      text: "造成 9 点伤害。",
+      effects: [{ type: "damage", amount: 9, target: "enemy" }],
+    },
+  },
+  defend: {
+    id: "defend",
+    name: "防御",
+    type: "Skill",
+    rarity: "starter",
+    base: {
+      cost: 1,
+      text: "获得 5 点格挡。",
+      effects: [{ type: "block", amount: 5 }],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 8 点格挡。",
+      effects: [{ type: "block", amount: 8 }],
+    },
+  },
+  bash: {
+    id: "bash",
+    name: "破甲重击",
+    type: "Attack",
+    rarity: "starter",
+    base: {
+      cost: 2,
+      text: "造成 8 点伤害。施加 2 层易伤。",
+      effects: [
+        { type: "damage", amount: 8, target: "enemy" },
+        { type: "applyPower", power: "vulnerable", amount: 2, target: "enemy" },
+      ],
+    },
+    upgraded: {
+      cost: 2,
+      text: "造成 10 点伤害。施加 3 层易伤。",
+      effects: [
+        { type: "damage", amount: 10, target: "enemy" },
+        { type: "applyPower", power: "vulnerable", amount: 3, target: "enemy" },
+      ],
+    },
+  },
+  quick_stab: {
+    id: "quick_stab",
+    name: "快刺",
+    type: "Attack",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "造成 5 点伤害。抽 1 张牌。",
+      effects: [
+        { type: "damage", amount: 5, target: "enemy" },
+        { type: "draw", amount: 1 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "造成 8 点伤害。抽 1 张牌。",
+      effects: [
+        { type: "damage", amount: 8, target: "enemy" },
+        { type: "draw", amount: 1 },
+      ],
+    },
+  },
+  iron_wave: {
+    id: "iron_wave",
+    name: "铁潮",
+    type: "Attack",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "获得 5 点格挡。造成 5 点伤害。",
+      effects: [
+        { type: "block", amount: 5 },
+        { type: "damage", amount: 5, target: "enemy" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 7 点格挡。造成 7 点伤害。",
+      effects: [
+        { type: "block", amount: 7 },
+        { type: "damage", amount: 7, target: "enemy" },
+      ],
+    },
+  },
+  cleave: {
+    id: "cleave",
+    name: "横扫",
+    type: "Attack",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "对所有敌人造成 7 点伤害。",
+      effects: [{ type: "damage", amount: 7, target: "allEnemies" }],
+    },
+    upgraded: {
+      cost: 1,
+      text: "对所有敌人造成 10 点伤害。",
+      effects: [{ type: "damage", amount: 10, target: "allEnemies" }],
+    },
+  },
+  guard_break: {
+    id: "guard_break",
+    name: "卸力斩",
+    type: "Attack",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "造成 6 点伤害。施加 1 层虚弱。",
+      effects: [
+        { type: "damage", amount: 6, target: "enemy" },
+        { type: "applyPower", power: "weak", amount: 1, target: "enemy" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "造成 8 点伤害。施加 2 层虚弱。",
+      effects: [
+        { type: "damage", amount: 8, target: "enemy" },
+        { type: "applyPower", power: "weak", amount: 2, target: "enemy" },
+      ],
+    },
+  },
+  deep_cut: {
+    id: "deep_cut",
+    name: "深切",
+    type: "Attack",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "造成 5 点伤害。施加 3 层流血。",
+      effects: [
+        { type: "damage", amount: 5, target: "enemy" },
+        { type: "applyPower", power: "bleed", amount: 3, target: "enemy" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "造成 7 点伤害。施加 5 层流血。",
+      effects: [
+        { type: "damage", amount: 7, target: "enemy" },
+        { type: "applyPower", power: "bleed", amount: 5, target: "enemy" },
+      ],
+    },
+  },
+  expose_weakness: {
+    id: "expose_weakness",
+    name: "揭露破绽",
+    type: "Skill",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "施加 3 层破绽。抽 1 张牌。",
+      effects: [
+        { type: "applyPower", power: "mark", amount: 3, target: "enemy" },
+        { type: "draw", amount: 1 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "施加 4 层破绽。抽 2 张牌。",
+      effects: [
+        { type: "applyPower", power: "mark", amount: 4, target: "enemy" },
+        { type: "draw", amount: 2 },
+      ],
+    },
+  },
+  marking_strike: {
+    id: "marking_strike",
+    name: "刻痕击",
+    type: "Attack",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "造成 4 点伤害。施加 2 层破绽。",
+      effects: [
+        { type: "damage", amount: 4, target: "enemy" },
+        { type: "applyPower", power: "mark", amount: 2, target: "enemy" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "造成 6 点伤害。施加 3 层破绽。",
+      effects: [
+        { type: "damage", amount: 6, target: "enemy" },
+        { type: "applyPower", power: "mark", amount: 3, target: "enemy" },
+      ],
+    },
+  },
+  poison_dart: {
+    id: "poison_dart",
+    name: "淬毒飞镖",
+    type: "Attack",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "造成 4 点伤害。施加 3 层中毒。",
+      effects: [
+        { type: "damage", amount: 4, target: "enemy" },
+        { type: "applyPower", power: "poison", amount: 3, target: "enemy" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "造成 6 点伤害。施加 5 层中毒。",
+      effects: [
+        { type: "damage", amount: 6, target: "enemy" },
+        { type: "applyPower", power: "poison", amount: 5, target: "enemy" },
+      ],
+    },
+  },
+  arc_blade: {
+    id: "arc_blade",
+    name: "弧光刃",
+    type: "Attack",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "造成 5 点伤害。施加 1 层电弧。",
+      effects: [
+        { type: "damage", amount: 5, target: "enemy" },
+        { type: "applyPower", power: "spark", amount: 1, target: "enemy" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "造成 7 点伤害。施加 2 层电弧。",
+      effects: [
+        { type: "damage", amount: 7, target: "enemy" },
+        { type: "applyPower", power: "spark", amount: 2, target: "enemy" },
+      ],
+    },
+  },
+  conductive_guard: {
+    id: "conductive_guard",
+    name: "导电防守",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 6 点格挡。对所有敌人施加 1 层电弧。",
+      effects: [
+        { type: "block", amount: 6 },
+        { type: "applyPower", power: "spark", amount: 1, target: "allEnemies" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 8 点格挡。对所有敌人施加 2 层电弧。",
+      effects: [
+        { type: "block", amount: 8 },
+        { type: "applyPower", power: "spark", amount: 2, target: "allEnemies" },
+      ],
+    },
+  },
+  second_wind: {
+    id: "second_wind",
+    name: "稳住阵脚",
+    type: "Skill",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "获得 7 点格挡。抽 1 张牌。",
+      effects: [
+        { type: "block", amount: 7 },
+        { type: "draw", amount: 1 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 10 点格挡。抽 1 张牌。",
+      effects: [
+        { type: "block", amount: 10 },
+        { type: "draw", amount: 1 },
+      ],
+    },
+  },
+  clear_mind: {
+    id: "clear_mind",
+    name: "清醒",
+    type: "Skill",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "获得 6 点格挡。净化自身所有负面状态。",
+      effects: [
+        { type: "block", amount: 6 },
+        { type: "cleanseDebuffs" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 9 点格挡。净化自身所有负面状态。抽 1 张牌。",
+      effects: [
+        { type: "block", amount: 9 },
+        { type: "cleanseDebuffs" },
+        { type: "draw", amount: 1 },
+      ],
+    },
+  },
+  capacitor: {
+    id: "capacitor",
+    name: "蓄能电容",
+    type: "Skill",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "获得 4 点格挡。获得 1 层蓄能。",
+      effects: [
+        { type: "block", amount: 4 },
+        { type: "applyPower", power: "charge", amount: 1, target: "self" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 7 点格挡。获得 2 层蓄能。",
+      effects: [
+        { type: "block", amount: 7 },
+        { type: "applyPower", power: "charge", amount: 2, target: "self" },
+      ],
+    },
+  },
+  twin_cut: {
+    id: "twin_cut",
+    name: "双裂",
+    type: "Attack",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "造成 4 点伤害 2 次。",
+      effects: [{ type: "damage", amount: 4, hits: 2, target: "enemy" }],
+    },
+    upgraded: {
+      cost: 1,
+      text: "造成 6 点伤害 2 次。",
+      effects: [{ type: "damage", amount: 6, hits: 2, target: "enemy" }],
+    },
+  },
+  blade_storm: {
+    id: "blade_storm",
+    name: "刃暴",
+    type: "Attack",
+    rarity: "uncommon",
+    base: {
+      cost: 2,
+      text: "对所有敌人造成 5 点伤害 2 次。",
+      effects: [{ type: "damage", amount: 5, hits: 2, target: "allEnemies" }],
+    },
+    upgraded: {
+      cost: 2,
+      text: "对所有敌人造成 7 点伤害 2 次。",
+      effects: [{ type: "damage", amount: 7, hits: 2, target: "allEnemies" }],
+    },
+  },
+  inflame: {
+    id: "inflame",
+    name: "燃起",
+    type: "Power",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 2 点力量。",
+      effects: [{ type: "applyPower", power: "strength", amount: 2, target: "self" }],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 3 点力量。",
+      effects: [{ type: "applyPower", power: "strength", amount: 3, target: "self" }],
+    },
+  },
+  footwork: {
+    id: "footwork",
+    name: "步法",
+    type: "Power",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 2 点敏捷。",
+      effects: [{ type: "applyPower", power: "dexterity", amount: 2, target: "self" }],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 3 点敏捷。",
+      effects: [{ type: "applyPower", power: "dexterity", amount: 3, target: "self" }],
+    },
+  },
+  iron_skin: {
+    id: "iron_skin",
+    name: "铁肤",
+    type: "Power",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 1 点敏捷。获得 2 层金属化。",
+      effects: [
+        { type: "applyPower", power: "dexterity", amount: 1, target: "self" },
+        { type: "applyPower", power: "platedArmor", amount: 2, target: "self" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 1 点敏捷。获得 3 层金属化。",
+      effects: [
+        { type: "applyPower", power: "dexterity", amount: 1, target: "self" },
+        { type: "applyPower", power: "platedArmor", amount: 3, target: "self" },
+      ],
+    },
+  },
+  adrenaline: {
+    id: "adrenaline",
+    name: "肾上腺素",
+    type: "Skill",
+    rarity: "rare",
+    base: {
+      cost: 0,
+      text: "获得 1 点能量。抽 2 张牌。消耗。",
+      exhaust: true,
+      effects: [
+        { type: "gainEnergy", amount: 1 },
+        { type: "draw", amount: 2 },
+      ],
+    },
+    upgraded: {
+      cost: 0,
+      text: "获得 2 点能量。抽 2 张牌。消耗。",
+      exhaust: true,
+      effects: [
+        { type: "gainEnergy", amount: 2 },
+        { type: "draw", amount: 2 },
+      ],
+    },
+  },
+  regeneration: {
+    id: "regeneration",
+    name: "再生护符",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 4 层再生。",
+      effects: [{ type: "applyPower", power: "regen", amount: 4, target: "self" }],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 6 层再生。",
+      effects: [{ type: "applyPower", power: "regen", amount: 6, target: "self" }],
+    },
+  },
+  mirror_image: {
+    id: "mirror_image",
+    name: "镜影",
+    type: "Skill",
+    rarity: "rare",
+    base: {
+      cost: 1,
+      text: "获得 9 点格挡。将 1 张防御加入手牌。消耗。",
+      exhaust: true,
+      effects: [
+        { type: "block", amount: 9 },
+        { type: "createCard", cardId: "defend", destination: "hand", upgraded: true },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 13 点格挡。将 1 张防御+加入手牌。消耗。",
+      exhaust: true,
+      effects: [
+        { type: "block", amount: 13 },
+        { type: "createCard", cardId: "defend", destination: "hand", upgraded: true },
+      ],
+    },
+  },
+  salvage: {
+    id: "salvage",
+    name: "战场回收",
+    type: "Skill",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "获得 5 点格挡。从弃牌堆回收最多 1 张非状态牌到手牌。",
+      effects: [
+        { type: "block", amount: 5 },
+        { type: "returnFromDiscard", amount: 1, excludeStatus: true },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 8 点格挡。从弃牌堆回收最多 2 张非状态牌到手牌。",
+      effects: [
+        { type: "block", amount: 8 },
+        { type: "returnFromDiscard", amount: 2, excludeStatus: true },
+      ],
+    },
+  },
+  memory_hook: {
+    id: "memory_hook",
+    name: "记忆钩索",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "从弃牌堆回收最多 1 张攻击牌到手牌。获得 1 层连击。",
+      effects: [
+        { type: "returnFromDiscard", amount: 1, cardType: "Attack" },
+        { type: "applyPower", power: "combo", amount: 1, target: "self" },
+      ],
+    },
+    upgraded: {
+      cost: 0,
+      text: "从弃牌堆回收最多 1 张攻击牌到手牌。获得 2 层连击。",
+      effects: [
+        { type: "returnFromDiscard", amount: 1, cardType: "Attack" },
+        { type: "applyPower", power: "combo", amount: 2, target: "self" },
+      ],
+    },
+  },
+  shield_recall: {
+    id: "shield_recall",
+    name: "回盾牵引",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 7 点格挡。从弃牌堆回收最多 1 张技能牌到手牌。",
+      effects: [
+        { type: "block", amount: 7 },
+        { type: "returnFromDiscard", amount: 1, cardType: "Skill" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 10 点格挡。从弃牌堆回收最多 2 张技能牌到手牌。",
+      effects: [
+        { type: "block", amount: 10 },
+        { type: "returnFromDiscard", amount: 2, cardType: "Skill" },
+      ],
+    },
+  },
+  fracture_thrust: {
+    id: "fracture_thrust",
+    name: "破痕突刺",
+    type: "Attack",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "造成 7 点伤害。施加 2 层破绽。",
+      effects: [
+        { type: "damage", amount: 7, target: "enemy" },
+        { type: "applyPower", power: "mark", amount: 2, target: "enemy" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "造成 9 点伤害。施加 3 层破绽。",
+      effects: [
+        { type: "damage", amount: 9, target: "enemy" },
+        { type: "applyPower", power: "mark", amount: 3, target: "enemy" },
+      ],
+    },
+  },
+  venom_cut: {
+    id: "venom_cut",
+    name: "毒血切割",
+    type: "Attack",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "造成 5 点伤害。施加 2 层中毒和 1 层流血。",
+      effects: [
+        { type: "damage", amount: 5, target: "enemy" },
+        { type: "applyPower", power: "poison", amount: 2, target: "enemy" },
+        { type: "applyPower", power: "bleed", amount: 1, target: "enemy" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "造成 7 点伤害。施加 3 层中毒和 2 层流血。",
+      effects: [
+        { type: "damage", amount: 7, target: "enemy" },
+        { type: "applyPower", power: "poison", amount: 3, target: "enemy" },
+        { type: "applyPower", power: "bleed", amount: 2, target: "enemy" },
+      ],
+    },
+  },
+  bulwark_engine: {
+    id: "bulwark_engine",
+    name: "壁垒引擎",
+    type: "Power",
+    rarity: "rare",
+    base: {
+      cost: 2,
+      text: "获得 2 层金属化和 2 层蓄能。",
+      effects: [
+        { type: "applyPower", power: "platedArmor", amount: 2, target: "self" },
+        { type: "applyPower", power: "charge", amount: 2, target: "self" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 3 层金属化和 3 层蓄能。",
+      effects: [
+        { type: "applyPower", power: "platedArmor", amount: 3, target: "self" },
+        { type: "applyPower", power: "charge", amount: 3, target: "self" },
+      ],
+    },
+  },
+  charge_shield: {
+    id: "charge_shield",
+    name: "蓄能盾阵",
+    type: "Skill",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "获得 5 点格挡。消耗最多 2 层蓄能，每层额外获得 1 点格挡。",
+      effects: [
+        { type: "block", amount: 5 },
+        { type: "blockPerPower", amount: 1, power: "charge", consume: 2 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 7 点格挡。消耗最多 3 层蓄能，每层额外获得 2 点格挡。",
+      effects: [
+        { type: "block", amount: 7 },
+        { type: "blockPerPower", amount: 2, power: "charge", consume: 3 },
+      ],
+    },
+  },
+  rupture_finish: {
+    id: "rupture_finish",
+    name: "裂势终击",
+    type: "Attack",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "施加 1 层破绽。消耗所有连击，每层造成 3 点伤害，至少按 1 层计算。",
+      effects: [
+        { type: "applyPower", power: "mark", amount: 1, target: "enemy" },
+        { type: "damagePerPower", amount: 3, power: "combo", powerTarget: "self", target: "enemy", consume: true, minimum: 1 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "施加 2 层破绽。消耗所有连击，每层造成 4 点伤害，至少按 1 层计算。",
+      effects: [
+        { type: "applyPower", power: "mark", amount: 2, target: "enemy" },
+        { type: "damagePerPower", amount: 4, power: "combo", powerTarget: "self", target: "enemy", consume: true, minimum: 1 },
+      ],
+    },
+  },
+  venom_battery: {
+    id: "venom_battery",
+    name: "毒能电池",
+    type: "Power",
+    rarity: "rare",
+    base: {
+      cost: 2,
+      text: "获得 1 层蓄能。对所有敌人施加 2 层中毒和 1 层电弧。",
+      effects: [
+        { type: "applyPower", power: "charge", amount: 1, target: "self" },
+        { type: "applyPower", power: "poison", amount: 2, target: "allEnemies" },
+        { type: "applyPower", power: "spark", amount: 1, target: "allEnemies" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 2 层蓄能。对所有敌人施加 3 层中毒和 2 层电弧。",
+      effects: [
+        { type: "applyPower", power: "charge", amount: 2, target: "self" },
+        { type: "applyPower", power: "poison", amount: 3, target: "allEnemies" },
+        { type: "applyPower", power: "spark", amount: 2, target: "allEnemies" },
+      ],
+    },
+  },
+  fault_resonance: {
+    id: "fault_resonance",
+    name: "裂痕共振",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "施加 2 层破绽，然后使目标破绽层数翻倍。",
+      effects: [
+        { type: "applyPower", power: "mark", amount: 2, target: "enemy" },
+        { type: "amplifyPower", power: "mark", target: "enemy", multiplier: 2 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "施加 3 层破绽，然后使目标破绽层数翻倍。抽 1 张牌。",
+      effects: [
+        { type: "applyPower", power: "mark", amount: 3, target: "enemy" },
+        { type: "amplifyPower", power: "mark", target: "enemy", multiplier: 2 },
+        { type: "draw", amount: 1 },
+      ],
+    },
+  },
+  blood_catalyst: {
+    id: "blood_catalyst",
+    name: "血毒催化",
+    type: "Skill",
+    rarity: "rare",
+    base: {
+      cost: 1,
+      text: "使一个敌人的中毒和流血层数翻倍。消耗。",
+      exhaust: true,
+      effects: [
+        { type: "amplifyPower", power: "poison", target: "enemy", multiplier: 2 },
+        { type: "amplifyPower", power: "bleed", target: "enemy", multiplier: 2 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "使所有敌人的中毒和流血层数翻倍。消耗。",
+      exhaust: true,
+      effects: [
+        { type: "amplifyPower", power: "poison", target: "allEnemies", multiplier: 2 },
+        { type: "amplifyPower", power: "bleed", target: "allEnemies", multiplier: 2 },
+      ],
+    },
+  },
+  spark_cascade: {
+    id: "spark_cascade",
+    name: "电弧级联",
+    type: "Attack",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "对所有敌人造成 4 点伤害。使所有敌人的电弧层数翻倍，至少增加 1 层。",
+      effects: [
+        { type: "damage", amount: 4, target: "allEnemies" },
+        { type: "amplifyPower", power: "spark", target: "allEnemies", multiplier: 2, minimum: 1 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "对所有敌人造成 6 点伤害。使所有敌人的电弧层数翻倍，至少增加 2 层。",
+      effects: [
+        { type: "damage", amount: 6, target: "allEnemies" },
+        { type: "amplifyPower", power: "spark", target: "allEnemies", multiplier: 2, minimum: 2 },
+      ],
+    },
+  },
+  body_slam: {
+    id: "body_slam",
+    name: "盾击",
+    type: "Attack",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "造成等同于当前格挡的伤害。",
+      effects: [{ type: "damageFromBlock", multiplier: 1, target: "enemy" }],
+    },
+    upgraded: {
+      cost: 0,
+      text: "造成等同于当前格挡的伤害。",
+      effects: [{ type: "damageFromBlock", multiplier: 1, target: "enemy" }],
+    },
+  },
+  finisher: {
+    id: "finisher",
+    name: "终结技",
+    type: "Attack",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "消耗所有连击。每层连击造成 6 点伤害。",
+      effects: [{ type: "damagePerPower", amount: 6, power: "combo", powerTarget: "self", target: "enemy", consume: true }],
+    },
+    upgraded: {
+      cost: 1,
+      text: "消耗所有连击。每层连击造成 8 点伤害。",
+      effects: [{ type: "damagePerPower", amount: 8, power: "combo", powerTarget: "self", target: "enemy", consume: true }],
+    },
+  },
+  toxin_cloud: {
+    id: "toxin_cloud",
+    name: "毒雾",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 2,
+      text: "对所有敌人施加 4 层中毒。",
+      effects: [{ type: "applyPower", power: "poison", amount: 4, target: "allEnemies" }],
+    },
+    upgraded: {
+      cost: 2,
+      text: "对所有敌人施加 7 层中毒。",
+      effects: [{ type: "applyPower", power: "poison", amount: 7, target: "allEnemies" }],
+    },
+  },
+  blood_burst: {
+    id: "blood_burst",
+    name: "血涌",
+    type: "Attack",
+    rarity: "rare",
+    base: {
+      cost: 2,
+      text: "对所有敌人每层流血造成 2 点伤害。",
+      effects: [{ type: "damagePerPower", amount: 2, power: "bleed", powerTarget: "enemy", target: "allEnemies" }],
+    },
+    upgraded: {
+      cost: 2,
+      text: "对所有敌人每层流血造成 3 点伤害。",
+      effects: [{ type: "damagePerPower", amount: 3, power: "bleed", powerTarget: "enemy", target: "allEnemies" }],
+    },
+  },
+  blood_rite: {
+    id: "blood_rite",
+    name: "血仪式",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 2,
+      text: "对所有敌人施加 3 层流血。抽 1 张牌。",
+      effects: [
+        { type: "applyPower", power: "bleed", amount: 3, target: "allEnemies" },
+        { type: "draw", amount: 1 },
+      ],
+    },
+    upgraded: {
+      cost: 2,
+      text: "对所有敌人施加 4 层流血。抽 1 张牌。",
+      effects: [
+        { type: "applyPower", power: "bleed", amount: 4, target: "allEnemies" },
+        { type: "draw", amount: 1 },
+      ],
+    },
+  },
+  discharge: {
+    id: "discharge",
+    name: "放电",
+    type: "Attack",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "对所有敌人造成 3 点伤害。消耗最多 3 层蓄能，每层额外造成 3 点伤害。",
+      effects: [
+        { type: "damage", amount: 3, target: "allEnemies" },
+        { type: "spendPowerDamage", amount: 3, power: "charge", target: "allEnemies", consume: 3 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "对所有敌人造成 5 点伤害。消耗最多 4 层蓄能，每层额外造成 4 点伤害。",
+      effects: [
+        { type: "damage", amount: 5, target: "allEnemies" },
+        { type: "spendPowerDamage", amount: 4, power: "charge", target: "allEnemies", consume: 4 },
+      ],
+    },
+  },
+  charged_thought: {
+    id: "charged_thought",
+    name: "充能思考",
+    type: "Skill",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "获得 1 层蓄能。抽 1 张牌。",
+      effects: [
+        { type: "applyPower", power: "charge", amount: 1, target: "self" },
+        { type: "draw", amount: 1 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 2 层蓄能。抽 1 张牌。",
+      effects: [
+        { type: "applyPower", power: "charge", amount: 2, target: "self" },
+        { type: "draw", amount: 1 },
+      ],
+    },
+  },
+  arc_barrier: {
+    id: "arc_barrier",
+    name: "弧能屏障",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 5 点格挡。消耗最多 3 层蓄能，每层额外获得 2 点格挡。",
+      effects: [
+        { type: "block", amount: 5 },
+        { type: "blockPerPower", amount: 2, power: "charge", consume: 3 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 7 点格挡。消耗最多 4 层蓄能，每层额外获得 3 点格挡。",
+      effects: [
+        { type: "block", amount: 7 },
+        { type: "blockPerPower", amount: 3, power: "charge", consume: 4 },
+      ],
+    },
+  },
+  storm_core: {
+    id: "storm_core",
+    name: "风暴核心",
+    type: "Power",
+    rarity: "rare",
+    base: {
+      cost: 2,
+      text: "获得 2 层蓄能。对所有敌人施加 2 层电弧。",
+      effects: [
+        { type: "applyPower", power: "charge", amount: 2, target: "self" },
+        { type: "applyPower", power: "spark", amount: 2, target: "allEnemies" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 3 层蓄能。对所有敌人施加 3 层电弧。",
+      effects: [
+        { type: "applyPower", power: "charge", amount: 3, target: "self" },
+        { type: "applyPower", power: "spark", amount: 3, target: "allEnemies" },
+      ],
+    },
+  },
+  static_field: {
+    id: "static_field",
+    name: "静电场",
+    type: "Power",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 1 层蓄能。对所有敌人施加 1 层电弧。",
+      effects: [
+        { type: "applyPower", power: "charge", amount: 1, target: "self" },
+        { type: "applyPower", power: "spark", amount: 1, target: "allEnemies" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 2 层蓄能。对所有敌人施加 2 层电弧。",
+      effects: [
+        { type: "applyPower", power: "charge", amount: 2, target: "self" },
+        { type: "applyPower", power: "spark", amount: 2, target: "allEnemies" },
+      ],
+    },
+  },
+  venom_stance: {
+    id: "venom_stance",
+    name: "毒刃架势",
+    type: "Power",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 1 点敏捷。对所有敌人施加 3 层中毒。",
+      effects: [
+        { type: "applyPower", power: "dexterity", amount: 1, target: "self" },
+        { type: "applyPower", power: "poison", amount: 3, target: "allEnemies" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 1 点敏捷。对所有敌人施加 5 层中毒。",
+      effects: [
+        { type: "applyPower", power: "dexterity", amount: 1, target: "self" },
+        { type: "applyPower", power: "poison", amount: 5, target: "allEnemies" },
+      ],
+    },
+  },
+  battle_rhythm: {
+    id: "battle_rhythm",
+    name: "战斗节拍",
+    type: "Power",
+    rarity: "rare",
+    base: {
+      cost: 1,
+      text: "获得 2 层连击。获得 1 层蓄能。",
+      effects: [
+        { type: "applyPower", power: "combo", amount: 2, target: "self" },
+        { type: "applyPower", power: "charge", amount: 1, target: "self" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 3 层连击。获得 2 层蓄能。",
+      effects: [
+        { type: "applyPower", power: "combo", amount: 3, target: "self" },
+        { type: "applyPower", power: "charge", amount: 2, target: "self" },
+      ],
+    },
+  },
+  blood_pact: {
+    id: "blood_pact",
+    name: "血契",
+    type: "Power",
+    rarity: "rare",
+    base: {
+      cost: 1,
+      text: "获得 2 点力量。自身获得 2 层流血。",
+      effects: [
+        { type: "applyPower", power: "strength", amount: 2, target: "self" },
+        { type: "applyPower", power: "bleed", amount: 2, target: "self" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 3 点力量。自身获得 1 层流血。",
+      effects: [
+        { type: "applyPower", power: "strength", amount: 3, target: "self" },
+        { type: "applyPower", power: "bleed", amount: 1, target: "self" },
+      ],
+    },
+  },
+  hold_guard: {
+    id: "hold_guard",
+    name: "固守",
+    type: "Skill",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "保留。获得 9 点格挡。",
+      retain: true,
+      effects: [{ type: "block", amount: 9 }],
+    },
+    upgraded: {
+      cost: 1,
+      text: "保留。获得 12 点格挡。抽 1 张牌。",
+      retain: true,
+      effects: [
+        { type: "block", amount: 12 },
+        { type: "draw", amount: 1 },
+      ],
+    },
+  },
+  plated_guard: {
+    id: "plated_guard",
+    name: "镀层防守",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 7 点格挡。获得 2 层金属化。",
+      effects: [
+        { type: "block", amount: 7 },
+        { type: "applyPower", power: "platedArmor", amount: 2, target: "self" },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 10 点格挡。获得 3 层金属化。",
+      effects: [
+        { type: "block", amount: 10 },
+        { type: "applyPower", power: "platedArmor", amount: 3, target: "self" },
+      ],
+    },
+  },
+  tempo_shift: {
+    id: "tempo_shift",
+    name: "抢节奏",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 0,
+      text: "获得 2 层连击。抽 1 张牌。消耗。",
+      exhaust: true,
+      effects: [
+        { type: "applyPower", power: "combo", amount: 2, target: "self" },
+        { type: "draw", amount: 1 },
+      ],
+    },
+    upgraded: {
+      cost: 0,
+      text: "获得 3 层连击。抽 1 张牌。消耗。",
+      exhaust: true,
+      effects: [
+        { type: "applyPower", power: "combo", amount: 3, target: "self" },
+        { type: "draw", amount: 1 },
+      ],
+    },
+  },
+  rhythm_battery: {
+    id: "rhythm_battery",
+    name: "节拍电池",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 6 点格挡。按自身连击层数获得等量蓄能，最多计算 4 层，至少 1 层。",
+      effects: [
+        { type: "block", amount: 6 },
+        { type: "gainPowerPerPower", sourcePower: "combo", gainedPower: "charge", amount: 1, cap: 4, minimum: 1 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 9 点格挡。按自身连击层数获得等量蓄能，最多计算 5 层，至少 1 层。",
+      effects: [
+        { type: "block", amount: 9 },
+        { type: "gainPowerPerPower", sourcePower: "combo", gainedPower: "charge", amount: 1, cap: 5, minimum: 1 },
+      ],
+    },
+  },
+  chain_guard: {
+    id: "chain_guard",
+    name: "连锁护法",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 5 点格挡。本回合每打出 1 张牌，获得 1 层蓄能，最多计算 4 张。",
+      effects: [
+        { type: "block", amount: 5 },
+        { type: "gainPowerPerCardPlayed", power: "charge", amount: 1, cap: 4 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 8 点格挡。本回合每打出 1 张牌，获得 1 层蓄能，最多计算 5 张，并获得 1 层连击。",
+      effects: [
+        { type: "block", amount: 8 },
+        { type: "gainPowerPerCardPlayed", power: "charge", amount: 1, cap: 5 },
+        { type: "applyPower", power: "combo", amount: 1, target: "self" },
+      ],
+    },
+  },
+  overload_surge: {
+    id: "overload_surge",
+    name: "过载涌流",
+    type: "Skill",
+    rarity: "rare",
+    base: {
+      cost: 0,
+      text: "获得 1 点能量、2 层蓄能，抽 1 张牌。自身获得 2 层流血。消耗。",
+      exhaust: true,
+      effects: [
+        { type: "gainEnergy", amount: 1 },
+        { type: "applyPower", power: "charge", amount: 2, target: "self" },
+        { type: "draw", amount: 1 },
+        { type: "applyPower", power: "bleed", amount: 2, target: "self" },
+      ],
+    },
+    upgraded: {
+      cost: 0,
+      text: "获得 1 点能量、3 层蓄能，抽 1 张牌。自身获得 1 层流血。消耗。",
+      exhaust: true,
+      effects: [
+        { type: "gainEnergy", amount: 1 },
+        { type: "applyPower", power: "charge", amount: 3, target: "self" },
+        { type: "draw", amount: 1 },
+        { type: "applyPower", power: "bleed", amount: 1, target: "self" },
+      ],
+    },
+  },
+  heat_sink: {
+    id: "heat_sink",
+    name: "散热片",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 5 点格挡。移除自身最多 2 层流血；每移除 1 层，获得 4 点格挡和 1 层蓄能。",
+      effects: [
+        { type: "block", amount: 5 },
+        {
+          type: "cleansePower",
+          power: "bleed",
+          amount: 2,
+          gainBlockPerStack: 4,
+          gainPowerPerStack: { power: "charge", amount: 1 },
+        },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 7 点格挡。移除自身最多 3 层流血；每移除 1 层，获得 5 点格挡和 1 层蓄能。",
+      effects: [
+        { type: "block", amount: 7 },
+        {
+          type: "cleansePower",
+          power: "bleed",
+          amount: 3,
+          gainBlockPerStack: 5,
+          gainPowerPerStack: { power: "charge", amount: 1 },
+        },
+      ],
+    },
+  },
+  purge: {
+    id: "purge",
+    name: "净化",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "消耗手牌中最多 2 张状态牌。每消耗 1 张，获得 6 点格挡。",
+      effects: [{ type: "exhaustCards", amount: 2, zone: "hand", cardType: "Status", gainBlockPerCard: 6 }],
+    },
+    upgraded: {
+      cost: 1,
+      text: "消耗手牌中最多 3 张状态牌。每消耗 1 张，获得 8 点格挡并抽 1 张牌。",
+      effects: [
+        { type: "exhaustCards", amount: 3, zone: "hand", cardType: "Status", gainBlockPerCard: 8, drawPerCard: 1 },
+      ],
+    },
+  },
+  trauma_recycler: {
+    id: "trauma_recycler",
+    name: "创伤回收",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "消耗手牌和弃牌堆中最多 2 张状态牌。每消耗 1 张，获得 4 点格挡和 1 层蓄能。抽 1 张牌。",
+      effects: [
+        {
+          type: "exhaustCards",
+          amount: 2,
+          zone: "handAndDiscard",
+          cardType: "Status",
+          gainBlockPerCard: 4,
+          gainPowerPerCard: { power: "charge", amount: 1 },
+        },
+        { type: "draw", amount: 1 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "消耗手牌和弃牌堆中最多 3 张状态牌。每消耗 1 张，获得 5 点格挡和 1 层蓄能。抽 2 张牌。",
+      effects: [
+        {
+          type: "exhaustCards",
+          amount: 3,
+          zone: "handAndDiscard",
+          cardType: "Status",
+          gainBlockPerCard: 5,
+          gainPowerPerCard: { power: "charge", amount: 1 },
+        },
+        { type: "draw", amount: 2 },
+      ],
+    },
+  },
+  wound_battery: {
+    id: "wound_battery",
+    name: "伤痕电池",
+    type: "Power",
+    rarity: "rare",
+    base: {
+      cost: 1,
+      text: "获得 2 层蓄能。将 1 张伤口加入弃牌堆。抽 1 张牌。",
+      effects: [
+        { type: "applyPower", power: "charge", amount: 2, target: "self" },
+        { type: "createCard", cardId: "wound", destination: "discard" },
+        { type: "draw", amount: 1 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 3 层蓄能。将 1 张伤口加入弃牌堆。抽 2 张牌。",
+      effects: [
+        { type: "applyPower", power: "charge", amount: 3, target: "self" },
+        { type: "createCard", cardId: "wound", destination: "discard" },
+        { type: "draw", amount: 2 },
+      ],
+    },
+  },
+  ash_ward: {
+    id: "ash_ward",
+    name: "余烬护幕",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 4 点格挡。消耗堆每有 1 张牌，额外获得 2 点格挡，最多计算 5 张。",
+      effects: [
+        { type: "block", amount: 4 },
+        { type: "blockPerExhaustedCard", amount: 2, cap: 5 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 6 点格挡。消耗堆每有 1 张牌，额外获得 3 点格挡，最多计算 6 张。",
+      effects: [
+        { type: "block", amount: 6 },
+        { type: "blockPerExhaustedCard", amount: 3, cap: 6 },
+      ],
+    },
+  },
+  battle_trance: {
+    id: "battle_trance",
+    name: "战斗专注",
+    type: "Skill",
+    rarity: "rare",
+    base: {
+      cost: 0,
+      text: "抽 3 张牌。消耗。",
+      exhaust: true,
+      effects: [{ type: "draw", amount: 3 }],
+    },
+    upgraded: {
+      cost: 0,
+      text: "抽 4 张牌。消耗。",
+      exhaust: true,
+      effects: [{ type: "draw", amount: 4 }],
+    },
+  },
+  alloy_shell: {
+    id: "alloy_shell",
+    name: "合金壳",
+    type: "Skill",
+    rarity: "common",
+    base: {
+      cost: 1,
+      text: "获得 6 点格挡。按自身金属化层数，每层额外获得 2 点格挡，至少按 1 层计算。",
+      effects: [
+        { type: "block", amount: 6 },
+        { type: "blockPerPower", amount: 2, power: "platedArmor", minimum: 1 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 8 点格挡。按自身金属化层数，每层额外获得 3 点格挡，至少按 1 层计算。",
+      effects: [
+        { type: "block", amount: 8 },
+        { type: "blockPerPower", amount: 3, power: "platedArmor", minimum: 1 },
+      ],
+    },
+  },
+  coil_lash: {
+    id: "coil_lash",
+    name: "线圈鞭击",
+    type: "Attack",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "造成 6 点伤害。消耗最多 2 层蓄能，每层追加 5 点伤害。",
+      effects: [
+        { type: "damage", amount: 6, target: "enemy" },
+        { type: "spendPowerDamage", amount: 5, power: "charge", target: "enemy", consume: 2 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "造成 8 点伤害。消耗最多 3 层蓄能，每层追加 6 点伤害。",
+      effects: [
+        { type: "damage", amount: 8, target: "enemy" },
+        { type: "spendPowerDamage", amount: 6, power: "charge", target: "enemy", consume: 3 },
+      ],
+    },
+  },
+  static_rebuke: {
+    id: "static_rebuke",
+    name: "静电反击",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "获得 8 点格挡。消耗最多 2 层蓄能，每层对所有敌人造成 4 点伤害。",
+      effects: [
+        { type: "block", amount: 8 },
+        { type: "spendPowerDamage", amount: 4, power: "charge", target: "allEnemies", consume: 2 },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "获得 11 点格挡。消耗最多 3 层蓄能，每层对所有敌人造成 5 点伤害。",
+      effects: [
+        { type: "block", amount: 11 },
+        { type: "spendPowerDamage", amount: 5, power: "charge", target: "allEnemies", consume: 3 },
+      ],
+    },
+  },
+  mirror_plating: {
+    id: "mirror_plating",
+    name: "镜面镀层",
+    type: "Power",
+    rarity: "rare",
+    base: {
+      cost: 2,
+      text: "获得 2 层金属化、2 层尖刺和 2 层蓄能。",
+      effects: [
+        { type: "applyPower", power: "platedArmor", amount: 2, target: "self" },
+        { type: "applyPower", power: "thorns", amount: 2, target: "self" },
+        { type: "applyPower", power: "charge", amount: 2, target: "self" },
+      ],
+    },
+    upgraded: {
+      cost: 2,
+      text: "获得 3 层金属化、3 层尖刺和 3 层蓄能。",
+      effects: [
+        { type: "applyPower", power: "platedArmor", amount: 3, target: "self" },
+        { type: "applyPower", power: "thorns", amount: 3, target: "self" },
+        { type: "applyPower", power: "charge", amount: 3, target: "self" },
+      ],
+    },
+  },
+  field_tactics: {
+    id: "field_tactics",
+    name: "战地预案",
+    type: "Skill",
+    rarity: "uncommon",
+    base: {
+      cost: 1,
+      text: "保留。获得 4 点格挡。从弃牌堆回收最多 1 张非状态牌。",
+      retain: true,
+      effects: [
+        { type: "block", amount: 4 },
+        { type: "returnFromDiscard", amount: 1, excludeStatus: true },
+      ],
+    },
+    upgraded: {
+      cost: 1,
+      text: "保留。获得 7 点格挡。从弃牌堆回收最多 1 张非状态牌。抽 1 张牌。",
+      retain: true,
+      effects: [
+        { type: "block", amount: 7 },
+        { type: "returnFromDiscard", amount: 1, excludeStatus: true },
+        { type: "draw", amount: 1 },
+      ],
+    },
+  },
+  emergency_orders: {
+    id: "emergency_orders",
+    name: "应急指令",
+    type: "Skill",
+    rarity: "rare",
+    base: {
+      cost: 0,
+      text: "获得 1 点能量。抽 1 张牌。从弃牌堆回收最多 1 张非状态牌。消耗。",
+      exhaust: true,
+      effects: [
+        { type: "gainEnergy", amount: 1 },
+        { type: "draw", amount: 1 },
+        { type: "returnFromDiscard", amount: 1, excludeStatus: true },
+      ],
+    },
+    upgraded: {
+      cost: 0,
+      text: "获得 1 点能量。抽 2 张牌。从弃牌堆回收最多 1 张非状态牌。消耗。",
+      exhaust: true,
+      effects: [
+        { type: "gainEnergy", amount: 1 },
+        { type: "draw", amount: 2 },
+        { type: "returnFromDiscard", amount: 1, excludeStatus: true },
+      ],
+    },
+  },
+  slimed: {
+    id: "slimed",
+    name: "黏液",
+    type: "Status",
+    rarity: "status",
+    base: {
+      cost: 1,
+      text: "消耗。",
+      exhaust: true,
+      effects: [],
+    },
+    upgraded: {
+      cost: 1,
+      text: "消耗。",
+      exhaust: true,
+      effects: [],
+    },
+  },
+  wound: {
+    id: "wound",
+    name: "伤口",
+    type: "Status",
+    rarity: "status",
+    base: {
+      cost: 0,
+      text: "无法打出。",
+      unplayable: true,
+      effects: [],
+    },
+    upgraded: {
+      cost: 0,
+      text: "无法打出。",
+      unplayable: true,
+      effects: [],
+    },
+  },
+  dazed: {
+    id: "dazed",
+    name: "晕眩",
+    type: "Status",
+    rarity: "status",
+    base: {
+      cost: 0,
+      text: "无法打出。虚无。",
+      unplayable: true,
+      ethereal: true,
+      effects: [],
+    },
+    upgraded: {
+      cost: 0,
+      text: "无法打出。虚无。",
+      unplayable: true,
+      ethereal: true,
+      effects: [],
+    },
+  },
+  burn: {
+    id: "burn",
+    name: "灼烧",
+    type: "Status",
+    rarity: "status",
+    base: {
+      cost: 0,
+      text: "无法打出。回合结束时受到 2 点伤害。",
+      unplayable: true,
+      endTurnDamage: 2,
+      effects: [],
+    },
+    upgraded: {
+      cost: 0,
+      text: "无法打出。回合结束时受到 4 点伤害。",
+      unplayable: true,
+      endTurnDamage: 4,
+      effects: [],
+    },
+  },
+};
+
+export const REWARD_CARD_IDS = Object.values(CARDS)
+  .filter((card) => card.rarity !== "starter" && card.rarity !== "status")
+  .map((card) => card.id);
+
+export const ENEMIES: Record<string, EnemyDef> = {
+  acid_slime: {
+    id: "acid_slime",
+    name: "酸液史莱姆",
+    tier: "normal",
+    maxHp: [24, 30],
+    moves: [
+      {
+        id: "tackle",
+        name: "撞击",
+        intent: "attack",
+        weight: 4,
+        effects: [{ type: "damage", amount: 7 }],
+      },
+      {
+        id: "spit",
+        name: "腐蚀唾液",
+        intent: "debuff",
+        weight: 3,
+        effects: [
+          { type: "applyPower", power: "frail", amount: 1, target: "player" },
+          { type: "createCard", cardId: "slimed", destination: "discard" },
+        ],
+      },
+    ],
+  },
+  cultist: {
+    id: "cultist",
+    name: "低语信徒",
+    tier: "normal",
+    maxHp: [30, 36],
+    pattern: ["chant", "slash", "slash"],
+    moves: [
+      {
+        id: "chant",
+        name: "咏唱",
+        intent: "buff",
+        weight: 1,
+        effects: [{ type: "applyPower", power: "ritual", amount: 1, target: "self" }],
+      },
+      {
+        id: "slash",
+        name: "弯刀",
+        intent: "attack",
+        weight: 1,
+        effects: [{ type: "damage", amount: 6 }],
+      },
+    ],
+  },
+  jaw_beast: {
+    id: "jaw_beast",
+    name: "裂颚兽",
+    tier: "normal",
+    maxHp: [42, 48],
+    moves: [
+      {
+        id: "chomp",
+        name: "撕咬",
+        intent: "attack",
+        weight: 4,
+        effects: [
+          { type: "damage", amount: 11 },
+          { type: "applyPower", power: "bleed", amount: 1, target: "player" },
+        ],
+      },
+      {
+        id: "harden",
+        name: "蜷缩",
+        intent: "defend",
+        weight: 3,
+        effects: [
+          { type: "block", amount: 8 },
+          { type: "applyPower", power: "strength", amount: 1, target: "self" },
+        ],
+      },
+      {
+        id: "maul",
+        name: "扑杀",
+        intent: "mixed",
+        weight: 2,
+        effects: [
+          { type: "damage", amount: 7 },
+          { type: "block", amount: 5 },
+        ],
+      },
+    ],
+  },
+  scar_collector: {
+    id: "scar_collector",
+    name: "伤痕收集者",
+    tier: "normal",
+    maxHp: [34, 42],
+    pattern: ["pack_wound", "bone_saw", "stitch_mask", "bone_saw"],
+    moves: [
+      {
+        id: "pack_wound",
+        name: "塞入伤口",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "createCard", cardId: "wound", destination: "discard" },
+          { type: "applyPower", power: "frail", amount: 1, target: "player" },
+        ],
+      },
+      {
+        id: "bone_saw",
+        name: "骨锯",
+        intent: "attack",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 5, hits: 2 },
+          { type: "applyPower", power: "bleed", amount: 2, target: "player" },
+        ],
+      },
+      {
+        id: "stitch_mask",
+        name: "缝合面具",
+        intent: "mixed",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 8 },
+          { type: "applyPower", power: "strength", amount: 1, target: "self" },
+          { type: "createCard", cardId: "dazed", destination: "discard" },
+        ],
+      },
+    ],
+  },
+  spore_mender: {
+    id: "spore_mender",
+    name: "孢子巫医",
+    tier: "normal",
+    maxHp: [26, 34],
+    moves: [
+      {
+        id: "needles",
+        name: "毒针",
+        intent: "mixed",
+        weight: 4,
+        effects: [
+          { type: "damage", amount: 5 },
+          { type: "applyPower", power: "poison", amount: 2, target: "player" },
+        ],
+      },
+      {
+        id: "mend",
+        name: "孢子壳",
+        intent: "defend",
+        weight: 3,
+        effects: [
+          { type: "block", amount: 7 },
+          { type: "applyPower", power: "regen", amount: 2, target: "self" },
+        ],
+      },
+    ],
+  },
+  rift_wisp: {
+    id: "rift_wisp",
+    name: "裂隙萤火",
+    tier: "normal",
+    maxHp: [14, 18],
+    moves: [
+      {
+        id: "sting",
+        name: "闪刺",
+        intent: "attack",
+        weight: 4,
+        effects: [{ type: "damage", amount: 5 }],
+      },
+      {
+        id: "static",
+        name: "扰流",
+        intent: "debuff",
+        weight: 2,
+        effects: [
+          { type: "applyPower", power: "spark", amount: 2, target: "self" },
+          { type: "createCard", cardId: "dazed", destination: "discard" },
+        ],
+      },
+    ],
+  },
+  spark_hulk: {
+    id: "spark_hulk",
+    name: "电弧巨壳",
+    tier: "normal",
+    maxHp: [46, 54],
+    pattern: ["charge_shell", "arc_slam", "vent"],
+    moves: [
+      {
+        id: "charge_shell",
+        name: "充能甲壳",
+        intent: "buff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "spark", amount: 3, target: "self" },
+          { type: "applyPower", power: "strength", amount: 1, target: "self" },
+        ],
+      },
+      {
+        id: "arc_slam",
+        name: "电弧重击",
+        intent: "attack",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 8, hits: 2 },
+          { type: "applyPower", power: "spark", amount: 1, target: "self" },
+        ],
+      },
+      {
+        id: "vent",
+        name: "泄流",
+        intent: "mixed",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 10 },
+          { type: "applyPower", power: "weak", amount: 1, target: "player" },
+          { type: "createCard", cardId: "dazed", destination: "discard" },
+        ],
+      },
+    ],
+  },
+  mirror_duelist: {
+    id: "mirror_duelist",
+    name: "镜面剑士",
+    tier: "normal",
+    maxHp: [34, 42],
+    pattern: ["mirror_guard", "riposte", "expose"],
+    moves: [
+      {
+        id: "mirror_guard",
+        name: "镜盾",
+        intent: "defend",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 9 },
+          { type: "applyPower", power: "thorns", amount: 2, target: "self" },
+        ],
+      },
+      {
+        id: "riposte",
+        name: "反斩",
+        intent: "attack",
+        weight: 1,
+        effects: [{ type: "damage", amount: 12 }],
+      },
+      {
+        id: "expose",
+        name: "照见破绽",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "mark", amount: 2, target: "player" },
+          { type: "applyPower", power: "frail", amount: 1, target: "player" },
+        ],
+      },
+    ],
+  },
+  blood_leech: {
+    id: "blood_leech",
+    name: "血纹蛭",
+    tier: "normal",
+    maxHp: [28, 36],
+    moves: [
+      {
+        id: "bite",
+        name: "汲血",
+        intent: "mixed",
+        weight: 4,
+        effects: [
+          { type: "damage", amount: 6 },
+          { type: "applyPower", power: "bleed", amount: 2, target: "player" },
+        ],
+      },
+      {
+        id: "coagulate",
+        name: "凝血",
+        intent: "defend",
+        weight: 3,
+        effects: [
+          { type: "block", amount: 6 },
+          { type: "applyPower", power: "regen", amount: 3, target: "self" },
+        ],
+      },
+      {
+        id: "burst",
+        name: "血刺",
+        intent: "attack",
+        weight: 2,
+        effects: [
+          { type: "damage", amount: 4, hits: 2 },
+          { type: "applyPower", power: "weak", amount: 1, target: "player" },
+        ],
+      },
+    ],
+  },
+  supply_mimic: {
+    id: "supply_mimic",
+    name: "补给拟态箱",
+    tier: "normal",
+    maxHp: [36, 44],
+    pattern: ["spill_tonic", "lid_snap", "lock_case"],
+    moves: [
+      {
+        id: "spill_tonic",
+        name: "泼洒药剂",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "poison", amount: 2, target: "player" },
+          { type: "createCard", cardId: "dazed", destination: "discard" },
+        ],
+      },
+      {
+        id: "lid_snap",
+        name: "箱盖咬合",
+        intent: "attack",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 10 },
+          { type: "applyPower", power: "vulnerable", amount: 1, target: "player" },
+        ],
+      },
+      {
+        id: "lock_case",
+        name: "锁扣收紧",
+        intent: "defend",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 9 },
+          { type: "applyPower", power: "thorns", amount: 2, target: "self" },
+          { type: "applyPower", power: "platedArmor", amount: 1, target: "self" },
+        ],
+      },
+    ],
+  },
+  coil_scrapper: {
+    id: "coil_scrapper",
+    name: "线圈拆解机",
+    tier: "normal",
+    maxHp: [38, 46],
+    pattern: ["wind_coil", "magnet_slam", "scatter_bolts"],
+    moves: [
+      {
+        id: "wind_coil",
+        name: "缠紧线圈",
+        intent: "defend",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 8 },
+          { type: "applyPower", power: "platedArmor", amount: 1, target: "self" },
+          { type: "applyPower", power: "spark", amount: 1, target: "self" },
+        ],
+      },
+      {
+        id: "magnet_slam",
+        name: "磁锤重砸",
+        intent: "mixed",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 9 },
+          { type: "applyPower", power: "frail", amount: 1, target: "player" },
+        ],
+      },
+      {
+        id: "scatter_bolts",
+        name: "散射螺栓",
+        intent: "attack",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 4, hits: 2 },
+          { type: "createCard", cardId: "dazed", destination: "discard" },
+        ],
+      },
+    ],
+  },
+  tempo_sentry: {
+    id: "tempo_sentry",
+    name: "错拍哨兵",
+    tier: "normal",
+    maxHp: [30, 38],
+    pattern: ["offbeat_chime", "gear_jab", "stutter_guard", "gear_jab"],
+    moves: [
+      {
+        id: "offbeat_chime",
+        name: "错拍钟鸣",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "weak", amount: 1, target: "player" },
+          { type: "createCard", cardId: "dazed", destination: "discard" },
+        ],
+      },
+      {
+        id: "gear_jab",
+        name: "齿针连刺",
+        intent: "mixed",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 4, hits: 2 },
+          { type: "applyPower", power: "mark", amount: 1, target: "player" },
+        ],
+      },
+      {
+        id: "stutter_guard",
+        name: "断拍护壳",
+        intent: "defend",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 8 },
+          { type: "applyPower", power: "spark", amount: 2, target: "self" },
+        ],
+      },
+    ],
+  },
+  ash_scout: {
+    id: "ash_scout",
+    name: "灰烬哨探",
+    tier: "normal",
+    maxHp: [24, 32],
+    pattern: ["mark_flare", "knife_rain", "smoke_step"],
+    moves: [
+      {
+        id: "mark_flare",
+        name: "标记照明",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "mark", amount: 2, target: "player" },
+          { type: "applyPower", power: "weak", amount: 1, target: "player" },
+        ],
+      },
+      {
+        id: "knife_rain",
+        name: "短刃雨",
+        intent: "attack",
+        weight: 1,
+        effects: [{ type: "damage", amount: 4, hits: 3 }],
+      },
+      {
+        id: "smoke_step",
+        name: "烟步",
+        intent: "mixed",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 7 },
+          { type: "createCard", cardId: "dazed", destination: "discard" },
+        ],
+      },
+    ],
+  },
+  plague_mote: {
+    id: "plague_mote",
+    name: "瘟疫浮泡",
+    tier: "normal",
+    maxHp: [20, 26],
+    moves: [
+      {
+        id: "toxic_puff",
+        name: "毒雾鼓胀",
+        intent: "debuff",
+        weight: 4,
+        effects: [{ type: "applyPower", power: "poison", amount: 3, target: "player" }],
+      },
+      {
+        id: "acid_pop",
+        name: "酸泡爆裂",
+        intent: "mixed",
+        weight: 3,
+        effects: [
+          { type: "damage", amount: 6 },
+          { type: "applyPower", power: "frail", amount: 1, target: "player" },
+        ],
+      },
+      {
+        id: "spore_shell",
+        name: "孢壳",
+        intent: "defend",
+        weight: 2,
+        effects: [
+          { type: "block", amount: 8 },
+          { type: "applyPower", power: "regen", amount: 1, target: "self" },
+        ],
+      },
+    ],
+  },
+  glass_stalker: {
+    id: "glass_stalker",
+    name: "玻璃潜猎者",
+    tier: "normal",
+    maxHp: [32, 40],
+    pattern: ["expose", "glass_cut", "phase_guard"],
+    moves: [
+      {
+        id: "expose",
+        name: "折光暴露",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "mark", amount: 2, target: "player" },
+          { type: "applyPower", power: "weak", amount: 1, target: "player" },
+        ],
+      },
+      {
+        id: "glass_cut",
+        name: "玻璃切线",
+        intent: "mixed",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 9 },
+          { type: "applyPower", power: "bleed", amount: 1, target: "player" },
+        ],
+      },
+      {
+        id: "phase_guard",
+        name: "相位护步",
+        intent: "defend",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 10 },
+          { type: "applyPower", power: "spark", amount: 1, target: "self" },
+        ],
+      },
+    ],
+  },
+  venom_binder: {
+    id: "venom_binder",
+    name: "缚毒织师",
+    tier: "normal",
+    maxHp: [34, 42],
+    pattern: ["toxic_bind", "silk_shell", "needle_loop"],
+    moves: [
+      {
+        id: "toxic_bind",
+        name: "毒丝缠绕",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "poison", amount: 2, target: "player" },
+          { type: "applyPower", power: "frail", amount: 1, target: "player" },
+        ],
+      },
+      {
+        id: "silk_shell",
+        name: "丝壳再生",
+        intent: "defend",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 8 },
+          { type: "applyPower", power: "regen", amount: 2, target: "self" },
+        ],
+      },
+      {
+        id: "needle_loop",
+        name: "回环毒针",
+        intent: "attack",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 5, hits: 2 },
+          { type: "applyPower", power: "poison", amount: 1, target: "player" },
+        ],
+      },
+    ],
+  },
+  catalyst_adept: {
+    id: "catalyst_adept",
+    name: "催化学徒",
+    tier: "normal",
+    maxHp: [36, 44],
+    pattern: ["primer_vial", "rupture_vial", "stabilize_mix"],
+    moves: [
+      {
+        id: "primer_vial",
+        name: "底剂泼洒",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "poison", amount: 2, target: "player" },
+          { type: "applyPower", power: "mark", amount: 1, target: "player" },
+        ],
+      },
+      {
+        id: "rupture_vial",
+        name: "裂血试管",
+        intent: "mixed",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 8 },
+          { type: "applyPower", power: "bleed", amount: 2, target: "player" },
+        ],
+      },
+      {
+        id: "stabilize_mix",
+        name: "稳定混剂",
+        intent: "defend",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 9 },
+          { type: "applyPower", power: "strength", amount: 1, target: "self" },
+          { type: "applyPower", power: "regen", amount: 1, target: "self" },
+        ],
+      },
+    ],
+  },
+  rift_tactician: {
+    id: "rift_tactician",
+    name: "裂隙战术师",
+    tier: "normal",
+    maxHp: [34, 42],
+    pattern: ["marking_order", "crossfire", "cover_plan"],
+    moves: [
+      {
+        id: "marking_order",
+        name: "标记口令",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "mark", amount: 2, target: "player" },
+          { type: "createCard", cardId: "dazed", destination: "discard" },
+        ],
+      },
+      {
+        id: "crossfire",
+        name: "交叉火线",
+        intent: "attack",
+        weight: 1,
+        effects: [{ type: "damage", amount: 5, hits: 2 }],
+      },
+      {
+        id: "cover_plan",
+        name: "掩护计划",
+        intent: "mixed",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 8 },
+          { type: "applyPower", power: "weak", amount: 1, target: "player" },
+          { type: "applyPower", power: "strength", amount: 1, target: "self" },
+        ],
+      },
+    ],
+  },
+  rift_lancer: {
+    id: "rift_lancer",
+    name: "裂隙枪卫",
+    tier: "normal",
+    maxHp: [38, 46],
+    pattern: ["impale", "brace", "fracture"],
+    moves: [
+      {
+        id: "impale",
+        name: "裂枪穿刺",
+        intent: "mixed",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 11 },
+          { type: "applyPower", power: "mark", amount: 1, target: "player" },
+        ],
+      },
+      {
+        id: "brace",
+        name: "裂盾备战",
+        intent: "defend",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 9 },
+          { type: "applyPower", power: "platedArmor", amount: 1, target: "self" },
+        ],
+      },
+      {
+        id: "fracture",
+        name: "折光压制",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "vulnerable", amount: 1, target: "player" },
+          { type: "applyPower", power: "weak", amount: 1, target: "player" },
+        ],
+      },
+    ],
+  },
+  ember_sentinel: {
+    id: "ember_sentinel",
+    name: "余烬守卫",
+    tier: "normal",
+    maxHp: [44, 52],
+    pattern: ["ember_wall", "cinder_slam", "ash_bind"],
+    moves: [
+      {
+        id: "ember_wall",
+        name: "余烬壁垒",
+        intent: "defend",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 11 },
+          { type: "applyPower", power: "thorns", amount: 2, target: "self" },
+        ],
+      },
+      {
+        id: "cinder_slam",
+        name: "火渣重击",
+        intent: "attack",
+        weight: 1,
+        effects: [{ type: "damage", amount: 14 }],
+      },
+      {
+        id: "ash_bind",
+        name: "灰烬束缚",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "createCard", cardId: "burn", destination: "discard" },
+          { type: "applyPower", power: "frail", amount: 1, target: "player" },
+        ],
+      },
+    ],
+  },
+  gremlin_nob: {
+    id: "gremlin_nob",
+    name: "暴怒头目",
+    tier: "elite",
+    maxHp: [82, 92],
+    pattern: ["bellow", "skull_bash", "rush"],
+    moves: [
+      {
+        id: "bellow",
+        name: "怒吼",
+        intent: "buff",
+        weight: 1,
+        effects: [{ type: "applyPower", power: "strength", amount: 3, target: "self" }],
+      },
+      {
+        id: "skull_bash",
+        name: "碎颅",
+        intent: "mixed",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 14 },
+          { type: "applyPower", power: "vulnerable", amount: 2, target: "player" },
+        ],
+      },
+      {
+        id: "rush",
+        name: "冲锋",
+        intent: "attack",
+        weight: 1,
+        effects: [{ type: "damage", amount: 8, hits: 2 }],
+      },
+    ],
+  },
+  sentry: {
+    id: "sentry",
+    name: "尖塔哨卫",
+    tier: "elite",
+    maxHp: [38, 44],
+    moves: [
+      {
+        id: "beam",
+        name: "光束",
+        intent: "attack",
+        weight: 4,
+        effects: [
+          { type: "damage", amount: 9 },
+          { type: "applyPower", power: "spark", amount: 1, target: "self" },
+        ],
+      },
+      {
+        id: "shield",
+        name: "折光盾",
+        intent: "defend",
+        weight: 3,
+        effects: [
+          { type: "block", amount: 10 },
+          { type: "applyPower", power: "platedArmor", amount: 1, target: "self" },
+          { type: "createCard", cardId: "dazed", destination: "discard" },
+        ],
+      },
+    ],
+  },
+  hex_mage: {
+    id: "hex_mage",
+    name: "六印术师",
+    tier: "elite",
+    maxHp: [76, 86],
+    moves: [
+      {
+        id: "hex",
+        name: "虚印",
+        intent: "debuff",
+        weight: 3,
+        effects: [
+          { type: "applyPower", power: "weak", amount: 2, target: "player" },
+          { type: "applyPower", power: "frail", amount: 1, target: "player" },
+          { type: "applyPower", power: "mark", amount: 1, target: "player" },
+          { type: "createCard", cardId: "wound", destination: "discard" },
+        ],
+      },
+      {
+        id: "flare",
+        name: "灼印爆发",
+        intent: "attack",
+        weight: 4,
+        effects: [{ type: "damage", amount: 6, hits: 3 }],
+      },
+      {
+        id: "ward",
+        name: "符文护壁",
+        intent: "mixed",
+        weight: 2,
+        effects: [
+          { type: "block", amount: 12 },
+          { type: "applyPower", power: "strength", amount: 2, target: "self" },
+          { type: "summon", enemyId: "rift_wisp" },
+        ],
+      },
+    ],
+  },
+  clockwork_jailer: {
+    id: "clockwork_jailer",
+    name: "钟械狱卒",
+    tier: "elite",
+    maxHp: [88, 98],
+    pattern: ["lock", "gear_wall", "execute"],
+    moves: [
+      {
+        id: "lock",
+        name: "锁链判决",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "weak", amount: 2, target: "player" },
+          { type: "applyPower", power: "frail", amount: 2, target: "player" },
+          { type: "createCard", cardId: "wound", destination: "discard" },
+        ],
+      },
+      {
+        id: "gear_wall",
+        name: "齿轮壁垒",
+        intent: "defend",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 16 },
+          { type: "applyPower", power: "platedArmor", amount: 2, target: "self" },
+          { type: "applyPower", power: "spark", amount: 2, target: "self" },
+        ],
+      },
+      {
+        id: "execute",
+        name: "处决轮",
+        intent: "mixed",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 10, hits: 2 },
+          { type: "applyPower", power: "mark", amount: 1, target: "player" },
+        ],
+      },
+    ],
+  },
+  runic_colossus: {
+    id: "runic_colossus",
+    name: "符文巨像",
+    tier: "elite",
+    maxHp: [92, 104],
+    pattern: ["seal_script", "stone_wall", "glyph_hammer", "overload"],
+    moves: [
+      {
+        id: "seal_script",
+        name: "封印刻文",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "frail", amount: 2, target: "player" },
+          { type: "createCard", cardId: "dazed", destination: "discard" },
+          { type: "createCard", cardId: "burn", destination: "discard" },
+        ],
+      },
+      {
+        id: "stone_wall",
+        name: "石壁复写",
+        intent: "defend",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 18 },
+          { type: "applyPower", power: "platedArmor", amount: 2, target: "self" },
+        ],
+      },
+      {
+        id: "glyph_hammer",
+        name: "铭文重锤",
+        intent: "attack",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 19 },
+          { type: "applyPower", power: "mark", amount: 1, target: "player" },
+        ],
+      },
+      {
+        id: "overload",
+        name: "符文过载",
+        intent: "buff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "strength", amount: 2, target: "self" },
+          { type: "applyPower", power: "spark", amount: 3, target: "self" },
+        ],
+      },
+    ],
+  },
+  null_oracle: {
+    id: "null_oracle",
+    name: "虚无司仪",
+    tier: "elite",
+    maxHp: [84, 94],
+    pattern: ["empty_omen", "void_chant", "black_pulse"],
+    moves: [
+      {
+        id: "empty_omen",
+        name: "空相预言",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "weak", amount: 1, target: "player" },
+          { type: "applyPower", power: "mark", amount: 2, target: "player" },
+          { type: "createCard", cardId: "dazed", destination: "discard" },
+        ],
+      },
+      {
+        id: "void_chant",
+        name: "虚声咏唱",
+        intent: "buff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "ritual", amount: 2, target: "self" },
+          { type: "applyPower", power: "spark", amount: 2, target: "self" },
+          { type: "summon", enemyId: "rift_wisp" },
+        ],
+      },
+      {
+        id: "black_pulse",
+        name: "黑脉冲",
+        intent: "mixed",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 8, hits: 2 },
+          { type: "createCard", cardId: "wound", destination: "discard" },
+        ],
+      },
+    ],
+  },
+  rift_heart: {
+    id: "rift_heart",
+    name: "裂隙心核",
+    tier: "boss",
+    maxHp: [210, 230],
+    pattern: ["scan", "pulse", "fortify", "rupture", "pulse"],
+    moves: [
+      {
+        id: "scan",
+        name: "心核扫描",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "vulnerable", amount: 2, target: "player" },
+          { type: "applyPower", power: "weak", amount: 1, target: "player" },
+          { type: "applyPower", power: "mark", amount: 1, target: "player" },
+          { type: "createCard", cardId: "burn", destination: "discard" },
+        ],
+      },
+      {
+        id: "pulse",
+        name: "脉冲连击",
+        intent: "attack",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 5, hits: 4 },
+          { type: "applyPower", power: "spark", amount: 2, target: "self" },
+        ],
+      },
+      {
+        id: "fortify",
+        name: "合金外壳",
+        intent: "defend",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 18 },
+          { type: "applyPower", power: "thorns", amount: 2, target: "self" },
+          { type: "applyPower", power: "platedArmor", amount: 2, target: "self" },
+        ],
+      },
+      {
+        id: "rupture",
+        name: "裂隙重压",
+        intent: "mixed",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 22 },
+          { type: "applyPower", power: "frail", amount: 2, target: "player" },
+          { type: "applyPower", power: "bleed", amount: 3, target: "player" },
+          { type: "summon", enemyId: "rift_wisp" },
+        ],
+      },
+    ],
+  },
+  rift_heart_awakened: {
+    id: "rift_heart_awakened",
+    name: "觉醒裂隙心核",
+    tier: "boss",
+    maxHp: [204, 224],
+    pattern: ["wake", "needle_pulse", "void_shell", "heartbreak", "needle_pulse", "rift_call"],
+    moves: [
+      {
+        id: "wake",
+        name: "心核觉醒",
+        intent: "buff",
+        weight: 1,
+        effects: [
+          { type: "applyPower", power: "strength", amount: 1, target: "self" },
+          { type: "applyPower", power: "spark", amount: 3, target: "self" },
+          { type: "applyPower", power: "platedArmor", amount: 2, target: "self" },
+        ],
+      },
+      {
+        id: "needle_pulse",
+        name: "针雨脉冲",
+        intent: "attack",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 4, hits: 5 },
+          { type: "applyPower", power: "bleed", amount: 2, target: "player" },
+        ],
+      },
+      {
+        id: "void_shell",
+        name: "虚空外壳",
+        intent: "defend",
+        weight: 1,
+        effects: [
+          { type: "block", amount: 18 },
+          { type: "applyPower", power: "thorns", amount: 2, target: "self" },
+          { type: "createCard", cardId: "dazed", destination: "discard" },
+        ],
+      },
+      {
+        id: "heartbreak",
+        name: "碎心重压",
+        intent: "mixed",
+        weight: 1,
+        effects: [
+          { type: "damage", amount: 20 },
+          { type: "applyPower", power: "vulnerable", amount: 2, target: "player" },
+          { type: "applyPower", power: "mark", amount: 2, target: "player" },
+        ],
+      },
+      {
+        id: "rift_call",
+        name: "裂隙召回",
+        intent: "debuff",
+        weight: 1,
+        effects: [
+          { type: "summon", enemyId: "rift_wisp" },
+          { type: "createCard", cardId: "burn", destination: "discard" },
+          { type: "applyPower", power: "weak", amount: 1, target: "player" },
+        ],
+      },
+    ],
+  },
+};
+
+export const ENCOUNTERS: EncounterDef[] = [
+  {
+    id: "slime_and_cultist",
+    name: "腐液与低语",
+    type: "fight",
+    enemies: ["acid_slime", "cultist"],
+  },
+  {
+    id: "jaw_beast",
+    name: "裂颚兽",
+    type: "fight",
+    enemies: ["jaw_beast"],
+  },
+  {
+    id: "spore_pack",
+    name: "孢子群落",
+    type: "fight",
+    minFloor: 3,
+    enemies: ["spore_mender", "acid_slime"],
+  },
+  {
+    id: "scar_triage",
+    name: "伤痕分诊",
+    type: "fight",
+    minFloor: 4,
+    enemies: ["scar_collector", "acid_slime"],
+  },
+  {
+    id: "double_slime",
+    name: "双生黏液",
+    type: "fight",
+    enemies: ["acid_slime", "acid_slime"],
+  },
+  {
+    id: "spark_hulk",
+    name: "电弧巨壳",
+    type: "fight",
+    minFloor: 5,
+    enemies: ["spark_hulk"],
+  },
+  {
+    id: "mirror_patrol",
+    name: "镜卫巡逻",
+    type: "fight",
+    minFloor: 4,
+    enemies: ["mirror_duelist", "rift_wisp"],
+  },
+  {
+    id: "blood_leech_pack",
+    name: "血蛭群",
+    type: "fight",
+    minFloor: 4,
+    enemies: ["blood_leech", "spore_mender"],
+  },
+  {
+    id: "ash_ambush",
+    name: "灰烬伏击",
+    type: "fight",
+    minFloor: 2,
+    enemies: ["ash_scout", "rift_wisp"],
+  },
+  {
+    id: "supply_mimic",
+    name: "拟态补给箱",
+    type: "fight",
+    minFloor: 3,
+    enemies: ["supply_mimic"],
+  },
+  {
+    id: "scrap_workshop",
+    name: "线圈工坊",
+    type: "fight",
+    minFloor: 4,
+    enemies: ["coil_scrapper"],
+  },
+  {
+    id: "tempo_patrol",
+    name: "错拍巡逻",
+    type: "fight",
+    minFloor: 4,
+    enemies: ["tempo_sentry", "rift_wisp"],
+  },
+  {
+    id: "rift_tactics",
+    name: "裂隙战术队",
+    type: "fight",
+    minFloor: 5,
+    enemies: ["rift_tactician", "ash_scout"],
+  },
+  {
+    id: "plague_bloom",
+    name: "瘟疫浮泡",
+    type: "fight",
+    minFloor: 6,
+    enemies: ["plague_mote", "plague_mote", "spore_mender"],
+  },
+  {
+    id: "glass_hunt",
+    name: "玻璃潜猎",
+    type: "fight",
+    minAct: 2,
+    minFloor: 2,
+    enemies: ["glass_stalker", "rift_wisp"],
+  },
+  {
+    id: "venom_weave",
+    name: "缚毒织网",
+    type: "fight",
+    minAct: 2,
+    minFloor: 4,
+    enemies: ["venom_binder", "plague_mote"],
+  },
+  {
+    id: "catalyst_trial",
+    name: "催化试验",
+    type: "fight",
+    minAct: 2,
+    minFloor: 5,
+    enemies: ["catalyst_adept", "plague_mote"],
+  },
+  {
+    id: "rift_lance_line",
+    name: "裂隙枪线",
+    type: "fight",
+    minAct: 2,
+    minFloor: 3,
+    enemies: ["rift_lancer", "rift_lancer"],
+  },
+  {
+    id: "ember_ward",
+    name: "余烬守备",
+    type: "fight",
+    minAct: 2,
+    minFloor: 4,
+    enemies: ["ember_sentinel", "rift_wisp"],
+  },
+  {
+    id: "gremlin_nob",
+    name: "暴怒头目",
+    type: "elite",
+    enemies: ["gremlin_nob"],
+  },
+  {
+    id: "sentry_trio",
+    name: "哨卫阵列",
+    type: "elite",
+    enemies: ["sentry", "sentry", "sentry"],
+  },
+  {
+    id: "hex_mage",
+    name: "六印术师",
+    type: "elite",
+    enemies: ["hex_mage"],
+  },
+  {
+    id: "clockwork_jailer",
+    name: "钟械狱卒",
+    type: "elite",
+    minFloor: 5,
+    enemies: ["clockwork_jailer"],
+  },
+  {
+    id: "runic_colossus",
+    name: "符文巨像",
+    type: "elite",
+    minFloor: 6,
+    enemies: ["runic_colossus"],
+  },
+  {
+    id: "null_oracle",
+    name: "虚无司仪",
+    type: "elite",
+    minAct: 2,
+    minFloor: 5,
+    enemies: ["null_oracle"],
+  },
+  {
+    id: "rift_heart",
+    name: "裂隙心核",
+    type: "boss",
+    maxAct: 1,
+    enemies: ["rift_heart"],
+  },
+  {
+    id: "rift_heart_awakened",
+    name: "觉醒裂隙心核",
+    type: "boss",
+    minAct: 2,
+    enemies: ["rift_heart_awakened"],
+  },
+];
+
+export const RELICS: Record<string, RelicDef> = {
+  ember_core: {
+    id: "ember_core",
+    name: "余烬核心",
+    rarity: "starter",
+    text: "每场战斗的第一回合获得 1 点额外能量。",
+  },
+  bronze_scales: {
+    id: "bronze_scales",
+    name: "青铜鳞片",
+    rarity: "common",
+    text: "战斗开始时获得 3 层尖刺。",
+  },
+  blood_vial: {
+    id: "blood_vial",
+    name: "血瓶",
+    rarity: "common",
+    text: "每场战斗结束后回复 2 点生命。",
+  },
+  anchor: {
+    id: "anchor",
+    name: "船锚",
+    rarity: "uncommon",
+    text: "战斗开始时获得 10 点格挡。",
+  },
+  flower: {
+    id: "flower",
+    name: "日轮花",
+    rarity: "uncommon",
+    text: "每 3 回合额外获得 1 点能量。",
+  },
+  pocket_watch: {
+    id: "pocket_watch",
+    name: "怀表",
+    rarity: "rare",
+    text: "如果上回合打出不超过 3 张牌，本回合多抽 2 张牌。",
+  },
+  kunai: {
+    id: "kunai",
+    name: "苦无",
+    rarity: "rare",
+    text: "每打出 3 张攻击牌，获得 1 点敏捷。",
+  },
+  meal_ticket: {
+    id: "meal_ticket",
+    name: "餐券",
+    rarity: "common",
+    text: "进入商店时回复 8 点生命。",
+  },
+  red_skull: {
+    id: "red_skull",
+    name: "红头骨",
+    rarity: "uncommon",
+    text: "若战斗开始时生命不高于一半，获得 3 点力量。",
+  },
+  star_orb: {
+    id: "star_orb",
+    name: "星尘宝珠",
+    rarity: "boss",
+    text: "最大能量加 1。",
+  },
+  ancient_coin: {
+    id: "ancient_coin",
+    name: "古币",
+    rarity: "common",
+    text: "拾取时获得 80 金币。",
+  },
+  serrated_edge: {
+    id: "serrated_edge",
+    name: "锯齿刃",
+    rarity: "uncommon",
+    text: "战斗开始时对所有敌人施加 2 层流血。",
+  },
+  metronome: {
+    id: "metronome",
+    name: "节拍器",
+    rarity: "rare",
+    text: "战斗开始时获得 2 层连击。",
+  },
+  whetstone: {
+    id: "whetstone",
+    name: "磨刀石",
+    rarity: "uncommon",
+    text: "战斗开始时获得 1 点力量。",
+  },
+  threaded_needle: {
+    id: "threaded_needle",
+    name: "穿线针",
+    rarity: "rare",
+    text: "战斗开始时获得 1 层金属化。",
+  },
+  toxic_vial: {
+    id: "toxic_vial",
+    name: "毒液小瓶",
+    rarity: "uncommon",
+    text: "战斗开始时对所有敌人施加 2 层中毒。",
+  },
+  fracture_lens: {
+    id: "fracture_lens",
+    name: "裂纹透镜",
+    rarity: "common",
+    text: "战斗开始时对所有敌人施加 2 层破绽。",
+  },
+  echo_bell: {
+    id: "echo_bell",
+    name: "回声铃",
+    rarity: "uncommon",
+    text: "战斗开始时将 1 张记忆钩索+放到抽牌堆顶。",
+  },
+  alchemy_stone: {
+    id: "alchemy_stone",
+    name: "炼金石",
+    rarity: "rare",
+    text: "每次使用药水后获得 1 点能量并抽 1 张牌。",
+  },
+  charged_plate: {
+    id: "charged_plate",
+    name: "充能甲片",
+    rarity: "uncommon",
+    text: "战斗开始时获得 5 点格挡和 2 层蓄能。",
+  },
+  storm_needle: {
+    id: "storm_needle",
+    name: "风暴针",
+    rarity: "rare",
+    text: "战斗开始时获得 1 层金属化，并对所有敌人施加 1 层电弧。",
+  },
+};
+
+export const RELIC_POOL = Object.values(RELICS)
+  .filter((relic) => relic.rarity !== "starter" && relic.rarity !== "boss")
+  .map((relic) => relic.id);
+
+export const BOONS: Record<BoonId, BoonDef> = {
+  vitality: {
+    id: "vitality",
+    name: "生命训练",
+    rarity: "common",
+    text: "最大生命提高 4，并回复 4 点生命。",
+  },
+  bottle_rack: {
+    id: "bottle_rack",
+    name: "药剂腰带",
+    rarity: "uncommon",
+    text: "药水槽永久增加 1 个。",
+  },
+  opening_guard: {
+    id: "opening_guard",
+    name: "起手护势",
+    rarity: "common",
+    text: "每场战斗开始时获得 3 点格挡。",
+  },
+  combo_discipline: {
+    id: "combo_discipline",
+    name: "连击纪律",
+    rarity: "uncommon",
+    text: "每场战斗开始时获得 1 层连击。",
+  },
+  static_attunement: {
+    id: "static_attunement",
+    name: "静电调谐",
+    rarity: "uncommon",
+    text: "每场战斗开始时获得 2 层蓄能。",
+  },
+  plate_training: {
+    id: "plate_training",
+    name: "镀层训练",
+    rarity: "uncommon",
+    text: "每场战斗开始时获得 1 层金属化。",
+  },
+  armory_drill: {
+    id: "armory_drill",
+    name: "军械演练",
+    rarity: "rare",
+    text: "立即随机升级 1 张牌。",
+  },
+  battle_focus: {
+    id: "battle_focus",
+    name: "战斗专注",
+    rarity: "uncommon",
+    text: "每场战斗第一回合多抽 1 张牌。",
+  },
+  spark_conduit: {
+    id: "spark_conduit",
+    name: "导电脉络",
+    rarity: "uncommon",
+    text: "每场战斗开始时对所有敌人施加 1 层电弧。",
+  },
+  bleed_edge: {
+    id: "bleed_edge",
+    name: "刃口习惯",
+    rarity: "common",
+    text: "每场战斗开始时对所有敌人施加 1 层流血。",
+  },
+  field_alchemy: {
+    id: "field_alchemy",
+    name: "野外炼金",
+    rarity: "common",
+    text: "获得时若有空槽，立即获得 1 瓶随机药水。",
+  },
+  blade_oil: {
+    id: "blade_oil",
+    name: "刃油准备",
+    rarity: "common",
+    text: "每场战斗开始时获得 1 点力量。",
+  },
+  venom_prep: {
+    id: "venom_prep",
+    name: "毒囊预备",
+    rarity: "uncommon",
+    text: "每场战斗开始时对所有敌人施加 2 层中毒。",
+  },
+  reserve_battery: {
+    id: "reserve_battery",
+    name: "备用电池",
+    rarity: "rare",
+    text: "每场战斗第一回合额外获得 1 点能量和 1 层蓄能。",
+  },
+  recovery_mantra: {
+    id: "recovery_mantra",
+    name: "复苏默念",
+    rarity: "common",
+    text: "每场战斗开始时获得 2 层再生。",
+  },
+  scavenger_kit: {
+    id: "scavenger_kit",
+    name: "拾荒套件",
+    rarity: "uncommon",
+    text: "每场战斗开始时将 1 张战场回收放到抽牌堆顶。",
+  },
+  weakpoint_chart: {
+    id: "weakpoint_chart",
+    name: "破绽图谱",
+    rarity: "common",
+    text: "每场战斗开始时对所有敌人施加 1 层破绽。",
+  },
+  catalyst_training: {
+    id: "catalyst_training",
+    name: "催化训练",
+    rarity: "rare",
+    text: "每场战斗开始时对所有敌人施加 2 层中毒、1 层流血和 1 层破绽。",
+  },
+  potion_catalyst: {
+    id: "potion_catalyst",
+    name: "催化腰包",
+    rarity: "rare",
+    text: "每次使用药水后获得 1 层蓄能。",
+  },
+  tempered_shell: {
+    id: "tempered_shell",
+    name: "淬火外壳",
+    rarity: "uncommon",
+    text: "每场战斗开始时获得 1 层金属化和 2 层尖刺。",
+  },
+  coil_training: {
+    id: "coil_training",
+    name: "线圈训练",
+    rarity: "uncommon",
+    text: "每场战斗开始时获得 1 层蓄能和 1 层连击。",
+  },
+  rhythm_meter: {
+    id: "rhythm_meter",
+    name: "随身节拍器",
+    rarity: "uncommon",
+    text: "每场战斗开始时获得 1 层连击和 1 层蓄能；每回合第 2 张牌获得 1 层蓄能，若它是攻击牌，额外获得 1 层连击。",
+  },
+  chain_manual: {
+    id: "chain_manual",
+    name: "连锁手册",
+    rarity: "uncommon",
+    text: "每回合第 3 张牌获得 1 点能量和 1 层连击。",
+  },
+  heat_regulator: {
+    id: "heat_regulator",
+    name: "热控铭文",
+    rarity: "uncommon",
+    text: "每场战斗开始时将 1 张散热片放到抽牌堆顶；若牌组有会让自身流血的牌，额外获得 1 层蓄能。",
+  },
+  field_protocol: {
+    id: "field_protocol",
+    name: "战地协议",
+    rarity: "uncommon",
+    text: "每场战斗开始时将 1 张战地预案放到抽牌堆顶。",
+  },
+  banner_drill: {
+    id: "banner_drill",
+    name: "战旗操典",
+    rarity: "uncommon",
+    text: "每场战斗开始时获得 1 点力量，并对所有敌人施加 1 层破绽。",
+  },
+  triage_doctrine: {
+    id: "triage_doctrine",
+    name: "战伤教范",
+    rarity: "uncommon",
+    text: "每场战斗开始时将 1 张创伤回收放到抽牌堆顶；若牌组有状态牌，额外获得 1 层蓄能。",
+  },
+  ash_ledger: {
+    id: "ash_ledger",
+    name: "余烬账本",
+    rarity: "uncommon",
+    text: "每场战斗开始时将 1 张余烬护幕放到抽牌堆顶；若牌组有状态牌，额外获得 3 点格挡。每当你消耗牌，获得等量格挡。",
+  },
+};
+
+export const BOON_POOL = Object.values(BOONS).map((boon) => boon.id);
+
+export const POTIONS: Record<string, PotionDef> = {
+  fire_potion: {
+    id: "fire_potion",
+    name: "火焰药水",
+    rarity: "common",
+    text: "对一个敌人造成 20 点伤害。",
+    target: "enemy",
+    effects: [{ type: "damage", amount: 20, target: "enemy" }],
+  },
+  explosive_potion: {
+    id: "explosive_potion",
+    name: "爆炸药水",
+    rarity: "uncommon",
+    text: "对所有敌人造成 10 点伤害。",
+    target: "allEnemies",
+    effects: [{ type: "damage", amount: 10, target: "allEnemies" }],
+  },
+  block_potion: {
+    id: "block_potion",
+    name: "护盾药水",
+    rarity: "common",
+    text: "获得 12 点格挡。",
+    target: "self",
+    effects: [{ type: "block", amount: 12 }],
+  },
+  cleanse_potion: {
+    id: "cleanse_potion",
+    name: "清醒药水",
+    rarity: "common",
+    text: "净化自身所有负面状态。",
+    target: "self",
+    effects: [{ type: "cleanseDebuffs" }],
+  },
+  strength_potion: {
+    id: "strength_potion",
+    name: "力量药水",
+    rarity: "uncommon",
+    text: "获得 2 点力量。",
+    target: "self",
+    effects: [{ type: "applyPower", power: "strength", amount: 2, target: "self" }],
+  },
+  dexterity_potion: {
+    id: "dexterity_potion",
+    name: "敏捷药水",
+    rarity: "uncommon",
+    text: "获得 2 点敏捷。",
+    target: "self",
+    effects: [{ type: "applyPower", power: "dexterity", amount: 2, target: "self" }],
+  },
+  energy_potion: {
+    id: "energy_potion",
+    name: "能量药水",
+    rarity: "common",
+    text: "获得 2 点能量。",
+    target: "self",
+    effects: [{ type: "gainEnergy", amount: 2 }],
+  },
+  poison_potion: {
+    id: "poison_potion",
+    name: "毒药水",
+    rarity: "common",
+    text: "对一个敌人施加 6 层中毒。",
+    target: "enemy",
+    effects: [{ type: "applyPower", power: "poison", amount: 6, target: "enemy" }],
+  },
+  bleed_potion: {
+    id: "bleed_potion",
+    name: "放血药水",
+    rarity: "uncommon",
+    text: "对一个敌人施加 8 层流血。",
+    target: "enemy",
+    effects: [{ type: "applyPower", power: "bleed", amount: 8, target: "enemy" }],
+  },
+  mark_potion: {
+    id: "mark_potion",
+    name: "破绽药水",
+    rarity: "common",
+    text: "对一个敌人施加 5 层破绽。",
+    target: "enemy",
+    effects: [{ type: "applyPower", power: "mark", amount: 5, target: "enemy" }],
+  },
+  arc_potion: {
+    id: "arc_potion",
+    name: "电弧药水",
+    rarity: "uncommon",
+    text: "对所有敌人施加 2 层电弧。",
+    target: "allEnemies",
+    effects: [{ type: "applyPower", power: "spark", amount: 2, target: "allEnemies" }],
+  },
+  charge_potion: {
+    id: "charge_potion",
+    name: "蓄能药水",
+    rarity: "common",
+    text: "获得 3 层蓄能。",
+    target: "self",
+    effects: [{ type: "applyPower", power: "charge", amount: 3, target: "self" }],
+  },
+  tempo_potion: {
+    id: "tempo_potion",
+    name: "节拍药水",
+    rarity: "uncommon",
+    text: "获得 2 层连击。按自身连击层数获得等量蓄能，最多计算 4 层。",
+    target: "self",
+    effects: [
+      { type: "applyPower", power: "combo", amount: 2, target: "self" },
+      { type: "gainPowerPerPower", sourcePower: "combo", gainedPower: "charge", amount: 1, cap: 4 },
+    ],
+  },
+  chain_potion: {
+    id: "chain_potion",
+    name: "连锁药水",
+    rarity: "uncommon",
+    text: "获得 1 点能量。本回合每打出 1 张牌，获得 1 层连击，最多计算 3 张，至少 1 层。",
+    target: "self",
+    effects: [
+      { type: "gainEnergy", amount: 1 },
+      { type: "gainPowerPerCardPlayed", power: "combo", amount: 1, cap: 3, minimum: 1 },
+    ],
+  },
+  coolant_potion: {
+    id: "coolant_potion",
+    name: "冷却药水",
+    rarity: "uncommon",
+    text: "移除自身最多 3 层流血；每移除 1 层，获得 5 点格挡和 1 层金属化。",
+    target: "self",
+    effects: [
+      {
+        type: "cleansePower",
+        power: "bleed",
+        amount: 3,
+        gainBlockPerStack: 5,
+        gainPowerPerStack: { power: "platedArmor", amount: 1 },
+      },
+    ],
+  },
+  recall_potion: {
+    id: "recall_potion",
+    name: "回响药水",
+    rarity: "rare",
+    text: "获得 2 点能量，从弃牌堆回收最多 2 张非状态牌。",
+    target: "self",
+    effects: [
+      { type: "gainEnergy", amount: 2 },
+      { type: "returnFromDiscard", amount: 2, excludeStatus: true },
+    ],
+  },
+  fracture_potion: {
+    id: "fracture_potion",
+    name: "碎痕药水",
+    rarity: "uncommon",
+    text: "对所有敌人施加 3 层破绽。",
+    target: "allEnemies",
+    effects: [{ type: "applyPower", power: "mark", amount: 3, target: "allEnemies" }],
+  },
+  brace_potion: {
+    id: "brace_potion",
+    name: "守势药水",
+    rarity: "uncommon",
+    text: "获得 12 点格挡和 2 层金属化。",
+    target: "self",
+    effects: [
+      { type: "block", amount: 12 },
+      { type: "applyPower", power: "platedArmor", amount: 2, target: "self" },
+    ],
+  },
+  plating_potion: {
+    id: "plating_potion",
+    name: "镀层药水",
+    rarity: "rare",
+    text: "获得 4 层金属化。",
+    target: "self",
+    effects: [{ type: "applyPower", power: "platedArmor", amount: 4, target: "self" }],
+  },
+  swift_potion: {
+    id: "swift_potion",
+    name: "迅捷药水",
+    rarity: "rare",
+    text: "抽 3 张牌。",
+    target: "self",
+    effects: [{ type: "draw", amount: 3 }],
+  },
+  blood_potion: {
+    id: "blood_potion",
+    name: "血药水",
+    rarity: "rare",
+    text: "回复 15 点生命。",
+    target: "self",
+    effects: [{ type: "heal", amount: 15 }],
+  },
+  catalyst_potion: {
+    id: "catalyst_potion",
+    name: "催化药水",
+    rarity: "rare",
+    text: "使一个敌人的中毒、流血和破绽层数翻倍；若没有层数则各增加 1 层。",
+    target: "enemy",
+    effects: [
+      { type: "amplifyPower", power: "poison", target: "enemy", multiplier: 2, minimum: 1 },
+      { type: "amplifyPower", power: "bleed", target: "enemy", multiplier: 2, minimum: 1 },
+      { type: "amplifyPower", power: "mark", target: "enemy", multiplier: 2, minimum: 1 },
+    ],
+  },
+  alloy_potion: {
+    id: "alloy_potion",
+    name: "合金药水",
+    rarity: "uncommon",
+    text: "获得 2 层金属化和 2 层尖刺。",
+    target: "self",
+    effects: [
+      { type: "applyPower", power: "platedArmor", amount: 2, target: "self" },
+      { type: "applyPower", power: "thorns", amount: 2, target: "self" },
+    ],
+  },
+  overcharge_potion: {
+    id: "overcharge_potion",
+    name: "过载药水",
+    rarity: "rare",
+    text: "获得 4 层蓄能，并对所有敌人施加 2 层电弧。",
+    target: "allEnemies",
+    effects: [
+      { type: "applyPower", power: "charge", amount: 4, target: "self" },
+      { type: "applyPower", power: "spark", amount: 2, target: "allEnemies" },
+    ],
+  },
+  tactics_potion: {
+    id: "tactics_potion",
+    name: "战术药水",
+    rarity: "uncommon",
+    text: "抽 2 张牌，从弃牌堆回收最多 1 张非状态牌。",
+    target: "self",
+    effects: [
+      { type: "draw", amount: 2 },
+      { type: "returnFromDiscard", amount: 1, excludeStatus: true },
+    ],
+  },
+  triage_potion: {
+    id: "triage_potion",
+    name: "清创药水",
+    rarity: "uncommon",
+    text: "消耗手牌和弃牌堆中最多 3 张状态牌。每消耗 1 张，获得 5 点格挡并抽 1 张牌。",
+    target: "self",
+    effects: [
+      {
+        type: "exhaustCards",
+        amount: 3,
+        zone: "handAndDiscard",
+        cardType: "Status",
+        gainBlockPerCard: 5,
+        drawPerCard: 1,
+      },
+    ],
+  },
+  ash_potion: {
+    id: "ash_potion",
+    name: "余烬药水",
+    rarity: "uncommon",
+    text: "获得 8 点格挡。消耗堆每有 1 张牌，额外获得 2 点格挡，最多计算 5 张。",
+    target: "self",
+    effects: [
+      { type: "block", amount: 8 },
+      { type: "blockPerExhaustedCard", amount: 2, cap: 5 },
+    ],
+  },
+};
+
+export const POTION_POOL = Object.values(POTIONS).map((potion) => potion.id);
