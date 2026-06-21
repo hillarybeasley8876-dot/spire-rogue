@@ -812,6 +812,27 @@ assert(illegalCardTargetRun.combat!.playerBlock === illegalCardBlockBefore, "sel
 assert(illegalCardTargetRun.combat!.hand.some((card) => card.uid === illegalDefend.uid), "rejected self card should stay in hand");
 assert(illegalCardTargetRun.message?.includes("不需要选择敌人目标"), "rejected self card should explain the target rule");
 
+let missingAttackTargetRun = createInitialRun(12354, "map", "standard");
+missingAttackTargetRun = enterNode(missingAttackTargetRun, getAvailableNodeIds(missingAttackTargetRun)[0]);
+const missingTargetStrike = makeCardInstance("strike");
+missingAttackTargetRun.combat!.hand = [missingTargetStrike];
+missingAttackTargetRun.combat!.energy = 3;
+const missingTargetEnemyHp = missingAttackTargetRun.combat!.enemies[0].hp;
+missingAttackTargetRun = playCard(missingAttackTargetRun, missingTargetStrike.uid);
+assert(missingAttackTargetRun.combat!.enemies[0].hp === missingTargetEnemyHp, "enemy-target attacks should not resolve without a target");
+assert(missingAttackTargetRun.combat!.hand.some((card) => card.uid === missingTargetStrike.uid), "rejected attack should stay in hand");
+assert(missingAttackTargetRun.message?.includes("请选择一个有效目标"), "rejected attack should explain it needs a target");
+
+let allEnemyTargetRun = createInitialRun(12355, "map", "standard");
+allEnemyTargetRun = enterNode(allEnemyTargetRun, getAvailableNodeIds(allEnemyTargetRun)[0]);
+const cleave = makeCardInstance("cleave");
+allEnemyTargetRun.combat!.hand = [cleave];
+allEnemyTargetRun.combat!.energy = 3;
+const cleaveEnemyUid = livingEnemyUid(allEnemyTargetRun);
+allEnemyTargetRun = playCard(allEnemyTargetRun, cleave.uid, cleaveEnemyUid);
+assert(allEnemyTargetRun.combat!.hand.some((card) => card.uid === cleave.uid), "all-enemy attacks should reject explicit enemy targets");
+assert(allEnemyTargetRun.message?.includes("不需要选择敌人目标"), "all-enemy attack target rejection should be explicit");
+
 let illegalPotionTargetRun = createInitialRun(12351, "map", "standard");
 illegalPotionTargetRun = enterNode(illegalPotionTargetRun, getAvailableNodeIds(illegalPotionTargetRun)[0]);
 illegalPotionTargetRun.player.potions = [makePotionInstance("energy_potion")];

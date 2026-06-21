@@ -275,14 +275,17 @@ function App() {
   const [run, setRun] = useState<RunState>(() => createInitialRun(Date.now(), "title"));
   const [difficulty, setDifficulty] = useState<DifficultyKey>("standard");
   const [selectedCardUid, setSelectedCardUid] = useState<string>();
+  const [inspectedCardUid, setInspectedCardUid] = useState<string>();
   const [selectedPotionUid, setSelectedPotionUid] = useState<string>();
 
   useEffect(() => {
     setSelectedCardUid(undefined);
+    setInspectedCardUid(undefined);
     setSelectedPotionUid(undefined);
   }, [run.phase, run.combat?.turn]);
 
   const selectedCard = run.combat?.hand.find((card) => card.uid === selectedCardUid);
+  const inspectedCard = run.combat?.hand.find((card) => card.uid === inspectedCardUid);
   const selectedPotion = run.player.potions.find((potion) => potion.uid === selectedPotionUid);
 
   useEffect(() => {
@@ -300,6 +303,7 @@ function App() {
 
   function startNewRun() {
     setSelectedCardUid(undefined);
+    setInspectedCardUid(undefined);
     setSelectedPotionUid(undefined);
     setRun(createInitialRun(Date.now(), "map", difficulty));
   }
@@ -311,6 +315,7 @@ function App() {
       return;
     }
     setSelectedCardUid(undefined);
+    setInspectedCardUid(undefined);
     setSelectedPotionUid(undefined);
     setDifficulty(current.difficulty);
     setRun(current);
@@ -320,6 +325,7 @@ function App() {
     clearSavedRun();
     setSavedRun(undefined);
     setSelectedCardUid(undefined);
+    setInspectedCardUid(undefined);
     setSelectedPotionUid(undefined);
     setRun((current) => abandonToTitle(current));
   }
@@ -334,16 +340,19 @@ function App() {
       if (living.length === 1) {
         setRun((current) => playCard(current, card.uid, living[0].uid));
         setSelectedCardUid(undefined);
+        setInspectedCardUid(undefined);
         setSelectedPotionUid(undefined);
         return;
       }
       setSelectedPotionUid(undefined);
+      setInspectedCardUid(card.uid);
       setSelectedCardUid((current) => (current === card.uid ? undefined : card.uid));
       return;
     }
 
     setRun((current) => playCard(current, card.uid));
     setSelectedCardUid(undefined);
+    setInspectedCardUid(undefined);
     setSelectedPotionUid(undefined);
   }
 
@@ -369,10 +378,12 @@ function App() {
     setRun((current) => usePotion(current, selectedPotionUid));
     setSelectedPotionUid(undefined);
     setSelectedCardUid(undefined);
+    setInspectedCardUid(undefined);
   }
 
   function handleClearSelection() {
     setSelectedCardUid(undefined);
+    setInspectedCardUid(undefined);
     setSelectedPotionUid(undefined);
   }
 
@@ -384,6 +395,7 @@ function App() {
       setRun((current) => usePotion(current, selectedPotionForTarget.uid, enemy.uid));
       setSelectedPotionUid(undefined);
       setSelectedCardUid(undefined);
+      setInspectedCardUid(undefined);
       return;
     }
 
@@ -393,6 +405,7 @@ function App() {
     }
     setRun((current) => playCard(current, selectedCardForTarget.uid, enemy.uid));
     setSelectedCardUid(undefined);
+    setInspectedCardUid(undefined);
     setSelectedPotionUid(undefined);
   }
 
@@ -451,9 +464,13 @@ function App() {
                   run={run}
                   selectedCard={selectedCard}
                   selectedCardUid={selectedCardUid}
+                  inspectedCard={inspectedCard}
+                  inspectedCardUid={inspectedCardUid}
                   selectedPotion={selectedPotion}
                   selectedPotionUid={selectedPotionUid}
                   onCardClick={handleCardClick}
+                  onCardInspect={(card) => setInspectedCardUid(card.uid)}
+                  onCardInspectEnd={(card) => setInspectedCardUid((current) => (current === card.uid ? undefined : current))}
                   onPotionClick={handlePotionClick}
                   onEnemyClick={handleEnemyClick}
                   onUseSelectedPotion={handleUseSelectedPotion}
@@ -1323,9 +1340,13 @@ function CombatScreen({
   run,
   selectedCard,
   selectedCardUid,
+  inspectedCard,
+  inspectedCardUid,
   selectedPotion,
   selectedPotionUid,
   onCardClick,
+  onCardInspect,
+  onCardInspectEnd,
   onPotionClick,
   onEnemyClick,
   onUseSelectedPotion,
@@ -1335,9 +1356,13 @@ function CombatScreen({
   run: RunState;
   selectedCard?: CardInstance;
   selectedCardUid?: string;
+  inspectedCard?: CardInstance;
+  inspectedCardUid?: string;
   selectedPotion?: PotionInstance;
   selectedPotionUid?: string;
   onCardClick: (card: CardInstance) => void;
+  onCardInspect: (card: CardInstance) => void;
+  onCardInspectEnd: (card: CardInstance) => void;
   onPotionClick: (potion: PotionInstance) => void;
   onEnemyClick: (enemy: EnemyState) => void;
   onUseSelectedPotion: () => void;
@@ -1345,6 +1370,7 @@ function CombatScreen({
   onEndTurn: () => void;
 }) {
   const combat = run.combat!;
+  const panelCard = selectedCard ?? inspectedCard ?? combat.hand[0];
   const selectedCardDef = selectedCard ? CARDS[selectedCard.cardId] : undefined;
   const selectedCardTarget = selectedCard ? getCardTarget(selectedCard) : undefined;
   const selectedNeedsTarget = selectedCardTarget === "enemy";
@@ -1588,6 +1614,9 @@ function CombatScreen({
               disabled={!canPlayCard(run, card)}
               disabledReason={cardPlayPenalty(run, card)}
               selected={selectedCardUid === card.uid}
+              inspected={inspectedCardUid === card.uid}
+              onInspectStart={() => onCardInspect(card)}
+              onInspectEnd={() => onCardInspectEnd(card)}
               onClick={() => onCardClick(card)}
             />
           ))}
@@ -1626,7 +1655,7 @@ function CombatScreen({
           resetKey={run.phase}
           className="fold-section--combat"
         >
-          <MechanicPanel run={run} selectedCard={selectedCard} selectedPotion={selectedPotion} />
+          <MechanicPanel run={run} selectedCard={panelCard} selectedPotion={selectedPotion} />
         </FoldSection>
 
         <FoldSection
@@ -1943,6 +1972,7 @@ function MechanicPanel({
       </div>
       <TempoPanel combat={combat} hasPocketWatch={hasPocketWatch} />
       <PileInsight combat={combat} />
+      {selectedCard && <CardInspectorPanel card={selectedCard} run={run} />}
       <div className="mechanic-grid">
         <MechanicMeter label="连击" value={combat.playerPowers.combo ?? 0} text="攻击牌" />
         <MechanicMeter label="蓄能" value={combat.playerPowers.charge ?? 0} text="技能牌" />
@@ -1965,7 +1995,7 @@ function MechanicPanel({
           ))}
         </div>
       )}
-      {selectedName && (
+      {selectedPotion && selectedName && (
         <div className="mechanic-selected">
           <strong>{selectedName}</strong>
           <div>
@@ -1978,6 +2008,58 @@ function MechanicPanel({
       )}
     </div>
   );
+}
+
+function CardInspectorPanel({ card, run }: { card: CardInstance; run: RunState }) {
+  const level = getCardLevel(card);
+  const details = cardMechanicDetails(card, run);
+  const tags = cardMechanicTags(card);
+  const summary = summarizeCardAction(run, card);
+  const penalty = cardPlayPenalty(run, card);
+
+  return (
+    <div className={`card-inspector card-inspector--${level.target}`}>
+      <div className="card-inspector__head">
+        <strong>{cardDisplayName(card)}</strong>
+        <span className={`game-card__target game-card__target--${level.target}`}>{ACTION_TARGET_LABELS[level.target]}</span>
+        <b>{level.cost}费</b>
+      </div>
+      <p className={penalty ? "is-warning" : ""}>{penalty ?? cardTargetRuleLine(card, run)}</p>
+      <div className="card-inspector__formula">
+        {details.slice(0, 6).map((detail, index) => (
+          <span key={`${detail}-${index}`}>{detail}</span>
+        ))}
+      </div>
+      <ActionSummaryView summary={summary} />
+      {tags.length > 0 && (
+        <div className="card-inspector__tags">
+          {tags.map((tag) => (
+            <em key={tag}>{tag}</em>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function cardTargetRuleLine(card: CardInstance, run: RunState): string {
+  const level = getCardLevel(card);
+  const combat = run.combat;
+  const livingEnemies = combat?.enemies.filter((enemy) => enemy.hp > 0).length ?? 0;
+
+  if (level.unplayable) {
+    return "状态牌不可主动打出，只按自身规则触发。";
+  }
+  if (level.target === "enemy") {
+    return livingEnemies === 1 ? "敌方目标：只命中敌人；单敌时自动锁定。" : "敌方目标：只命中选中的敌人，不会作用自身。";
+  }
+  if (level.target === "allEnemies") {
+    return "全体目标：结算到所有存活敌人，不会作用自身。";
+  }
+  if (level.target === "self") {
+    return "自身目标：只结算到角色，不会给敌人格挡或增益。";
+  }
+  return "无目标：直接结算卡牌效果。";
 }
 
 function CatalystInsightPanel({ insight }: { insight?: CatalystInsight }) {
@@ -3531,6 +3613,9 @@ function CardView({
   disabled,
   disabledReason,
   selected,
+  inspected,
+  onInspectStart,
+  onInspectEnd,
   onClick,
 }: {
   card: CardInstance;
@@ -3538,6 +3623,9 @@ function CardView({
   disabled?: boolean;
   disabledReason?: string;
   selected?: boolean;
+  inspected?: boolean;
+  onInspectStart?: () => void;
+  onInspectEnd?: () => void;
   onClick?: () => void;
 }) {
   const def = getCardDef(card.cardId);
@@ -3551,10 +3639,14 @@ function CardView({
     <button
       className={`game-card game-card--${def.type.toLowerCase()} game-card--rarity-${def.rarity} ${visualClass} ${
         selected ? "is-selected" : ""
-      } ${disabledReason ? "is-penalty" : ""}`}
+      } ${inspected ? "is-inspected" : ""} ${disabledReason ? "is-penalty" : ""}`}
       type="button"
       disabled={disabled}
       title={mechanicTitle}
+      onPointerEnter={onInspectStart}
+      onPointerLeave={onInspectEnd}
+      onFocus={onInspectStart}
+      onBlur={onInspectEnd}
       onClick={onClick}
     >
       <div className="game-card__top">
