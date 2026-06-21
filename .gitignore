@@ -1,5 +1,6 @@
 node_modules/
 dist/
+.vercel/
 
 *.tsbuildinfo
 vite.config.d.ts
@@ -13,3 +14,4 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+.vercel

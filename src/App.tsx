@@ -334,6 +334,8 @@ function App() {
   return (
     <div className="app">
       <div className="app__backdrop" />
+      <div className="app__rift app__rift--left" aria-hidden="true" />
+      <div className="app__rift app__rift--right" aria-hidden="true" />
       <header className="topbar">
         <div className="brand">
           <span className="brand__mark">

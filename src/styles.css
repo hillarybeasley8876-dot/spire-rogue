@@ -24,6 +24,8 @@
   --blue: #688bd8;
   --violet: #a075cc;
   --shadow: 0 18px 52px rgba(0, 0, 0, 0.32);
+  --panel-glass: rgba(18, 23, 29, 0.76);
+  --gold-line: rgba(255, 224, 163, 0.28);
   --rift-bg-url: url("/assets/rift-spire-bg.png");
 }
 
@@ -71,6 +73,55 @@ button {
   background-size: 42px 42px;
   background-position: center top;
   mask-image: linear-gradient(to bottom, black, rgba(0, 0, 0, 0.88) 72%, transparent 100%);
+  animation: rift-grid-drift 18s linear infinite;
+}
+
+.app::before,
+.app::after,
+.app__rift {
+  position: fixed;
+  z-index: 1;
+  content: "";
+  pointer-events: none;
+}
+
+.app::before {
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 224, 163, 0.12), transparent 24%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.58), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.62));
+}
+
+.app::after {
+  inset: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  box-shadow:
+    inset 0 0 0 1px rgba(91, 210, 191, 0.06),
+    inset 0 0 70px rgba(0, 0, 0, 0.34);
+}
+
+.app__rift {
+  top: -12vh;
+  width: 180px;
+  height: 124vh;
+  opacity: 0.32;
+  filter: blur(1px);
+  background:
+    linear-gradient(180deg, transparent, rgba(91, 210, 191, 0.36), transparent 72%),
+    repeating-linear-gradient(0deg, transparent 0 24px, rgba(255, 224, 163, 0.13) 24px 25px);
+  transform: rotate(9deg);
+  animation: rift-column-pulse 5.2s ease-in-out infinite;
+}
+
+.app__rift--left {
+  left: clamp(10px, 4vw, 72px);
+}
+
+.app__rift--right {
+  right: clamp(8px, 5vw, 88px);
+  animation-delay: -2.1s;
+  transform: rotate(-8deg);
 }
 
 .topbar {
@@ -81,7 +132,17 @@ button {
   justify-content: space-between;
   gap: 18px;
   min-width: 0;
-  padding: 18px 28px;
+  padding: 18px 28px 14px;
+}
+
+.topbar::after {
+  position: absolute;
+  right: 28px;
+  bottom: 0;
+  left: 28px;
+  height: 1px;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(91, 210, 191, 0.34), rgba(255, 224, 163, 0.18), transparent);
 }
 
 .brand {
@@ -101,6 +162,7 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(240, 109, 89, 0.18);
+  animation: ember-breathe 2.6s ease-in-out infinite;
 }
 
 .brand h1,
@@ -144,8 +206,11 @@ button {
   color: var(--text);
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.095), rgba(255, 255, 255, 0.04)),
+    rgba(0, 0, 0, 0.12);
   white-space: nowrap;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .stat-pill--hp {
@@ -214,6 +279,16 @@ button {
   border-color: rgba(255, 255, 255, 0.35);
 }
 
+.icon-button:active,
+.primary-button:active,
+.secondary-button:active,
+.end-turn-button:active,
+.route-option:active,
+.game-card:active:not(:disabled),
+.enemy-card:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+
 .screen {
   position: relative;
   z-index: 2;
@@ -255,11 +330,12 @@ button {
   display: grid;
   gap: 0;
   min-width: 0;
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025)),
     rgba(7, 10, 13, 0.34);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   overflow: hidden;
 }
 
@@ -273,7 +349,9 @@ button {
   color: #eef8f6;
   text-align: left;
   border: 0;
-  background: rgba(255, 255, 255, 0.035);
+  background:
+    linear-gradient(90deg, rgba(91, 210, 191, 0.08), transparent),
+    rgba(255, 255, 255, 0.035);
   cursor: pointer;
 }
 
@@ -408,6 +486,9 @@ button {
   border: 1px solid rgba(91, 210, 191, 0.24);
   border-radius: 8px;
   background: linear-gradient(135deg, rgba(91, 210, 191, 0.13), rgba(216, 160, 59, 0.08));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 22px rgba(0, 0, 0, 0.16);
 }
 
 .phase-status > span {
@@ -587,9 +668,10 @@ button {
 .title-board {
   position: relative;
   min-height: 560px;
-  border: 1px solid rgba(91, 210, 191, 0.24);
+  border: 1px solid rgba(91, 210, 191, 0.34);
   border-radius: 8px;
   background:
+    radial-gradient(circle at 50% 18%, rgba(255, 224, 163, 0.16), transparent 22%),
     linear-gradient(180deg, rgba(8, 12, 16, 0.02), rgba(8, 12, 16, 0.52) 58%, rgba(72, 18, 19, 0.38)),
     var(--rift-bg-url) center / cover,
     rgba(14, 17, 22, 0.68);
@@ -639,6 +721,28 @@ button {
   height: 218px;
   padding: 18px;
   text-align: center;
+  animation: title-card-float 4.8s ease-in-out infinite;
+}
+
+.title-card::before,
+.title-card::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.title-card::before {
+  inset: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.title-card::after {
+  inset: 0;
+  background:
+    linear-gradient(118deg, transparent 0 38%, rgba(255, 255, 255, 0.2) 42%, transparent 48%),
+    repeating-linear-gradient(0deg, transparent 0 10px, rgba(255, 255, 255, 0.035) 10px 11px);
+  opacity: 0.5;
 }
 
 .title-card span {
@@ -661,6 +765,7 @@ button {
   top: 34%;
   background: linear-gradient(160deg, rgba(66, 181, 165, 0.95), rgba(27, 67, 68, 0.95));
   transform: rotate(5deg);
+  animation-delay: -1.7s;
 }
 
 .title-card--power {
@@ -668,6 +773,7 @@ button {
   top: 17%;
   background: linear-gradient(160deg, rgba(216, 160, 59, 0.95), rgba(73, 51, 25, 0.95));
   transform: rotate(9deg);
+  animation-delay: -3.2s;
 }
 
 .title-enemy {
@@ -709,8 +815,14 @@ button {
 .end-layout {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--panel);
-  box-shadow: var(--shadow);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.022)),
+    var(--panel-glass);
+  box-shadow:
+    var(--shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(18px) saturate(1.08);
+  -webkit-backdrop-filter: blur(18px) saturate(1.08);
 }
 
 .side-panel {
@@ -1221,7 +1333,10 @@ button {
   padding: 7px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
-  background: rgba(12, 21, 27, 0.42);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02)),
+    rgba(12, 21, 27, 0.42);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .resource-dock__panel--signal {
@@ -1594,9 +1709,22 @@ button {
   opacity: 0.22;
 }
 
+.map-panel::after {
+  position: absolute;
+  inset: 12px;
+  content: "";
+  pointer-events: none;
+  border: 1px solid rgba(255, 224, 163, 0.09);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(91, 210, 191, 0.05), transparent 24%, transparent 76%, rgba(240, 109, 89, 0.05)),
+    repeating-linear-gradient(90deg, transparent 0 44px, rgba(255, 255, 255, 0.018) 44px 45px);
+  opacity: 0.8;
+}
+
 .map-panel > * {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .section-heading,
@@ -1705,6 +1833,9 @@ button {
   background:
     radial-gradient(circle at 12px 12px, rgba(255, 255, 255, 0.14), transparent 30px),
     rgba(8, 13, 17, 0.68);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 20px rgba(0, 0, 0, 0.16);
   transition:
     transform 160ms ease,
     border-color 160ms ease,
@@ -1986,6 +2117,7 @@ button {
   padding: 18px;
   overflow: hidden;
   background:
+    radial-gradient(circle at 50% 5%, rgba(255, 224, 163, 0.12), transparent 24%),
     linear-gradient(180deg, rgba(14, 19, 24, 0.68), rgba(14, 19, 24, 0.92)),
     var(--rift-bg-url) center / cover;
 }
@@ -2004,6 +2136,7 @@ button {
     linear-gradient(180deg, transparent 0 54%, rgba(240, 109, 89, 0.12) 72%, rgba(0, 0, 0, 0.42)),
     repeating-linear-gradient(0deg, transparent 0 10px, rgba(255, 255, 255, 0.022) 10px 11px);
   mix-blend-mode: screen;
+  animation: combat-light-sweep 8s ease-in-out infinite;
 }
 
 .combat-main::after {
@@ -2028,6 +2161,9 @@ button {
   min-height: 0;
   padding: 16px;
   overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.022)),
+    rgba(14, 18, 22, 0.82);
 }
 
 .mechanic-panel {
@@ -2936,6 +3072,19 @@ button {
   border-radius: 999px;
 }
 
+.enemy-card::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 28%),
+    linear-gradient(90deg, transparent, rgba(91, 210, 191, 0.08), transparent);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
 .enemy-card > * {
   position: relative;
   z-index: 1;
@@ -2944,7 +3093,13 @@ button {
 .enemy-card.is-targetable {
   cursor: crosshair;
   border-color: rgba(240, 190, 85, 0.75);
-  box-shadow: inset 0 0 0 2px rgba(240, 190, 85, 0.2);
+  box-shadow:
+    inset 0 0 0 2px rgba(240, 190, 85, 0.2),
+    0 0 26px rgba(240, 190, 85, 0.16);
+}
+
+.enemy-card.is-targetable::after {
+  opacity: 1;
 }
 
 .enemy-card.has-preview:not(.is-targetable) {
@@ -3127,7 +3282,10 @@ button {
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.055);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035)),
+    rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .pile-strip {
@@ -3365,6 +3523,19 @@ button {
   z-index: 1;
 }
 
+.game-card::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(118deg, transparent 0 34%, rgba(255, 255, 255, 0.18) 38%, transparent 44%),
+    radial-gradient(circle at 80% 10%, rgba(255, 224, 163, 0.12), transparent 26%);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
 .hand-row .game-card {
   width: 166px;
   scroll-snap-align: start;
@@ -3385,6 +3556,11 @@ button {
     0 0 22px rgba(255, 224, 163, 0.12),
     0 20px 34px rgba(0, 0, 0, 0.34);
   transform: translateY(-8px);
+}
+
+.game-card:hover:not(:disabled)::after,
+.game-card.is-selected::after {
+  opacity: 1;
 }
 
 .game-card:disabled {
@@ -3430,9 +3606,15 @@ button {
   height: 34px;
   place-items: center;
   color: #101216;
-  background: #eef2f0;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  background:
+    radial-gradient(circle at 40% 30%, rgba(255, 255, 255, 0.8), transparent 42%),
+    #eef2f0;
   border-radius: 999px;
   font-weight: 900;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.24),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.16);
 }
 
 .game-card__top strong {
@@ -3974,6 +4156,61 @@ button {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes rift-grid-drift {
+  from {
+    background-position: center top;
+  }
+  to {
+    background-position: center 42px;
+  }
+}
+
+@keyframes rift-column-pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+    translate: 0 0;
+  }
+  50% {
+    opacity: 0.38;
+    translate: 0 18px;
+  }
+}
+
+@keyframes ember-breathe {
+  0%,
+  100% {
+    box-shadow: 0 10px 30px rgba(240, 109, 89, 0.18);
+  }
+  50% {
+    box-shadow:
+      0 10px 30px rgba(240, 109, 89, 0.28),
+      0 0 22px rgba(255, 224, 163, 0.18);
+  }
+}
+
+@keyframes title-card-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -8px;
+  }
+}
+
+@keyframes combat-light-sweep {
+  0%,
+  100% {
+    opacity: 0.76;
+    background-position: center 0, center 0, center 0;
+  }
+  50% {
+    opacity: 1;
+    background-position: center 0, center 16px, center 0;
   }
 }
 
