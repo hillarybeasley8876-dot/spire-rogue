@@ -4496,6 +4496,7 @@ function dealDamageToPlayer(run: RunState, enemy: EnemyState, baseDamage: number
   if (hpLoss > 0) {
     chipPlatedArmor(combat, combat.playerPowers, "你的");
     triggerBleedOnPlayer(run);
+    triggerOverloadOnPlayer(run, enemy);
   }
 
   const thorns = combat.playerPowers.thorns ?? 0;
@@ -4559,6 +4560,21 @@ function triggerBleedOnPlayer(run: RunState): void {
   addLog(combat, `流血爆开，你失去 ${bleed} 点生命。`);
 }
 
+function triggerOverloadOnPlayer(run: RunState, enemy: EnemyState): void {
+  const combat = run.combat!;
+  const overload = enemy.powers.overload ?? 0;
+  if (overload <= 0 || run.player.hp <= 0) {
+    return;
+  }
+
+  const blocked = Math.min(combat.playerBlock, overload);
+  combat.playerBlock -= blocked;
+  const hpLoss = Math.max(0, overload - blocked);
+  takePlayerHpLoss(run, hpLoss);
+  addPower(enemy.powers, "overload", -1);
+  addLog(combat, `${enemy.name} 的过载放电对你造成 ${hpLoss} 点伤害。`);
+}
+
 function chipPlatedArmor(combat: CombatState, powers: PowerMap, ownerName: string): void {
   if ((powers.platedArmor ?? 0) <= 0) {
     return;
@@ -4578,6 +4594,12 @@ function calculatePlayerBlock(combat: CombatState, baseBlock: number): number {
 
 function tickOngoingPowers(run: RunState): void {
   const combat = run.combat!;
+
+  const playerRitual = combat.playerPowers.ritual ?? 0;
+  if (playerRitual > 0) {
+    addPower(combat.playerPowers, "strength", playerRitual);
+    addLog(combat, `仪式生效，你获得 ${playerRitual} 点力量。`);
+  }
 
   const playerPlatedArmor = combat.playerPowers.platedArmor ?? 0;
   if (playerPlatedArmor > 0) {
@@ -5046,6 +5068,7 @@ function powerName(power: PowerKey): string {
     combo: "连击",
     charge: "蓄能",
     spark: "电弧",
+    overload: "过载",
   };
   return labels[power];
 }

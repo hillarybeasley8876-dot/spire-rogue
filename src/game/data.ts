@@ -33,9 +33,9 @@ export const DIFFICULTIES: Record<DifficultyKey, DifficultyConfig> = {
     text: "按当前原型的基准曲线推进，容错适中。",
     startingHp: 82,
     startingGold: 115,
-    enemyHpMultiplier: 0.81,
-    enemyDamageMultiplier: 0.67,
-    enemyBlockMultiplier: 0.88,
+    enemyHpMultiplier: 0.79,
+    enemyDamageMultiplier: 0.62,
+    enemyBlockMultiplier: 0.86,
     rewardGoldMultiplier: 1.1,
     shopPriceMultiplier: 0.95,
     rewardUpgradeBonus: 0.04,
@@ -47,9 +47,9 @@ export const DIFFICULTIES: Record<DifficultyKey, DifficultyConfig> = {
     text: "敌人生命和伤害提高，金币略少，需要更主动地构筑。",
     startingHp: 80,
     startingGold: 108,
-    enemyHpMultiplier: 0.86,
-    enemyDamageMultiplier: 0.745,
-    enemyBlockMultiplier: 0.95,
+    enemyHpMultiplier: 0.82,
+    enemyDamageMultiplier: 0.67,
+    enemyBlockMultiplier: 0.92,
     rewardGoldMultiplier: 1.06,
     shopPriceMultiplier: 0.99,
     rewardUpgradeBonus: 0.02,
@@ -61,9 +61,9 @@ export const DIFFICULTIES: Record<DifficultyKey, DifficultyConfig> = {
     text: "敌人明显更硬更疼，资源更紧，精英路线需要谨慎。",
     startingHp: 76,
     startingGold: 100,
-    enemyHpMultiplier: 0.98,
-    enemyDamageMultiplier: 0.84,
-    enemyBlockMultiplier: 1.04,
+    enemyHpMultiplier: 0.94,
+    enemyDamageMultiplier: 0.78,
+    enemyBlockMultiplier: 1.02,
     rewardGoldMultiplier: 1,
     shopPriceMultiplier: 1.04,
     rewardUpgradeBonus: -0.01,
@@ -86,6 +86,7 @@ export const POWER_LABELS: Record<PowerKey, string> = {
   combo: "连击",
   charge: "蓄能",
   spark: "电弧",
+  overload: "过载",
 };
 
 export const POWER_HINTS: Record<PowerKey, string> = {
@@ -104,6 +105,7 @@ export const POWER_HINTS: Record<PowerKey, string> = {
   combo: "本回合攻击牌累积的连击，回合结束清空。",
   charge: "可被部分卡牌消耗，用来追加伤害或格挡。",
   spark: "受到攻击生命伤害后向全体敌人弹射等同层数的伤害，然后降低 1 层。",
+  overload: "敌人攻击你造成生命伤害后，额外放电造成等量伤害，然后降低 1 层。",
 };
 
 export const CARDS: Record<string, CardDef> = {
@@ -1692,6 +1694,307 @@ export const CARDS: Record<string, CardDef> = {
       ],
     },
   },
+  heavy_blow: {
+    id: "heavy_blow",
+    name: "重击",
+    type: "Attack",
+    rarity: "common",
+    tags: ["strength"],
+    base: {
+      target: "enemy",
+      cost: 2,
+      text: "造成 14 点伤害。",
+      effects: [{ type: "damage", amount: 14, target: "enemy" }],
+    },
+    upgraded: {
+      target: "enemy",
+      cost: 2,
+      text: "造成 19 点伤害。",
+      effects: [{ type: "damage", amount: 19, target: "enemy" }],
+    },
+  },
+  flurry: {
+    id: "flurry",
+    name: "连舞",
+    type: "Attack",
+    rarity: "uncommon",
+    tags: ["strength"],
+    base: {
+      target: "enemy",
+      cost: 1,
+      text: "造成 3 点伤害 3 次。",
+      effects: [{ type: "damage", amount: 3, hits: 3, target: "enemy" }],
+    },
+    upgraded: {
+      target: "enemy",
+      cost: 1,
+      text: "造成 4 点伤害 4 次。",
+      effects: [{ type: "damage", amount: 4, hits: 4, target: "enemy" }],
+    },
+  },
+  whirlwind: {
+    id: "whirlwind",
+    name: "旋风斩",
+    type: "Attack",
+    rarity: "uncommon",
+    tags: ["strength"],
+    base: {
+      target: "allEnemies",
+      cost: 2,
+      text: "对所有敌人，按本回合已打出的攻击牌数每张造成 4 点伤害。",
+      effects: [{ type: "damagePerAttackPlayed", amount: 4, target: "allEnemies" }],
+    },
+    upgraded: {
+      target: "allEnemies",
+      cost: 2,
+      text: "对所有敌人，按本回合已打出的攻击牌数每张造成 6 点伤害。",
+      effects: [{ type: "damagePerAttackPlayed", amount: 6, target: "allEnemies" }],
+    },
+  },
+  demon_form: {
+    id: "demon_form",
+    name: "恶魔形态",
+    type: "Power",
+    rarity: "rare",
+    tags: ["strength"],
+    base: {
+      target: "self",
+      cost: 2,
+      text: "获得 1 层仪式（每回合开始时获得等量力量）。",
+      effects: [{ type: "applyPower", power: "ritual", amount: 1, target: "self" }],
+    },
+    upgraded: {
+      target: "self",
+      cost: 2,
+      text: "获得 2 层仪式（每回合开始时获得等量力量）。",
+      effects: [{ type: "applyPower", power: "ritual", amount: 2, target: "self" }],
+    },
+  },
+  berserk_edge: {
+    id: "berserk_edge",
+    name: "狂暴之刃",
+    type: "Attack",
+    rarity: "rare",
+    tags: ["strength"],
+    base: {
+      target: "enemy",
+      cost: 1,
+      text: "消耗所有力量，每点力量造成 4 点伤害，至少按 1 点计算。",
+      effects: [
+        {
+          type: "damagePerPower",
+          amount: 4,
+          power: "strength",
+          powerTarget: "self",
+          target: "enemy",
+          consume: true,
+          minimum: 1,
+        },
+      ],
+    },
+    upgraded: {
+      target: "enemy",
+      cost: 1,
+      text: "消耗所有力量，每点力量造成 6 点伤害，至少按 1 点计算。",
+      effects: [
+        {
+          type: "damagePerPower",
+          amount: 6,
+          power: "strength",
+          powerTarget: "self",
+          target: "enemy",
+          consume: true,
+          minimum: 1,
+        },
+      ],
+    },
+  },
+  rallying_roar: {
+    id: "rallying_roar",
+    name: "战意咆哮",
+    type: "Skill",
+    rarity: "uncommon",
+    tags: ["strength"],
+    base: {
+      target: "self",
+      cost: 1,
+      text: "获得 2 点力量。获得 5 点格挡。",
+      effects: [
+        { type: "applyPower", power: "strength", amount: 2, target: "self" },
+        { type: "block", amount: 5 },
+      ],
+    },
+    upgraded: {
+      target: "self",
+      cost: 1,
+      text: "获得 3 点力量。获得 8 点格挡。",
+      effects: [
+        { type: "applyPower", power: "strength", amount: 3, target: "self" },
+        { type: "block", amount: 8 },
+      ],
+    },
+  },
+  tidal_edge: {
+    id: "tidal_edge",
+    name: "潮汐刃",
+    type: "Attack",
+    rarity: "uncommon",
+    tags: ["dexterity"],
+    base: {
+      target: "enemy",
+      cost: 1,
+      text: "造成 5 点伤害。按自身敏捷层数，每层额外造成 2 点伤害。",
+      effects: [
+        { type: "damage", amount: 5, target: "enemy" },
+        {
+          type: "damagePerPower",
+          amount: 2,
+          power: "dexterity",
+          powerTarget: "self",
+          target: "enemy",
+        },
+      ],
+    },
+    upgraded: {
+      target: "enemy",
+      cost: 1,
+      text: "造成 7 点伤害。按自身敏捷层数，每层额外造成 3 点伤害。",
+      effects: [
+        { type: "damage", amount: 7, target: "enemy" },
+        {
+          type: "damagePerPower",
+          amount: 3,
+          power: "dexterity",
+          powerTarget: "self",
+          target: "enemy",
+        },
+      ],
+    },
+  },
+  spike_surge: {
+    id: "spike_surge",
+    name: "尖刺迸发",
+    type: "Attack",
+    rarity: "uncommon",
+    tags: ["thorns"],
+    base: {
+      target: "allEnemies",
+      cost: 1,
+      text: "对所有敌人，按自身尖刺层数每层造成 3 点伤害，至少按 1 层计算。",
+      effects: [
+        {
+          type: "damagePerPower",
+          amount: 3,
+          power: "thorns",
+          powerTarget: "self",
+          target: "allEnemies",
+          minimum: 1,
+        },
+      ],
+    },
+    upgraded: {
+      target: "allEnemies",
+      cost: 1,
+      text: "对所有敌人，按自身尖刺层数每层造成 4 点伤害，至少按 1 层计算。",
+      effects: [
+        {
+          type: "damagePerPower",
+          amount: 4,
+          power: "thorns",
+          powerTarget: "self",
+          target: "allEnemies",
+          minimum: 1,
+        },
+      ],
+    },
+  },
+  spine_wall: {
+    id: "spine_wall",
+    name: "棘壁",
+    type: "Skill",
+    rarity: "common",
+    tags: ["thorns"],
+    base: {
+      target: "self",
+      cost: 1,
+      text: "获得 5 点格挡和 3 层尖刺。",
+      effects: [
+        { type: "block", amount: 5 },
+        { type: "applyPower", power: "thorns", amount: 3, target: "self" },
+      ],
+    },
+    upgraded: {
+      target: "self",
+      cost: 1,
+      text: "获得 8 点格挡和 4 层尖刺。",
+      effects: [
+        { type: "block", amount: 8 },
+        { type: "applyPower", power: "thorns", amount: 4, target: "self" },
+      ],
+    },
+  },
+  blood_forge: {
+    id: "blood_forge",
+    name: "血肉熔炉",
+    type: "Skill",
+    rarity: "uncommon",
+    tags: ["regen"],
+    base: {
+      target: "self",
+      cost: 1,
+      text: "消耗自身最多 4 层再生；每移除 1 层，获得 3 点格挡和 1 点力量。",
+      effects: [
+        {
+          type: "cleansePower",
+          power: "regen",
+          amount: 4,
+          gainBlockPerStack: 3,
+          gainPowerPerStack: { power: "strength", amount: 1 },
+        },
+      ],
+    },
+    upgraded: {
+      target: "self",
+      cost: 1,
+      text: "消耗自身最多 5 层再生；每移除 1 层，获得 4 点格挡和 1 点力量。",
+      effects: [
+        {
+          type: "cleansePower",
+          power: "regen",
+          amount: 5,
+          gainBlockPerStack: 4,
+          gainPowerPerStack: { power: "strength", amount: 1 },
+        },
+      ],
+    },
+  },
+  doom_mark: {
+    id: "doom_mark",
+    name: "厄运印记",
+    type: "Skill",
+    rarity: "rare",
+    tags: ["mark"],
+    base: {
+      target: "enemy",
+      cost: 1,
+      text: "施加 4 层破绽，然后使目标破绽层数翻倍。抽 1 张牌。",
+      effects: [
+        { type: "applyPower", power: "mark", amount: 4, target: "enemy" },
+        { type: "amplifyPower", power: "mark", target: "enemy", multiplier: 2 },
+        { type: "draw", amount: 1 },
+      ],
+    },
+    upgraded: {
+      target: "allEnemies",
+      cost: 1,
+      text: "对所有敌人施加 4 层破绽，然后使其破绽层数翻倍。抽 1 张牌。",
+      effects: [
+        { type: "applyPower", power: "mark", amount: 4, target: "allEnemies" },
+        { type: "amplifyPower", power: "mark", target: "allEnemies", multiplier: 2 },
+        { type: "draw", amount: 1 },
+      ],
+    },
+  },
   slimed: {
     id: "slimed",
     name: "黏液",
@@ -1956,7 +2259,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
         intent: "debuff",
         weight: 2,
         effects: [
-          { type: "applyPower", power: "spark", amount: 2, target: "self" },
+          { type: "applyPower", power: "overload", amount: 2, target: "self" },
           { type: "createCard", cardId: "dazed", destination: "discard" },
         ],
       },
@@ -1975,7 +2278,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
         intent: "buff",
         weight: 1,
         effects: [
-          { type: "applyPower", power: "spark", amount: 3, target: "self" },
+          { type: "applyPower", power: "overload", amount: 3, target: "self" },
           { type: "applyPower", power: "strength", amount: 1, target: "self" },
         ],
       },
@@ -1986,7 +2289,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
         weight: 1,
         effects: [
           { type: "damage", amount: 8, hits: 2 },
-          { type: "applyPower", power: "spark", amount: 1, target: "self" },
+          { type: "applyPower", power: "overload", amount: 1, target: "self" },
         ],
       },
       {
@@ -2131,7 +2434,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
         effects: [
           { type: "block", amount: 8 },
           { type: "applyPower", power: "platedArmor", amount: 1, target: "self" },
-          { type: "applyPower", power: "spark", amount: 1, target: "self" },
+          { type: "applyPower", power: "overload", amount: 1, target: "self" },
         ],
       },
       {
@@ -2190,7 +2493,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
         weight: 1,
         effects: [
           { type: "block", amount: 8 },
-          { type: "applyPower", power: "spark", amount: 2, target: "self" },
+          { type: "applyPower", power: "overload", amount: 2, target: "self" },
         ],
       },
     ],
@@ -2300,7 +2603,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
         weight: 1,
         effects: [
           { type: "block", amount: 10 },
-          { type: "applyPower", power: "spark", amount: 1, target: "self" },
+          { type: "applyPower", power: "overload", amount: 1, target: "self" },
         ],
       },
     ],
@@ -2542,7 +2845,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
         weight: 4,
         effects: [
           { type: "damage", amount: 9 },
-          { type: "applyPower", power: "spark", amount: 1, target: "self" },
+          { type: "applyPower", power: "overload", amount: 1, target: "self" },
         ],
       },
       {
@@ -2622,7 +2925,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
         effects: [
           { type: "block", amount: 16 },
           { type: "applyPower", power: "platedArmor", amount: 2, target: "self" },
-          { type: "applyPower", power: "spark", amount: 2, target: "self" },
+          { type: "applyPower", power: "overload", amount: 2, target: "self" },
         ],
       },
       {
@@ -2682,7 +2985,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
         weight: 1,
         effects: [
           { type: "applyPower", power: "strength", amount: 2, target: "self" },
-          { type: "applyPower", power: "spark", amount: 3, target: "self" },
+          { type: "applyPower", power: "overload", amount: 3, target: "self" },
         ],
       },
     ],
@@ -2712,7 +3015,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
         weight: 1,
         effects: [
           { type: "applyPower", power: "ritual", amount: 2, target: "self" },
-          { type: "applyPower", power: "spark", amount: 2, target: "self" },
+          { type: "applyPower", power: "overload", amount: 2, target: "self" },
           { type: "summon", enemyId: "rift_wisp" },
         ],
       },
@@ -2754,7 +3057,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
         weight: 1,
         effects: [
           { type: "damage", amount: 5, hits: 4 },
-          { type: "applyPower", power: "spark", amount: 2, target: "self" },
+          { type: "applyPower", power: "overload", amount: 2, target: "self" },
         ],
       },
       {
@@ -2796,7 +3099,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
         weight: 1,
         effects: [
           { type: "applyPower", power: "strength", amount: 1, target: "self" },
-          { type: "applyPower", power: "spark", amount: 3, target: "self" },
+          { type: "applyPower", power: "overload", amount: 3, target: "self" },
           { type: "applyPower", power: "platedArmor", amount: 2, target: "self" },
         ],
       },

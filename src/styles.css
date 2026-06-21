@@ -8419,6 +8419,329 @@ body {
   }
 }
 
+/* ===================================================================== */
+/* 自定义 Tooltip + PowerBadge（游戏化 UI v2）                           */
+/* ===================================================================== */
+.tooltip-anchor {
+  display: inline-flex;
+  outline: none;
+}
+.tooltip-anchor:focus-visible {
+  outline: 1px solid var(--gold-line);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.tooltip-pop {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  max-width: 280px;
+  animation: tooltip-in 120ms ease-out;
+}
+
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tip-card {
+  background: linear-gradient(180deg, rgba(28, 34, 41, 0.98), rgba(18, 22, 28, 0.98));
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--muted);
+  border-radius: 10px;
+  padding: 9px 12px;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+}
+.tip-card--buff {
+  border-left-color: var(--teal-strong);
+}
+.tip-card--debuff {
+  border-left-color: var(--red-strong);
+}
+.tip-card--engine {
+  border-left-color: var(--amber-strong);
+}
+.tip-card__title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text);
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.tip-card__body {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.tip-card__footer {
+  margin-top: 6px;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--line-strong);
+}
+
+.power-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.power-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(18, 22, 28, 0.72);
+  cursor: help;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+.power-badge:hover {
+  transform: translateY(-1px);
+}
+.power-badge__count {
+  font-weight: 700;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  min-width: 0.8em;
+  text-align: center;
+}
+.power-badge--buff {
+  border-color: rgba(91, 210, 191, 0.4);
+  box-shadow: inset 0 0 12px rgba(66, 181, 165, 0.14);
+}
+.power-badge--buff:hover {
+  border-color: var(--teal-strong);
+  box-shadow:
+    inset 0 0 14px rgba(66, 181, 165, 0.22),
+    0 0 10px rgba(66, 181, 165, 0.3);
+}
+.power-badge--debuff {
+  border-color: rgba(240, 109, 89, 0.42);
+  box-shadow: inset 0 0 12px rgba(212, 87, 69, 0.16);
+}
+.power-badge--debuff:hover {
+  border-color: var(--red-strong);
+  box-shadow:
+    inset 0 0 14px rgba(212, 87, 69, 0.24),
+    0 0 10px rgba(212, 87, 69, 0.32);
+}
+.power-badge--engine {
+  border-color: rgba(240, 190, 85, 0.42);
+  box-shadow: inset 0 0 12px rgba(216, 160, 59, 0.16);
+}
+.power-badge--engine:hover {
+  border-color: var(--amber-strong);
+  box-shadow:
+    inset 0 0 14px rgba(216, 160, 59, 0.24),
+    0 0 10px rgba(216, 160, 59, 0.32);
+}
+
+.power-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+@keyframes power-badge-pulse {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.18);
+    filter: brightness(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.power-badge.is-pulsing {
+  animation: power-badge-pulse 360ms ease-out;
+}
+
+/* ===================================================================== */
+/* 战斗界面：全屏分区 HUD（游戏 client 形态）                            */
+/* ===================================================================== */
+/* combat 阶段让 game-stage 撑满，combat-shell 接管为四区 grid */
+.game-stage:has(.combat-shell) {
+  min-height: calc(100vh - 96px);
+}
+
+.combat-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 23vw, 384px);
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "stage rail"
+    "dock  rail";
+  gap: 12px;
+  min-height: calc(100vh - 96px);
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--gold-line);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(20, 25, 31, 0.6), rgba(11, 14, 18, 0.82));
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -30px 70px rgba(0, 0, 0, 0.5),
+    var(--shadow);
+}
+
+/* —— 主战斗舞台 stage —— */
+.combat-shell > .combat-stage {
+  grid-area: stage;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  max-height: none;
+  padding: 16px 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.4),
+    inset 0 -60px 120px rgba(0, 0, 0, 0.55);
+}
+/* stage 暗角(vignette) + 噪点，破除网页平面感 */
+.combat-shell > .combat-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 40%, transparent 52%, rgba(0, 0, 0, 0.5) 100%);
+  mix-blend-mode: multiply;
+}
+/* stage 内的真实内容压在 setpiece 与 vignette 之上 */
+.combat-shell > .combat-stage > *:not(.combat-setpiece) {
+  position: relative;
+  z-index: 2;
+}
+
+/* —— 手牌坞 dock —— */
+.combat-shell > .hand-dock {
+  grid-area: dock;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(24, 29, 36, 0.72), rgba(15, 19, 24, 0.86));
+  backdrop-filter: blur(10px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 -6px 24px rgba(0, 0, 0, 0.3);
+}
+.combat-shell > .hand-dock .hand-row {
+  margin: 0;
+  min-height: 0;
+}
+
+/* —— 右侧 HUD 栏 rail —— */
+.combat-shell > .hud-rail {
+  grid-area: rail;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+  max-height: calc(100vh - 116px);
+  padding: 12px;
+  overflow: auto;
+  scrollbar-gutter: stable;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(22, 27, 33, 0.78), rgba(13, 17, 21, 0.9));
+  backdrop-filter: blur(12px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    var(--shadow);
+}
+
+/* HUD 标题（雕刻感） */
+.combat-shell .fold-section__toggle strong,
+.combat-shell .panel-title {
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* 数值统一 tabular，跳数不抖 */
+.combat-shell .combat-console__summary b,
+.combat-shell .combat-meters span,
+.combat-shell .turn-chip span,
+.combat-shell .pile-count b,
+.combat-shell .health-bar__label {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* 战斗日志：等宽 console 质感 */
+.combat-shell .combat-log__list {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  font-size: 0.74rem;
+  line-height: 1.6;
+}
+
+/* 阵营色描边：敌人红、玩家青 */
+.combat-shell .enemy-card {
+  border-top: 2px solid rgba(212, 87, 69, 0.5);
+}
+.combat-shell .player-core {
+  border-top: 2px solid rgba(66, 181, 165, 0.5);
+}
+
+/* 舞台内：敌人区居中且不过度拉伸，留白收拢到中央 */
+.combat-shell .enemy-row {
+  justify-content: center;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 280px));
+  justify-items: center;
+  align-content: center;
+  flex: 1 1 auto;
+}
+/* 敌人/玩家区之间用弹性留白，让舞台纵向饱满 */
+.combat-shell > .combat-stage > .player-board {
+  margin-top: auto;
+}
+
+/* 响应式：窄屏切单列 + rail 变底部 */
+@media (max-width: 1100px) {
+  .combat-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "stage"
+      "dock"
+      "rail";
+  }
+  .combat-shell > .hud-rail {
+    max-height: 40vh;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -48,7 +48,8 @@ export type PowerKey =
   | "platedArmor"
   | "combo"
   | "charge"
-  | "spark";
+  | "spark"
+  | "overload";
 
 export type PowerMap = Partial<Record<PowerKey, number>>;
 

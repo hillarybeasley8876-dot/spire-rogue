@@ -97,6 +97,17 @@ const CARD_SCORE: Record<string, number> = {
   mirror_plating: 78,
   field_tactics: 69,
   emergency_orders: 86,
+  heavy_blow: 70,
+  flurry: 78,
+  whirlwind: 76,
+  demon_form: 80,
+  berserk_edge: 72,
+  rallying_roar: 70,
+  tidal_edge: 74,
+  spike_surge: 70,
+  spine_wall: 60,
+  blood_forge: 66,
+  doom_mark: 74,
   cleave: 54,
   bash: 48,
   strike: 22,
@@ -698,6 +709,60 @@ function scoreCardInCombat(run: RunState, card: CardInstance, incoming: number):
 
   if (card.cardId === "bulwark_engine") {
     score += run.player.hp / run.player.maxHp < 0.72 ? 12 : 4;
+  }
+
+  if (card.cardId === "whirlwind") {
+    const attacksThisTurn = run.combat?.attacksPlayedThisTurn ?? 0;
+    const enemyCount = run.combat?.enemies.filter((enemy) => enemy.hp > 0).length ?? 1;
+    score += Math.min(48, attacksThisTurn * 9 + enemyCount * 5);
+    if (attacksThisTurn < 1) {
+      score -= 20;
+    }
+  }
+
+  if (card.cardId === "berserk_edge") {
+    const strength = run.combat?.playerPowers.strength ?? 0;
+    score += Math.min(54, strength * 7);
+    if (strength < 3) {
+      score -= 30;
+    }
+  }
+
+  if (card.cardId === "flurry" || card.cardId === "heavy_blow") {
+    const strength = run.combat?.playerPowers.strength ?? 0;
+    score += Math.min(28, strength * (card.cardId === "flurry" ? 6 : 3));
+  }
+
+  if (card.cardId === "tidal_edge") {
+    const dexterity = run.combat?.playerPowers.dexterity ?? 0;
+    score += Math.min(30, dexterity * 6);
+  }
+
+  if (card.cardId === "spike_surge") {
+    const thorns = run.combat?.playerPowers.thorns ?? 0;
+    const enemyCount = run.combat?.enemies.filter((enemy) => enemy.hp > 0).length ?? 1;
+    score += Math.min(46, thorns * 6 + enemyCount * 4);
+    if (thorns < 2) {
+      score -= 24;
+    }
+  }
+
+  if (card.cardId === "spine_wall") {
+    const blockNeed = Math.max(0, incoming - (run.combat?.playerBlock ?? 0));
+    score += Math.min(16, blockNeed);
+    if (run.player.deck.some((item) => item.cardId === "spike_surge")) {
+      score += 10;
+    }
+  }
+
+  if (card.cardId === "blood_forge") {
+    const regen = run.combat?.playerPowers.regen ?? 0;
+    score += regen > 0 ? Math.min(40, regen * 9) : -28;
+  }
+
+  if (card.cardId === "doom_mark") {
+    const enemyCount = run.combat?.enemies.filter((enemy) => enemy.hp > 0).length ?? 1;
+    score += 12 + (enemyCount >= 2 ? 8 : 0);
   }
 
   score -= level.cost * 4;

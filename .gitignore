@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .vercel/
+.audit/
 
 *.tsbuildinfo
 vite.config.d.ts

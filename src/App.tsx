@@ -1,9 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import {
   Award,
+  BatteryCharging,
   BookOpen,
   ChevronRight,
   Coins,
+  Crosshair,
+  Droplet,
+  Droplets,
+  Dumbbell,
+  Feather,
   FlaskConical,
   Flame,
   HeartPulse,
@@ -11,13 +18,17 @@ import {
   Map as MapIcon,
   RotateCcw,
   Shield,
+  ShieldOff,
+  ShieldPlus,
   ShoppingBag,
   Skull,
   Sparkles,
   Sword,
   Target,
   Trash2,
+  TrendingDown,
   Zap,
+  type LucideIcon,
 } from "lucide-react";
 import { BOONS, CARDS, DIFFICULTIES, ENEMIES, POTIONS, POWER_HINTS, POWER_LABELS, RELICS } from "./game/data";
 import {
@@ -155,6 +166,7 @@ const POWER_TONES: Record<PowerKey, PowerTone> = {
   combo: "engine",
   charge: "engine",
   spark: "debuff",
+  overload: "debuff",
 };
 
 const POWER_TONE_LABELS: Record<PowerTone, string> = {
@@ -162,6 +174,205 @@ const POWER_TONE_LABELS: Record<PowerTone, string> = {
   debuff: "负面",
   engine: "机制",
 };
+
+// ---------------------------------------------------------------------------
+// 自定义 Tooltip 原语（Portal + fixed 定位，逃离 overflow 裁切与 grid 层叠）
+// ---------------------------------------------------------------------------
+type TooltipPlacement = "top" | "bottom";
+
+interface TooltipPosition {
+  top: number;
+  left: number;
+  placement: TooltipPlacement;
+}
+
+function Tooltip({
+  content,
+  children,
+  placement = "top",
+  className,
+}: {
+  content: ReactNode;
+  children: ReactNode;
+  placement?: TooltipPlacement;
+  className?: string;
+}) {
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  const tipRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<TooltipPosition>({ top: 0, left: 0, placement });
+  const openTimer = useRef<number>();
+  const closeTimer = useRef<number>();
+
+  const show = () => {
+    window.clearTimeout(closeTimer.current);
+    openTimer.current = window.setTimeout(() => setOpen(true), 120);
+  };
+  const hide = () => {
+    window.clearTimeout(openTimer.current);
+    closeTimer.current = window.setTimeout(() => setOpen(false), 60);
+  };
+
+  useLayoutEffect(() => {
+    if (!open || !anchorRef.current) {
+      return;
+    }
+    const anchor = anchorRef.current.getBoundingClientRect();
+    const tip = tipRef.current?.getBoundingClientRect();
+    const tipW = tip?.width ?? 240;
+    const tipH = tip?.height ?? 96;
+    const gap = 10;
+    const margin = 8;
+
+    let nextPlacement: TooltipPlacement = placement;
+    if (placement === "top" && anchor.top - tipH - gap < margin) {
+      nextPlacement = "bottom";
+    } else if (placement === "bottom" && anchor.bottom + tipH + gap > window.innerHeight - margin) {
+      nextPlacement = "top";
+    }
+
+    const top =
+      nextPlacement === "top" ? anchor.top - tipH - gap : anchor.bottom + gap;
+    let left = anchor.left + anchor.width / 2 - tipW / 2;
+    left = Math.max(margin, Math.min(left, window.innerWidth - tipW - margin));
+
+    setPos({ top, left, placement: nextPlacement });
+  }, [open, placement]);
+
+  useEffect(() => {
+    return () => {
+      window.clearTimeout(openTimer.current);
+      window.clearTimeout(closeTimer.current);
+    };
+  }, []);
+
+  return (
+    <span
+      ref={anchorRef}
+      className={`tooltip-anchor${className ? ` ${className}` : ""}`}
+      onMouseEnter={show}
+      onMouseLeave={hide}
+      onFocus={show}
+      onBlur={hide}
+      tabIndex={0}
+    >
+      {children}
+      {open &&
+        createPortal(
+          <div
+            ref={tipRef}
+            className={`tooltip-pop tooltip-pop--${pos.placement}`}
+            style={{ top: pos.top, left: pos.left }}
+            role="tooltip"
+          >
+            {content}
+          </div>,
+          document.body,
+        )}
+    </span>
+  );
+}
+
+function TipCard({
+  title,
+  tone,
+  body,
+  footer,
+}: {
+  title: ReactNode;
+  tone?: PowerTone;
+  body?: ReactNode;
+  footer?: ReactNode;
+}) {
+  return (
+    <div className={`tip-card${tone ? ` tip-card--${tone}` : ""}`}>
+      <div className="tip-card__title">{title}</div>
+      {body ? <div className="tip-card__body">{body}</div> : null}
+      {footer ? <div className="tip-card__footer">{footer}</div> : null}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// PowerBadge：power 状态图标徽章（图标=身份，外壳 tone=好坏）
+// ---------------------------------------------------------------------------
+function ThornsIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 2 14 8 20 8 15 12 17 19 12 15 7 19 9 12 4 8 10 8Z" />
+    </svg>
+  );
+}
+
+interface PowerIconDef {
+  icon: LucideIcon | ((props: { size?: number }) => ReactNode);
+  color: string;
+}
+
+const POWER_ICONS: Record<PowerKey, PowerIconDef> = {
+  strength: { icon: Dumbbell, color: "var(--amber-strong)" },
+  dexterity: { icon: Feather, color: "var(--teal-strong)" },
+  regen: { icon: HeartPulse, color: "var(--green)" },
+  thorns: { icon: ThornsIcon, color: "var(--teal-strong)" },
+  platedArmor: { icon: ShieldPlus, color: "var(--blue)" },
+  vulnerable: { icon: Target, color: "var(--red-strong)" },
+  weak: { icon: TrendingDown, color: "var(--violet)" },
+  frail: { icon: ShieldOff, color: "var(--violet)" },
+  poison: { icon: Droplets, color: "var(--green)" },
+  bleed: { icon: Droplet, color: "var(--red-strong)" },
+  mark: { icon: Crosshair, color: "var(--blue)" },
+  ritual: { icon: Sparkles, color: "var(--violet)" },
+  combo: { icon: Layers, color: "var(--amber-strong)" },
+  charge: { icon: BatteryCharging, color: "var(--amber-strong)" },
+  spark: { icon: Zap, color: "var(--gold)" },
+  overload: { icon: Flame, color: "var(--red-strong)" },
+};
+
+function PowerGlyph({ power, size = 16 }: { power: PowerKey; size?: number }) {
+  const def = POWER_ICONS[power];
+  const Icon = def.icon;
+  return (
+    <span className="power-glyph" style={{ color: def.color }}>
+      <Icon size={size} />
+    </span>
+  );
+}
+
+function PowerBadge({ power, stacks }: { power: PowerKey; stacks: number }) {
+  const prevStacks = useRef(stacks);
+  const [pulsing, setPulsing] = useState(false);
+
+  useEffect(() => {
+    if (stacks !== prevStacks.current) {
+      prevStacks.current = stacks;
+      setPulsing(true);
+      const timer = window.setTimeout(() => setPulsing(false), 380);
+      return () => window.clearTimeout(timer);
+    }
+  }, [stacks]);
+
+  if (!stacks) {
+    return null;
+  }
+  const tone = POWER_TONES[power];
+  return (
+    <Tooltip
+      content={
+        <TipCard
+          title={`${POWER_LABELS[power]} · ${stacks}`}
+          tone={tone}
+          body={POWER_HINTS[power]}
+          footer={POWER_TONE_LABELS[tone]}
+        />
+      }
+    >
+      <span className={`power-badge power-badge--${tone}${pulsing ? " is-pulsing" : ""}`}>
+        <PowerGlyph power={power} />
+        <span className="power-badge__count">{stacks}</span>
+      </span>
+    </Tooltip>
+  );
+}
 
 const NODE_LABELS: Record<NodeType, string> = {
   fight: "战斗",
@@ -892,18 +1103,28 @@ function RunInventoryTray({ run }: { run: RunState }) {
           {relics.map((relicId) => {
             const relic = RELICS[relicId];
             return (
-              <button
-                className={`inventory-chip ${
-                  activeSelection?.kind === "relic" && activeSelection.id === relicId ? "is-selected" : ""
-                }`}
-                type="button"
+              <Tooltip
                 key={relicId}
-                title={relic?.text ?? "这个遗物来自旧数据。"}
-                onClick={() => setSelectedInventory({ kind: "relic", id: relicId })}
+                content={
+                  <TipCard
+                    title={relic?.name ?? "失效遗物"}
+                    tone="engine"
+                    body={relic?.text ?? "这个遗物来自旧数据。"}
+                    footer="遗物"
+                  />
+                }
               >
-                <Award size={13} />
-                {relic?.name ?? "失效遗物"}
-              </button>
+                <button
+                  className={`inventory-chip ${
+                    activeSelection?.kind === "relic" && activeSelection.id === relicId ? "is-selected" : ""
+                  }`}
+                  type="button"
+                  onClick={() => setSelectedInventory({ kind: "relic", id: relicId })}
+                >
+                  <Award size={13} />
+                  {relic?.name ?? "失效遗物"}
+                </button>
+              </Tooltip>
             );
           })}
           {hiddenRelics > 0 && <span className="inventory-chip inventory-chip--more">+{hiddenRelics}</span>}
@@ -916,18 +1137,28 @@ function RunInventoryTray({ run }: { run: RunState }) {
           {boons.map((boonId) => {
             const boon = BOONS[boonId];
             return (
-              <button
-                className={`inventory-chip ${
-                  activeSelection?.kind === "boon" && activeSelection.id === boonId ? "is-selected" : ""
-                }`}
-                type="button"
+              <Tooltip
                 key={boonId}
-                title={boon?.text ?? "这项常驻提升来自旧数据。"}
-                onClick={() => setSelectedInventory({ kind: "boon", id: boonId })}
+                content={
+                  <TipCard
+                    title={boon?.name ?? "失效常驻"}
+                    tone="buff"
+                    body={boon?.text ?? "这项常驻提升来自旧数据。"}
+                    footer="常驻提升"
+                  />
+                }
               >
-                <Sparkles size={13} />
-                {boon?.name ?? "失效常驻"}
-              </button>
+                <button
+                  className={`inventory-chip ${
+                    activeSelection?.kind === "boon" && activeSelection.id === boonId ? "is-selected" : ""
+                  }`}
+                  type="button"
+                  onClick={() => setSelectedInventory({ kind: "boon", id: boonId })}
+                >
+                  <Sparkles size={13} />
+                  {boon?.name ?? "失效常驻"}
+                </button>
+              </Tooltip>
             );
           })}
           {hiddenBoons > 0 && <span className="inventory-chip inventory-chip--more">+{hiddenBoons}</span>}
@@ -1776,8 +2007,8 @@ function CombatScreen({
   const playerFxClass = playerFx ? `has-combat-fx is-${combatFloatClass(playerFx.kind)}` : "";
 
   return (
-    <section className="combat-layout">
-      <div className="combat-main">
+    <section className="combat-shell">
+      <div className="combat-stage combat-main">
         <div className="combat-setpiece" aria-hidden="true">
           <span className="combat-setpiece__moon" />
           <span className="combat-setpiece__spire" />
@@ -1898,7 +2129,9 @@ function CombatScreen({
             </button>
           </div>
         </div>
+      </div>
 
+      <div className="hand-dock">
         <div className="hand-row">
           {combat.hand.map((card) => (
             <CardView
@@ -1917,7 +2150,7 @@ function CombatScreen({
         </div>
       </div>
 
-      <aside className="combat-log combat-console">
+      <aside className="hud-rail combat-log combat-console">
         <div className="combat-console__summary" aria-label="战斗摘要">
           <span className={incoming > 0 ? "is-danger" : ""}>
             <Sword size={14} />
@@ -2374,16 +2607,11 @@ function StatusLedgerColumn({ title, subtitle, powers }: { title: string; subtit
       {entries.length === 0 ? (
         <div className="status-ledger__empty">无状态</div>
       ) : (
-        entries.map(([power, value]) => (
-          <div key={power} className={`status-ledger__row status-ledger__row--${POWER_TONES[power]}`}>
-            <span>
-              <b>{POWER_LABELS[power]}</b>
-              <strong>{value}</strong>
-              <em>{POWER_TONE_LABELS[POWER_TONES[power]]}</em>
-            </span>
-            <small>{POWER_HINTS[power]}</small>
-          </div>
-        ))
+        <div className="power-badge-row">
+          {entries.map(([power, value]) => (
+            <PowerBadge key={power} power={power} stacks={value} />
+          ))}
+        </div>
       )}
     </div>
   );
@@ -4989,29 +5217,40 @@ function PowerBadges({ powers }: { powers: PowerMap }) {
   return (
     <div className="power-row">
       {entries.map(([power, value]) => (
-        <span
-          key={power}
-          className={`power power--${power} ${value >= 5 ? "is-stacked" : ""}`}
-          title={POWER_HINTS[power]}
-          data-hint={POWER_HINTS[power]}
-        >
-          {POWER_LABELS[power]} {value}
-        </span>
+        <PowerBadge key={power} power={power} stacks={value} />
       ))}
     </div>
   );
 }
 
 function IntentBadge({ move }: { move: EnemyMove }) {
+  const intentToneMap: Record<string, PowerTone> = {
+    attack: "debuff",
+    debuff: "debuff",
+    defend: "buff",
+    buff: "engine",
+    mixed: "engine",
+  };
   return (
-    <span className={`intent intent--${move.intent}`} title={intentSummary(move)}>
-      {move.intent === "attack" && <Sword size={15} />}
-      {move.intent === "defend" && <Shield size={15} />}
-      {move.intent === "buff" && <Flame size={15} />}
-      {move.intent === "debuff" && <Sparkles size={15} />}
-      {move.intent === "mixed" && <Target size={15} />}
-      {move.name}
-    </span>
+    <Tooltip
+      content={
+        <TipCard
+          title={move.name}
+          tone={intentToneMap[move.intent] ?? "engine"}
+          body={intentSummary(move)}
+          footer="敌方意图"
+        />
+      }
+    >
+      <span className={`intent intent--${move.intent}`}>
+        {move.intent === "attack" && <Sword size={15} />}
+        {move.intent === "defend" && <Shield size={15} />}
+        {move.intent === "buff" && <Flame size={15} />}
+        {move.intent === "debuff" && <Sparkles size={15} />}
+        {move.intent === "mixed" && <Target size={15} />}
+        {move.name}
+      </span>
+    </Tooltip>
   );
 }
 
@@ -5126,16 +5365,19 @@ function PotionBelt({
           );
         }
         return (
-          <button
-            className={`potion-slot ${selectedPotionUid === potion.uid ? "is-selected" : ""}`}
-            type="button"
+          <Tooltip
             key={potion.uid}
-            title={def.text}
-            onClick={() => onPotionClick(potion)}
+            content={<TipCard title={def.name} tone="engine" body={def.text} footer="药水" />}
           >
-            <FlaskConical size={15} />
-            <span>{def.name}</span>
-          </button>
+            <button
+              className={`potion-slot ${selectedPotionUid === potion.uid ? "is-selected" : ""}`}
+              type="button"
+              onClick={() => onPotionClick(potion)}
+            >
+              <FlaskConical size={15} />
+              <span>{def.name}</span>
+            </button>
+          </Tooltip>
         );
       })}
     </div>
