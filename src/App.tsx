@@ -188,6 +188,15 @@ const BOON_RARITY_LABELS = {
   rare: "稀有",
 };
 
+const RARITY_LABELS = {
+  starter: "初始",
+  common: "普通",
+  uncommon: "罕见",
+  rare: "稀有",
+  boss: "首领",
+  status: "状态",
+};
+
 const BOON_MECHANIC_TAGS: Record<BoonId, string[]> = {
   vitality: ["生命", "回复"],
   bottle_rack: ["药水槽", "资源"],
@@ -269,6 +278,16 @@ interface CatalystInsight {
   total: number;
   entries: [PowerKey, number][];
 }
+
+type InventorySelection =
+  | {
+      kind: "relic";
+      id: string;
+    }
+  | {
+      kind: "boon";
+      id: BoonId;
+    };
 
 function App() {
   const [savedRun, setSavedRun] = useState<RunState | undefined>(() => loadSavedRun());
@@ -361,12 +380,15 @@ function App() {
       return;
     }
 
-    if (!potionNeedsTarget(potion) && selectedPotionUid === potion.uid) {
-      handleUseSelectedPotion();
+    setSelectedCardUid(undefined);
+    setInspectedCardUid(undefined);
+
+    if (!potionNeedsTarget(potion)) {
+      setRun((current) => usePotion(current, potion.uid));
+      setSelectedPotionUid(undefined);
       return;
     }
 
-    setSelectedCardUid(undefined);
     setSelectedPotionUid((current) => (current === potion.uid ? undefined : potion.uid));
   }
 
@@ -456,7 +478,12 @@ function App() {
           />
         ) : (
           <div className="game-shell">
-            <RunSidebar run={run} onDiscardPotion={(uid) => setRun((current) => discardPotion(current, uid))} />
+            <RunSidebar
+              run={run}
+              selectedPotionUid={selectedPotionUid}
+              onPotionClick={handlePotionClick}
+              onDiscardPotion={(uid) => setRun((current) => discardPotion(current, uid))}
+            />
             <div className="game-stage">
               {run.phase === "map" && <MapScreen run={run} onEnter={(nodeId) => setRun((current) => enterNode(current, nodeId))} />}
               {run.phase === "combat" && (
@@ -525,9 +552,13 @@ function App() {
 
 function RunSidebar({
   run,
+  selectedPotionUid,
+  onPotionClick,
   onDiscardPotion,
 }: {
   run: RunState;
+  selectedPotionUid?: string;
+  onPotionClick: (potion: PotionInstance) => void;
   onDiscardPotion: (potionUid: string) => void;
 }) {
   const flowItems = [
@@ -581,7 +612,12 @@ function RunSidebar({
         resetKey={foldResetKey}
         className="fold-section--resources"
       >
-        <RunResourceDock run={run} onDiscardPotion={onDiscardPotion} />
+        <RunResourceDock
+          run={run}
+          selectedPotionUid={selectedPotionUid}
+          onPotionClick={onPotionClick}
+          onDiscardPotion={onDiscardPotion}
+        />
       </FoldSection>
       <FoldSection
         title="遗物 / 常驻"
@@ -726,9 +762,13 @@ function RunPhaseStatus({ run }: { run: RunState }) {
 
 function RunResourceDock({
   run,
+  selectedPotionUid,
+  onPotionClick,
   onDiscardPotion,
 }: {
   run: RunState;
+  selectedPotionUid?: string;
+  onPotionClick: (potion: PotionInstance) => void;
   onDiscardPotion: (potionUid: string) => void;
 }) {
   const summary = useMemo(() => summarizeDeck(run.player.deck), [run.player.deck]);
@@ -771,7 +811,14 @@ function RunResourceDock({
         </div>
         <div className="resource-slot-list resource-slot-list--compact">
           {potionSlots.map((potion, index) => (
-            <ResourcePotionSlot key={potion?.uid ?? `empty-${index}`} potion={potion} onDiscardPotion={onDiscardPotion} />
+            <ResourcePotionSlot
+              key={potion?.uid ?? `empty-${index}`}
+              potion={potion}
+              canUse={run.phase === "combat"}
+              selected={selectedPotionUid === potion?.uid}
+              onUsePotion={onPotionClick}
+              onDiscardPotion={onDiscardPotion}
+            />
           ))}
         </div>
       </section>
@@ -797,6 +844,19 @@ function RunInventoryTray({ run }: { run: RunState }) {
   const boons = run.player.boons.slice(0, 5);
   const hiddenRelics = Math.max(0, run.player.relics.length - relics.length);
   const hiddenBoons = Math.max(0, run.player.boons.length - boons.length);
+  const [selectedInventory, setSelectedInventory] = useState<InventorySelection>();
+  const selectedStillVisible =
+    selectedInventory?.kind === "relic"
+      ? relics.includes(selectedInventory.id)
+      : selectedInventory?.kind === "boon"
+        ? boons.includes(selectedInventory.id)
+        : false;
+  const fallbackSelection: InventorySelection | undefined = relics[0]
+    ? { kind: "relic", id: relics[0] }
+    : boons[0]
+      ? { kind: "boon", id: boons[0] }
+      : undefined;
+  const activeSelection = selectedStillVisible ? selectedInventory : fallbackSelection;
 
   return (
     <div className="inventory-tray">
@@ -806,10 +866,18 @@ function RunInventoryTray({ run }: { run: RunState }) {
           {relics.map((relicId) => {
             const relic = RELICS[relicId];
             return (
-              <span className="inventory-chip" key={relicId} title={relic?.text ?? "这个遗物来自旧数据。"}>
+              <button
+                className={`inventory-chip ${
+                  activeSelection?.kind === "relic" && activeSelection.id === relicId ? "is-selected" : ""
+                }`}
+                type="button"
+                key={relicId}
+                title={relic?.text ?? "这个遗物来自旧数据。"}
+                onClick={() => setSelectedInventory({ kind: "relic", id: relicId })}
+              >
                 <Award size={13} />
                 {relic?.name ?? "失效遗物"}
-              </span>
+              </button>
             );
           })}
           {hiddenRelics > 0 && <span className="inventory-chip inventory-chip--more">+{hiddenRelics}</span>}
@@ -822,18 +890,99 @@ function RunInventoryTray({ run }: { run: RunState }) {
           {boons.map((boonId) => {
             const boon = BOONS[boonId];
             return (
-              <span className="inventory-chip" key={boonId} title={boon?.text ?? "这项常驻提升来自旧数据。"}>
+              <button
+                className={`inventory-chip ${
+                  activeSelection?.kind === "boon" && activeSelection.id === boonId ? "is-selected" : ""
+                }`}
+                type="button"
+                key={boonId}
+                title={boon?.text ?? "这项常驻提升来自旧数据。"}
+                onClick={() => setSelectedInventory({ kind: "boon", id: boonId })}
+              >
                 <Sparkles size={13} />
                 {boon?.name ?? "失效常驻"}
-              </span>
+              </button>
             );
           })}
           {hiddenBoons > 0 && <span className="inventory-chip inventory-chip--more">+{hiddenBoons}</span>}
           {boons.length === 0 && <span className="inventory-chip inventory-chip--empty">暂无常驻</span>}
         </div>
       </div>
+      <InventoryInspector selection={activeSelection} />
     </div>
   );
+}
+
+function InventoryInspector({ selection }: { selection?: InventorySelection }) {
+  if (!selection) {
+    return null;
+  }
+
+  if (selection.kind === "relic") {
+    const relic = RELICS[selection.id];
+    const tags = relicMechanicTags(selection.id).slice(0, 4);
+    return (
+      <div className="inventory-inspector inventory-inspector--relic">
+        <div className="inventory-inspector__head">
+          <Award size={15} />
+          <strong>{relic?.name ?? "失效遗物"}</strong>
+          <small>{relic ? RARITY_LABELS[relic.rarity] : "失效"} · 被动</small>
+        </div>
+        <p>{relic?.text ?? "旧数据已失效。"}</p>
+        <div className="inventory-inspector__tags">
+          {tags.map((tag) => (
+            <span key={tag}>{tag}</span>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const boon = BOONS[selection.id];
+  const tags = boonMechanicTags(selection.id).slice(0, 4);
+  return (
+    <div className="inventory-inspector inventory-inspector--boon">
+      <div className="inventory-inspector__head">
+        <Sparkles size={15} />
+        <strong>{boon?.name ?? "失效常驻"}</strong>
+        <small>{boon ? BOON_RARITY_LABELS[boon.rarity] : "失效"} · 常驻</small>
+      </div>
+      <p>{boon?.text ?? "旧数据已失效。"}</p>
+      <div className="inventory-inspector__tags">
+        {tags.map((tag) => (
+          <span key={tag}>{tag}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function relicMechanicTags(relicId: string): string[] {
+  const relic = RELICS[relicId];
+  if (!relic) {
+    return ["失效"];
+  }
+
+  const tags = new Set<string>();
+  const text = relic.text;
+  if (text.includes("战斗开始") || text.includes("第一回合")) tags.add("开局");
+  if (text.includes("能量")) tags.add("能量");
+  if (text.includes("格挡")) tags.add("格挡");
+  if (text.includes("尖刺")) tags.add("尖刺");
+  if (text.includes("回复") || text.includes("生命")) tags.add("回复");
+  if (text.includes("力量")) tags.add("力量");
+  if (text.includes("敏捷")) tags.add("敏捷");
+  if (text.includes("抽")) tags.add("抽牌");
+  if (text.includes("药水")) tags.add("药水");
+  if (text.includes("流血")) tags.add("流血");
+  if (text.includes("中毒")) tags.add("中毒");
+  if (text.includes("破绽")) tags.add("破绽");
+  if (text.includes("连击")) tags.add("连击");
+  if (text.includes("蓄能")) tags.add("蓄能");
+  if (text.includes("金属化")) tags.add("金属化");
+  if (text.includes("电弧")) tags.add("电弧");
+  tags.add(RARITY_LABELS[relic.rarity]);
+  return [...tags];
 }
 
 function TitleScreen({
@@ -4060,9 +4209,15 @@ function ResourceOverview({
 
 function ResourcePotionSlot({
   potion,
+  canUse = false,
+  selected = false,
+  onUsePotion,
   onDiscardPotion,
 }: {
   potion?: PotionInstance;
+  canUse?: boolean;
+  selected?: boolean;
+  onUsePotion?: (potion: PotionInstance) => void;
   onDiscardPotion?: (potionUid: string) => void;
 }) {
   if (!potion) {
@@ -4075,13 +4230,25 @@ function ResourcePotionSlot({
   }
 
   const def = POTIONS[potion.potionId];
+  const canUsePotion = Boolean(canUse && onUsePotion);
   if (!def) {
     return (
-      <div className="resource-slot is-empty" title="这瓶药水来自旧数据，已无法使用。">
-        <FlaskConical size={14} />
-        <span>失效药水</span>
+      <div
+        className={`resource-slot is-invalid ${canUsePotion ? "is-usable" : ""} ${selected ? "is-selected" : ""}`}
+        title="这瓶药水来自旧数据，战斗中点击会清理，战斗外可丢弃。"
+      >
+        <button
+          className="resource-slot__main"
+          type="button"
+          disabled={!canUsePotion}
+          onClick={() => onUsePotion?.(potion)}
+          aria-label="清理失效药水"
+        >
+          <FlaskConical size={14} />
+          <span>失效药水</span>
+        </button>
         {onDiscardPotion && (
-          <button type="button" aria-label="丢弃失效药水" onClick={() => onDiscardPotion(potion.uid)}>
+          <button className="resource-slot__trash" type="button" aria-label="丢弃失效药水" onClick={() => onDiscardPotion(potion.uid)}>
             <Trash2 size={13} />
           </button>
         )}
@@ -4090,12 +4257,20 @@ function ResourcePotionSlot({
   }
   const tags = potionMechanicTags(potion).slice(0, 2);
   return (
-    <div className="resource-slot" title={def.text}>
-      <FlaskConical size={14} />
-      <span>{def.name}</span>
-      <small>{tags.length > 0 ? tags.join(" · ") : "药水"}</small>
+    <div className={`resource-slot ${canUsePotion ? "is-usable" : ""} ${selected ? "is-selected" : ""}`} title={def.text}>
+      <button
+        className="resource-slot__main"
+        type="button"
+        disabled={!canUsePotion}
+        onClick={() => onUsePotion?.(potion)}
+        aria-label={`${def.target === "enemy" ? "选择目标使用" : "使用"}${def.name}`}
+      >
+        <FlaskConical size={14} />
+        <span>{def.name}</span>
+        <small>{tags.length > 0 ? tags.join(" · ") : "药水"}</small>
+      </button>
       {onDiscardPotion && (
-        <button type="button" aria-label={`丢弃${def.name}`} onClick={() => onDiscardPotion(potion.uid)}>
+        <button className="resource-slot__trash" type="button" aria-label={`丢弃${def.name}`} onClick={() => onDiscardPotion(potion.uid)}>
           <Trash2 size={13} />
         </button>
       )}

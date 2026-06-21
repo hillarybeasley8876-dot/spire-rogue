@@ -842,6 +842,29 @@ illegalPotionTargetRun = usePotion(illegalPotionTargetRun, illegalPotion.uid, il
 assert(illegalPotionTargetRun.player.potions.length === 1, "self potions should not be consumed when an enemy target is forced");
 assert(illegalPotionTargetRun.message?.includes("不需要选择敌人目标"), "rejected self potion should explain the target rule");
 
+let selfPotionRun = createInitialRun(12352, "map", "standard");
+selfPotionRun = enterNode(selfPotionRun, getAvailableNodeIds(selfPotionRun)[0]);
+selfPotionRun.player.potions = [makePotionInstance("energy_potion")];
+selfPotionRun.combat!.energy = 0;
+selfPotionRun = usePotion(selfPotionRun, selfPotionRun.player.potions[0].uid);
+assert(selfPotionRun.player.potions.length === 0, "self potions should resolve immediately without a target");
+assert(selfPotionRun.combat!.energy === 2, "energy potion should grant energy when used without target");
+
+let allEnemyPotionRun = createInitialRun(12353, "map", "standard");
+allEnemyPotionRun = enterNode(allEnemyPotionRun, getAvailableNodeIds(allEnemyPotionRun)[0]);
+allEnemyPotionRun.player.potions = [makePotionInstance("explosive_potion")];
+for (const enemy of allEnemyPotionRun.combat!.enemies) {
+  enemy.maxHp = 50;
+  enemy.hp = 50;
+  enemy.block = 0;
+}
+allEnemyPotionRun = usePotion(allEnemyPotionRun, allEnemyPotionRun.player.potions[0].uid);
+assert(allEnemyPotionRun.player.potions.length === 0, "all-enemy potions should resolve immediately without a clicked target");
+assert(
+  allEnemyPotionRun.combat!.enemies.every((enemy) => enemy.hp === 40),
+  "explosive potion should hit every living enemy without target selection",
+);
+
 const strike = firstPlayableCard(run, "strike");
 run = playCard(run, strike.uid, livingEnemyUid(run));
 assert(run.phase === "combat", "playing strike should stay in combat unless fight ends");
