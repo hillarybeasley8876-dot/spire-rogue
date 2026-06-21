@@ -137,6 +137,32 @@ const MECHANIC_HINT_PRIORITY: PowerKey[] = [
   "dexterity",
 ];
 
+type PowerTone = "buff" | "debuff" | "engine";
+
+const POWER_TONES: Record<PowerKey, PowerTone> = {
+  strength: "buff",
+  dexterity: "buff",
+  vulnerable: "debuff",
+  weak: "debuff",
+  frail: "debuff",
+  poison: "debuff",
+  regen: "buff",
+  thorns: "buff",
+  ritual: "buff",
+  bleed: "debuff",
+  mark: "debuff",
+  platedArmor: "buff",
+  combo: "engine",
+  charge: "engine",
+  spark: "debuff",
+};
+
+const POWER_TONE_LABELS: Record<PowerTone, string> = {
+  buff: "增益",
+  debuff: "负面",
+  engine: "机制",
+};
+
 const NODE_LABELS: Record<NodeType, string> = {
   fight: "战斗",
   elite: "精英",
@@ -1005,10 +1031,10 @@ function TitleScreen({
   return (
     <section className="title-layout">
       <div className="title-copy">
-        <div className="kicker">Deckbuilding Roguelike Prototype</div>
-        <h2>从第一张打击开始，爬完一座可变尖塔。</h2>
+        <div className="kicker">卡牌肉鸽 · 随机爬塔原型</div>
+        <h2>构筑牌组，爬完一座会变形的尖塔。</h2>
         <p>
-          这一版先把程序层跑通：路线选择、遭遇战、抽弃牌、状态、敌人意图、奖励、商店、事件、休息、遗物、多幕推进和 Boss 都已经接入。
+          每次选择路线节点，进入战斗、事件、商店或营火；打牌消耗能量，状态按回合叠加结算，奖励会继续改变卡牌、药水和常驻能力。
         </p>
         <div className="title-actions">
           {savedRun && (
@@ -1042,6 +1068,7 @@ function TitleScreen({
             );
           })}
         </div>
+        <DifficultyBrief difficulty={difficulty} />
       </div>
       <div className="title-board" aria-hidden="true">
         <div className="title-card title-card--attack">
@@ -1063,6 +1090,54 @@ function TitleScreen({
       </div>
     </section>
   );
+}
+
+function DifficultyBrief({ difficulty }: { difficulty: DifficultyKey }) {
+  const option = DIFFICULTIES[difficulty];
+  const stats = [
+    { label: "起始生命", value: `${option.startingHp}`, note: `金币 ${option.startingGold}` },
+    { label: "敌人生命", value: formatPercent(option.enemyHpMultiplier), note: "战斗长度" },
+    { label: "敌人伤害", value: formatPercent(option.enemyDamageMultiplier), note: "入伤压力" },
+    { label: "敌人格挡", value: formatPercent(option.enemyBlockMultiplier), note: "破防压力" },
+    { label: "奖励金币", value: formatPercent(option.rewardGoldMultiplier), note: "路线经济" },
+    { label: "商店价格", value: formatPercent(option.shopPriceMultiplier), note: "采购压力" },
+    { label: "升级奖励", value: formatSignedPercent(option.rewardUpgradeBonus), note: "奖励强化率" },
+  ];
+
+  return (
+    <div className="difficulty-brief" aria-live="polite">
+      <div className="difficulty-brief__head">
+        <span>当前难度</span>
+        <strong>{option.name}</strong>
+        <small>{option.text}</small>
+      </div>
+      <div className="difficulty-brief__stats">
+        {stats.map((stat) => (
+          <span key={stat.label}>
+            <b>{stat.value}</b>
+            <small>{stat.label}</small>
+            <em>{stat.note}</em>
+          </span>
+        ))}
+      </div>
+      <div className="difficulty-brief__flow" aria-label="核心流程">
+        <span>路线节点</span>
+        <span>遭遇战</span>
+        <span>奖励/事件</span>
+        <span>继续爬塔</span>
+      </div>
+      <p>生命、伤害、格挡、金币和商店都会被难度倍率缩放；高难度会更快惩罚路线贪心和防线缺口。</p>
+    </div>
+  );
+}
+
+function formatPercent(value: number): string {
+  return `${Math.round(value * 100)}%`;
+}
+
+function formatSignedPercent(value: number): string {
+  const percent = Math.round(value * 100);
+  return `${percent >= 0 ? "+" : ""}${percent}%`;
 }
 
 function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) => void }) {
@@ -1095,6 +1170,8 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
             ))}
           </div>
         </div>
+
+        <MapReadPanel run={run} currentNode={currentNode} availableNodes={availableNodes} mapIntel={mapIntel} />
 
         <FoldSection
           title="地图情报"
@@ -1243,6 +1320,73 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
   );
 }
 
+function MapReadPanel({
+  run,
+  currentNode,
+  availableNodes,
+  mapIntel,
+}: {
+  run: RunState;
+  currentNode?: MapNode;
+  availableNodes: MapNode[];
+  mapIntel: ReturnType<typeof summarizeMapIntel>;
+}) {
+  const nextFloor =
+    availableNodes.length > 0 ? Math.min(...availableNodes.map((node) => node.floor + 1)) : Math.max(1, run.floor + 1);
+  const totalFloors = Math.max(1, mapIntel.maxFloor + 1);
+  const completedFloor = currentNode ? currentNode.floor + 1 : Math.max(0, nextFloor - 1);
+  const progress = clampPercent(Math.round((Math.min(completedFloor, totalFloors) / totalFloors) * 100));
+  const routeTypes = Array.from(new Set(availableNodes.map((node) => NODE_LABELS[node.type]))).join(" / ") || "暂无";
+  const currentLabel = currentNode ? `上一节点：第 ${completedFloor} 层 · ${NODE_LABELS[currentNode.type]}` : "入口起点";
+  const riskSignals = availableNodes
+    .slice(0, 3)
+    .map((node) => routeSignalLabel(node, run))
+    .join(" · ");
+
+  return (
+    <div className="map-read-panel" aria-label="爬塔读法">
+      <div className="map-read-panel__top">
+        <div>
+          <span>当前位置</span>
+          <strong>
+            第 {run.act ?? 1} 幕 · 待选第 {nextFloor} 层
+          </strong>
+          <small>{currentLabel}</small>
+        </div>
+        <div>
+          <span>下一步</span>
+          <strong>{availableNodes.length} 条可走</strong>
+          <small>{routeTypes}</small>
+        </div>
+        <div>
+          <span>进度</span>
+          <strong>{progress}%</strong>
+          <small>
+            已过 {completedFloor}/{totalFloors} 层
+          </small>
+        </div>
+      </div>
+      <div className="map-read-panel__meter" aria-hidden="true">
+        <span style={{ width: `${progress}%` }} />
+      </div>
+      <div className="map-read-panel__rules">
+        <span>
+          <b>亮节点</b>现在可进入
+        </span>
+        <span>
+          <b>亮折线</b>当前可走路线
+        </span>
+        <span>
+          <b>暗折线</b>后续分支预览
+        </span>
+        <span>
+          <b>风险</b>{riskSignals || "等待路线生成"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function summarizeMapIntel(map: MapNode[]) {
   const counts = map.reduce<Record<NodeType, number>>(
     (acc, node) => {
@@ -1275,6 +1419,7 @@ function summarizeMapIntel(map: MapNode[]) {
     counts,
     floorMarks,
     zoneBands,
+    maxFloor: Math.max(0, ...map.map((node) => node.floor)),
     nodeCount: map.length,
     branchCount: routeKinds.branch + routeKinds.crossroad,
     mergeCount: routeKinds.converge + routeKinds.crossroad,
@@ -1796,6 +1941,8 @@ function CombatScreen({
           </span>
         </div>
 
+        <CombatReadout run={run} />
+
         <FoldSection
           title="战斗指挥"
           icon={<Layers size={16} />}
@@ -1823,6 +1970,50 @@ function CombatScreen({
         </FoldSection>
       </aside>
     </section>
+  );
+}
+
+function CombatReadout({ run }: { run: RunState }) {
+  const combat = run.combat!;
+  const incoming = estimateIncomingDamage(run);
+  const ongoingDamage = estimateOngoingSelfDamage(run);
+  const enemyOngoingDamage = estimateOngoingEnemyDamage(combat);
+  const blockGap = Math.max(0, incoming - combat.playerBlock);
+  const aliveEnemies = combat.enemies.filter((enemy) => enemy.hp > 0).length;
+  const playerStateCount = powerLedgerEntries(combat.playerPowers).length;
+  const enemyStateCount = powerLedgerEntries(aggregateEnemyPowers(combat.enemies)).length;
+
+  return (
+    <div className="combat-readout" aria-label="战斗状态">
+      <div className={incoming > 0 ? "is-danger" : ""}>
+        <small>敌方意图</small>
+        <strong>{incoming} 入伤</strong>
+        <span>{aliveEnemies} 名敌人行动</span>
+      </div>
+      <div className={blockGap > 0 ? "is-warning" : "is-good"}>
+        <small>我方防线</small>
+        <strong>{blockGap > 0 ? `缺 ${blockGap}` : "已覆盖"}</strong>
+        <span>格挡 {combat.playerBlock}</span>
+      </div>
+      <div>
+        <small>行动资源</small>
+        <strong>
+          {combat.energy}/{combat.maxEnergy} 能量
+        </strong>
+        <span>
+          手牌 {combat.hand.length} · 抽牌 {combat.drawPile.length}
+        </span>
+      </div>
+      <div className={ongoingDamage > 0 || enemyOngoingDamage > 0 ? "is-arc" : ""}>
+        <small>状态结算</small>
+        <strong>
+          我方 {playerStateCount} · 敌方 {enemyStateCount}
+        </strong>
+        <span>
+          持续 {ongoingDamage} · 敌蚀 {enemyOngoingDamage}
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -2119,6 +2310,7 @@ function MechanicPanel({
           <Target size={14} /> 敌蚀 {enemyOngoingDamage}
         </span>
       </div>
+      <CombatStatusLedger combat={combat} />
       <TempoPanel combat={combat} hasPocketWatch={hasPocketWatch} />
       <PileInsight combat={combat} />
       {selectedCard && <CardInspectorPanel card={selectedCard} run={run} />}
@@ -2157,6 +2349,57 @@ function MechanicPanel({
       )}
     </div>
   );
+}
+
+function CombatStatusLedger({ combat }: { combat: NonNullable<RunState["combat"]> }) {
+  const enemyTotals = aggregateEnemyPowers(combat.enemies);
+
+  return (
+    <div className="status-ledger" aria-label="状态账本">
+      <StatusLedgerColumn title="我方状态" subtitle="影响出牌、防御和回合结算" powers={combat.playerPowers} />
+      <StatusLedgerColumn title="敌方状态" subtitle="所有存活敌人的状态合计" powers={enemyTotals} />
+    </div>
+  );
+}
+
+function StatusLedgerColumn({ title, subtitle, powers }: { title: string; subtitle: string; powers: PowerMap }) {
+  const entries = powerLedgerEntries(powers);
+
+  return (
+    <div className="status-ledger__column">
+      <div className="status-ledger__head">
+        <strong>{title}</strong>
+        <small>{subtitle}</small>
+      </div>
+      {entries.length === 0 ? (
+        <div className="status-ledger__empty">无状态</div>
+      ) : (
+        entries.map(([power, value]) => (
+          <div key={power} className={`status-ledger__row status-ledger__row--${POWER_TONES[power]}`}>
+            <span>
+              <b>{POWER_LABELS[power]}</b>
+              <strong>{value}</strong>
+              <em>{POWER_TONE_LABELS[POWER_TONES[power]]}</em>
+            </span>
+            <small>{POWER_HINTS[power]}</small>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+function powerLedgerEntries(powers: PowerMap): Array<[PowerKey, number]> {
+  return (Object.entries(powers) as Array<[PowerKey, number]>)
+    .filter(([, value]) => (value ?? 0) > 0)
+    .sort(([leftPower, leftValue], [rightPower, rightValue]) => {
+      const leftPriority = MECHANIC_HINT_PRIORITY.indexOf(leftPower);
+      const rightPriority = MECHANIC_HINT_PRIORITY.indexOf(rightPower);
+      if (leftPriority !== rightPriority) {
+        return (leftPriority < 0 ? 999 : leftPriority) - (rightPriority < 0 ? 999 : rightPriority);
+      }
+      return rightValue - leftValue;
+    });
 }
 
 function CardInspectorPanel({ card, run }: { card: CardInstance; run: RunState }) {
