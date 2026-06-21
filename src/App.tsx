@@ -191,11 +191,13 @@ function Tooltip({
   children,
   placement = "top",
   className,
+  style,
 }: {
   content: ReactNode;
   children: ReactNode;
   placement?: TooltipPlacement;
   className?: string;
+  style?: React.CSSProperties;
 }) {
   const anchorRef = useRef<HTMLSpanElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
@@ -250,6 +252,7 @@ function Tooltip({
     <span
       ref={anchorRef}
       className={`tooltip-anchor${className ? ` ${className}` : ""}`}
+      style={style}
       onMouseEnter={show}
       onMouseLeave={hide}
       onFocus={show}
@@ -714,7 +717,7 @@ function App() {
             onContinue={continueSavedRun}
           />
         ) : (
-          <div className="game-shell">
+          <div className={`game-shell game-shell--${run.phase}`}>
             <RunSidebar
               run={run}
               selectedPotionUid={selectedPotionUid}
@@ -1384,98 +1387,36 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
   const bossAvailable = availableNodes.some((node) => node.type === "boss");
 
   return (
-    <section className="map-layout">
-      <div className="map-panel">
-        <div className="section-heading">
-          <div>
-            <p>路线</p>
-            <h2>第 {run.act ?? 1} 幕 · 选择下一处节点</h2>
-            <span className="act-pressure">{actPressureText(run)}</span>
+    <section className="map-layout map-layout--game">
+      <div className="map-panel map-panel--game">
+        <div className="map-hud">
+          <div className="map-hud__title">
+            <h2>第 {run.act ?? 1} 幕</h2>
+            <span>{actPressureText(run)}</span>
           </div>
-          <div className="legend">
+          <div className="map-hud__legend">
             {(["fight", "elite", "rest", "shop", "event", "boss"] as NodeType[]).map((type) => (
-              <span key={type} className={`legend__item node-tone--${type}`}>
-                <NodeIcon type={type} size={14} />
-                {NODE_LABELS[type]}
-              </span>
+              <Tooltip key={type} content={<TipCard title={NODE_LABELS[type]} body={NODE_HINTS[type]} />}>
+                <span className={`map-hud__legend-item node-tone--${type}`}>
+                  <NodeIcon type={type} size={15} />
+                  <small>{NODE_LABELS[type]}</small>
+                </span>
+              </Tooltip>
             ))}
+          </div>
+          <div className="map-hud__progress">
+            <Layers size={14} />
+            <b>{mapIntel.nodeCount}</b>
+            <small>节点</small>
+            <span className="map-hud__sep" />
+            <Skull size={14} />
+            <b>{mapIntel.counts.elite}</b>
+            <small>精英</small>
           </div>
         </div>
 
-        <MapReadPanel run={run} currentNode={currentNode} availableNodes={availableNodes} mapIntel={mapIntel} />
-
-        <FoldSection
-          title="地图情报"
-          icon={<Layers size={16} />}
-          meta={`${mapIntel.nodeCount} 节点 · ${mapIntel.counts.elite} 精英 · ${mapIntel.counts.event} 事件`}
-          defaultOpen={false}
-          resetKey={`${run.act ?? 1}-${run.floor}`}
-          className="map-intel-command"
-        >
-          <div className="map-intel" aria-label="地图情报">
-            <span>
-              <MapIcon size={14} /> 节点 <b>{mapIntel.nodeCount}</b>
-            </span>
-            <span>
-              <Skull size={14} /> 精英 <b>{mapIntel.counts.elite}</b>
-            </span>
-            <span>
-              <Sparkles size={14} /> 事件 <b>{mapIntel.counts.event}</b>
-            </span>
-            <span>
-              <HeartPulse size={14} /> 补给 <b>{mapIntel.counts.rest + mapIntel.counts.shop}</b>
-            </span>
-            <span>
-              <Layers size={14} /> 分叉 <b>{mapIntel.branchCount}</b>
-            </span>
-            <span>
-              <Layers size={14} /> 汇合 <b>{mapIntel.mergeCount}</b>
-            </span>
-            <span>
-              <MapIcon size={14} /> 窄口 <b>{mapIntel.chokeCount}</b>
-            </span>
-            <span>
-              <Sparkles size={14} /> 区域 <b>{mapIntel.zoneCount}</b>
-            </span>
-          </div>
-        </FoldSection>
-
-        <FoldSection
-          title="可前往路线"
-          icon={<MapIcon size={16} />}
-          meta={`${availableNodes.length} 条 · ${currentNode ? `${NODE_LABELS[currentNode.type]}后续` : "入口"}`}
-          defaultOpen
-          className="route-command"
-        >
-          <div className="route-options__grid">
-            {availableNodes.map((node) => (
-              <button
-                key={node.id}
-                className={`route-option node-tone--${node.type} map-zone--${mapNodeZone(node)}`}
-                type="button"
-                onClick={() => onEnter(node.id)}
-                title={`${NODE_HINTS[node.type]} · ${routeStructureLabel(node)} · ${routeSignalLabel(node, run)}`}
-              >
-                <NodeIcon type={node.type} size={17} />
-                <div className="route-option__main">
-                  <strong>{NODE_LABELS[node.type]}</strong>
-                  <span>{node.id === "boss" ? `第 ${run.act ?? 1} 幕顶层` : `第 ${node.floor + 1} 层 · ${node.lane + 1} 道`}</span>
-                </div>
-                <div className="route-option__chips">
-                  <small className={`route-option__zone map-zone--${mapNodeZone(node)}`}>{MAP_ZONE_LABELS[mapNodeZone(node)]}</small>
-                  <small className={`route-option__route route-kind--${mapNodeRouteKind(node)}`}>
-                    {MAP_ROUTE_KIND_LABELS[mapNodeRouteKind(node)]}
-                  </small>
-                </div>
-                <small className="route-option__next">{routePreviewLabel(node, nodeById)}</small>
-                <small className="route-option__signal">{routeSignalLabel(node, run)}</small>
-              </button>
-            ))}
-          </div>
-        </FoldSection>
-
         {bossAvailable && (
-          <div className="boss-warning">
+          <div className="boss-warning boss-warning--game">
             <Skull size={19} />
             <div>
               <strong>第 {run.act ?? 1} 幕最终战已开启</strong>
@@ -1487,7 +1428,7 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
           </div>
         )}
 
-        <div className="map-scroll">
+        <div className="map-scroll map-scroll--game">
           <div className="map-canvas">
             <div className="map-art-layers" aria-hidden="true">
               <span className="map-art-layer map-art-layer--rift" />
@@ -1540,6 +1481,7 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
               <MapNodeButton
                 key={node.id}
                 node={node}
+                run={run}
                 available={available.has(node.id)}
                 onEnter={() => onEnter(node.id)}
               />
@@ -1833,31 +1775,39 @@ function routeSignalLabel(node: MapNode, run: RunState): string {
 
 function MapNodeButton({
   node,
+  run,
   available,
   onEnter,
 }: {
   node: MapNode;
+  run: RunState;
   available: boolean;
   onEnter: () => void;
 }) {
   const routeKind = mapNodeRouteKind(node);
+  const tip = (
+    <TipCard
+      title={node.id === "boss" ? `第 ${run.act ?? 1} 幕 · 首领` : NODE_LABELS[node.type]}
+      body={`${NODE_HINTS[node.type]}${node.id === "boss" ? "" : ` · 第 ${node.floor + 1} 层`}`}
+      footer={available ? "▶ 可前往" : `${MAP_ZONE_LABELS[mapNodeZone(node)]} · ${MAP_ROUTE_KIND_LABELS[routeKind]}`}
+    />
+  );
   return (
-    <button
-      className={`map-node node-tone--${node.type} map-zone--${mapNodeZone(node)} route-kind--${routeKind} ${
-        available ? "is-available" : ""
-      } ${
-        node.completed ? "is-completed" : ""
-      }`}
-      style={{ left: `${node.x}%`, top: `${node.y}%` }}
-      type="button"
-      disabled={!available}
-      onClick={onEnter}
-      title={`${NODE_LABELS[node.type]} · ${MAP_ROUTE_KIND_LABELS[routeKind]} · ${MAP_ZONE_LABELS[mapNodeZone(node)]}`}
-    >
-      <NodeIcon type={node.type} size={20} />
-      <span>{NODE_LABELS[node.type]}</span>
-      <small className="map-node__route">{MAP_ROUTE_KIND_SHORT[routeKind]}</small>
-    </button>
+    <Tooltip content={tip} placement="bottom" className="map-node-anchor" style={{ left: `${node.x}%`, top: `${node.y}%` }}>
+      <button
+        className={`map-node node-tone--${node.type} map-zone--${mapNodeZone(node)} route-kind--${routeKind} ${
+          available ? "is-available" : ""
+        } ${
+          node.completed ? "is-completed" : ""
+        }`}
+        type="button"
+        disabled={!available}
+        onClick={onEnter}
+      >
+        <NodeIcon type={node.type} size={20} />
+        <span>{NODE_LABELS[node.type]}</span>
+      </button>
+    </Tooltip>
   );
 }
 

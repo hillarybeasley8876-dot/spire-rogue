@@ -68,15 +68,14 @@ button {
   pointer-events: none;
   opacity: 1;
   background-image:
-    radial-gradient(circle at 50% 4%, rgba(91, 210, 191, 0.2), transparent 34%),
-    radial-gradient(circle at 10% 80%, rgba(240, 109, 89, 0.13), transparent 24%),
-    linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.45), transparent 16%, transparent 84%, rgba(0, 0, 0, 0.48));
-  background-size: 42px 42px;
+    radial-gradient(ellipse at 50% -8%, rgba(91, 210, 191, 0.28), transparent 46%),
+    radial-gradient(ellipse at 12% 88%, rgba(240, 109, 89, 0.18), transparent 40%),
+    radial-gradient(ellipse at 88% 70%, rgba(160, 117, 204, 0.16), transparent 44%),
+    linear-gradient(180deg, rgba(10, 13, 17, 0.4), rgba(7, 9, 12, 0.86) 78%),
+    var(--rift-bg-url) center top / cover;
   background-position: center top;
-  mask-image: linear-gradient(to bottom, black, rgba(0, 0, 0, 0.88) 72%, transparent 100%);
-  animation: rift-grid-drift 18s linear infinite;
+  mask-image: linear-gradient(to bottom, black, rgba(0, 0, 0, 0.92) 80%, rgba(0, 0, 0, 0.78) 100%);
+  animation: rift-grid-drift 26s linear infinite;
 }
 
 .app::before,
@@ -2546,7 +2545,7 @@ button.inventory-chip:focus-visible {
 
 .map-canvas {
   position: relative;
-  height: clamp(660px, 72vh, 760px);
+  height: clamp(1080px, 132vh, 1480px);
   min-width: 680px;
   border: 1px solid rgba(255, 224, 163, 0.18);
   border-radius: 8px;
@@ -2730,14 +2729,14 @@ button.inventory-chip:focus-visible {
 
 .map-line {
   fill: none;
-  stroke: rgba(157, 245, 229, 0.28);
-  stroke-width: 1.45;
-  stroke-linecap: square;
-  stroke-linejoin: bevel;
-  opacity: 0.62;
+  stroke: rgba(157, 245, 229, 0.4);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.78;
   filter:
-    drop-shadow(0 0 1px rgba(0, 0, 0, 0.68))
-    drop-shadow(0 0 5px rgba(91, 210, 191, 0.18));
+    drop-shadow(0 0 1px rgba(0, 0, 0, 0.7))
+    drop-shadow(0 0 5px rgba(91, 210, 191, 0.22));
   vector-effect: non-scaling-stroke;
 }
 
@@ -2780,24 +2779,23 @@ button.inventory-chip:focus-visible {
   position: absolute;
   z-index: 3;
   display: grid;
-  grid-template-rows: 22px 1fr;
-  width: clamp(60px, 6vw, 70px);
-  height: 58px;
+  grid-template-rows: 26px 1fr;
+  width: clamp(66px, 6.4vw, 80px);
+  height: 72px;
   place-items: center;
-  padding: 7px 6px 6px;
+  padding: 9px 6px 7px;
   color: var(--text);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  border-radius: 18px;
   background:
-    radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.18), transparent 38%),
-    linear-gradient(180deg, rgba(var(--zone-rgb, 157, 245, 229), 0.2), rgba(255, 255, 255, 0.04)),
-    rgba(8, 12, 15, 0.86);
+    radial-gradient(circle at 50% 16%, rgba(255, 255, 255, 0.22), transparent 42%),
+    linear-gradient(180deg, rgba(28, 34, 41, 0.96), rgba(13, 17, 22, 0.98));
   box-shadow:
-    0 14px 24px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    inset 0 -5px 0 rgba(0, 0, 0, 0.22);
+    0 16px 28px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -6px 0 rgba(0, 0, 0, 0.3);
   cursor: default;
-  opacity: 0.52;
+  opacity: 0.82;
   transform: translate(-50%, -50%);
   transition:
     transform 160ms ease,
@@ -2889,32 +2887,69 @@ button.inventory-chip:focus-visible {
 
 .node-tone--fight {
   color: #ffd6d0;
-  background-color: rgba(212, 87, 69, 0.18);
+}
+.map-node.node-tone--fight {
+  border-color: rgba(212, 87, 69, 0.55);
+  background:
+    radial-gradient(circle at 50% 16%, rgba(240, 109, 89, 0.4), transparent 52%),
+    linear-gradient(180deg, rgba(40, 24, 24, 0.96), rgba(16, 12, 14, 0.98));
 }
 
 .node-tone--elite {
   color: #ead6ff;
-  background-color: rgba(160, 117, 204, 0.18);
+}
+.map-node.node-tone--elite {
+  border-color: rgba(160, 117, 204, 0.6);
+  background:
+    radial-gradient(circle at 50% 16%, rgba(160, 117, 204, 0.46), transparent 52%),
+    linear-gradient(180deg, rgba(32, 24, 44, 0.96), rgba(15, 12, 20, 0.98));
 }
 
 .node-tone--rest {
   color: #d9ffd6;
-  background-color: rgba(112, 179, 107, 0.18);
+}
+.map-node.node-tone--rest {
+  border-color: rgba(112, 179, 107, 0.58);
+  background:
+    radial-gradient(circle at 50% 16%, rgba(112, 179, 107, 0.42), transparent 52%),
+    linear-gradient(180deg, rgba(22, 36, 24, 0.96), rgba(12, 18, 14, 0.98));
 }
 
 .node-tone--shop {
   color: #ffe0a3;
-  background-color: rgba(216, 160, 59, 0.18);
+}
+.map-node.node-tone--shop {
+  border-color: rgba(216, 160, 59, 0.6);
+  background:
+    radial-gradient(circle at 50% 16%, rgba(240, 190, 85, 0.44), transparent 52%),
+    linear-gradient(180deg, rgba(40, 33, 18, 0.96), rgba(18, 15, 10, 0.98));
 }
 
 .node-tone--event {
   color: #d5f2ed;
-  background-color: rgba(66, 181, 165, 0.18);
+}
+.map-node.node-tone--event {
+  border-color: rgba(66, 181, 165, 0.58);
+  background:
+    radial-gradient(circle at 50% 16%, rgba(91, 210, 191, 0.42), transparent 52%),
+    linear-gradient(180deg, rgba(18, 36, 34, 0.96), rgba(11, 18, 17, 0.98));
 }
 
 .node-tone--boss {
   color: #ffe2d6;
-  background-color: rgba(240, 109, 89, 0.26);
+}
+.map-node.node-tone--boss {
+  width: clamp(86px, 8vw, 104px);
+  height: 92px;
+  border-color: rgba(240, 109, 89, 0.78);
+  background:
+    radial-gradient(circle at 50% 18%, rgba(240, 109, 89, 0.6), transparent 54%),
+    linear-gradient(180deg, rgba(52, 22, 22, 0.98), rgba(20, 10, 12, 0.99));
+  box-shadow:
+    0 0 0 2px rgba(240, 109, 89, 0.4),
+    0 0 32px rgba(240, 109, 89, 0.35),
+    0 18px 30px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .combat-layout {
@@ -8740,6 +8775,325 @@ body {
   .combat-shell > .hud-rail {
     max-height: 40vh;
   }
+}
+
+/* ===================================================================== */
+/* 方向A：沉浸式游戏 HUD 皮肤（覆盖网页外壳）                            */
+/* ===================================================================== */
+
+/* —— 顶栏改成游戏 HUD 横幅 —— */
+.topbar {
+  margin: 10px 14px 0;
+  padding: 12px 22px;
+  border-radius: 14px;
+  border: 1px solid var(--gold-line);
+  background:
+    linear-gradient(180deg, rgba(34, 28, 20, 0.72), rgba(16, 14, 12, 0.86)),
+    linear-gradient(90deg, rgba(91, 210, 191, 0.06), transparent 40%, transparent 60%, rgba(240, 109, 89, 0.06));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -2px 8px rgba(0, 0, 0, 0.4),
+    0 8px 28px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+}
+/* 顶栏左右角饰 */
+.topbar::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  width: 26px;
+  height: 26px;
+  border-top: 2px solid rgba(255, 224, 163, 0.5);
+  border-left: 2px solid rgba(255, 224, 163, 0.5);
+  border-top-left-radius: 8px;
+  pointer-events: none;
+}
+
+.brand__mark {
+  background:
+    radial-gradient(circle at 40% 30%, rgba(240, 190, 85, 0.55), transparent 60%),
+    linear-gradient(180deg, rgba(212, 87, 69, 0.5), rgba(120, 40, 34, 0.6));
+  border: 1px solid rgba(255, 224, 163, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 16px rgba(240, 109, 89, 0.4);
+}
+.brand h1 {
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 14px rgba(240, 190, 85, 0.35);
+}
+
+/* 顶栏数值改成游戏徽章（金属底座+发光） */
+.stat-pill {
+  border: 1px solid var(--gold-line);
+  background:
+    linear-gradient(180deg, rgba(40, 36, 28, 0.7), rgba(18, 16, 13, 0.85));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.35);
+  font-variant-numeric: tabular-nums;
+}
+.stat-pill--hp {
+  border-color: rgba(112, 179, 107, 0.5);
+  box-shadow: inset 0 0 14px rgba(112, 179, 107, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.stat-pill--gold {
+  border-color: rgba(240, 190, 85, 0.55);
+  box-shadow: inset 0 0 14px rgba(240, 190, 85, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* —— 游戏框：整个 app 套厚边框 + vignette —— */
+.app::after {
+  inset: 6px;
+  border: 1px solid rgba(255, 224, 163, 0.16);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 0 0 1px rgba(91, 210, 191, 0.08),
+    inset 0 0 120px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 6px rgba(8, 10, 13, 0.4);
+}
+
+/* —— 左侧栏改成游戏面板（厚玻璃+符文角饰） —— */
+.game-sidebar {
+  border: 1px solid var(--gold-line);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(28, 33, 40, 0.82), rgba(13, 16, 21, 0.92));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 40px rgba(0, 0, 0, 0.3),
+    0 12px 36px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(14px);
+}
+.game-sidebar::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-top: 2px solid rgba(255, 224, 163, 0.4);
+  border-right: 2px solid rgba(255, 224, 163, 0.4);
+  border-top-right-radius: 6px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* —— 侧栏内的小面板：去网页扁平卡片，改游戏凹槽 —— */
+.fold-section,
+.sidebar-section,
+.run-resource-dock,
+.inventory-tray {
+  border-radius: 10px;
+}
+
+/* —— 主舞台容器（地图/商店/事件等非战斗）也套游戏框 —— */
+.game-stage > section:not(.combat-shell) {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(22, 27, 33, 0.55), rgba(12, 15, 20, 0.7));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* —— 主要按钮改成游戏按钮（立体+发光反馈） —— */
+.primary-button,
+.difficulty-card,
+.route-option {
+  border: 1px solid var(--gold-line);
+  background:
+    linear-gradient(180deg, rgba(44, 39, 28, 0.7), rgba(20, 17, 13, 0.85));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.4),
+    0 6px 18px rgba(0, 0, 0, 0.4);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    filter 140ms ease;
+}
+.primary-button:hover,
+.route-option:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 0 18px rgba(240, 190, 85, 0.3),
+    0 8px 22px rgba(0, 0, 0, 0.45);
+}
+.primary-button:active,
+.route-option:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* 标题字体更有游戏感 */
+.section-heading h2,
+.map-panel h2,
+.title-hero h1 {
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.5),
+    0 0 24px rgba(91, 210, 191, 0.2);
+}
+
+/* —— 地图 phase：隐藏侧栏，地图全屏当主角 —— */
+.game-shell--map {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+.game-shell--map .game-sidebar {
+  display: none;
+}
+
+/* —— 战斗 phase：同样隐藏侧栏，战斗 shell 全屏 —— */
+.game-shell--combat {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+.game-shell--combat .game-sidebar {
+  display: none;
+}
+
+.map-layout--game {
+  min-height: calc(100vh - 96px);
+}
+.map-panel--game {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+.map-panel--game::before,
+.map-panel--game::after {
+  display: none;
+}
+
+/* 地图顶部薄 HUD 条（替代网页表格） */
+.map-hud {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--gold-line);
+  background:
+    linear-gradient(180deg, rgba(30, 35, 42, 0.8), rgba(14, 17, 22, 0.9));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 26px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+}
+.map-hud__title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 18px;
+  border-right: 1px solid var(--line);
+}
+.map-hud__title h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 18px rgba(91, 210, 191, 0.3);
+}
+.map-hud__title span {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.map-hud__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+}
+.map-hud__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(16, 20, 26, 0.6);
+  cursor: help;
+}
+.map-hud__legend-item small {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.map-hud__progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.map-hud__progress b {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+.map-hud__progress small {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.map-hud__sep {
+  width: 1px;
+  height: 18px;
+  background: var(--line);
+  margin: 0 4px;
+}
+
+/* 地图画布全屏化、更高 */
+.map-scroll--game {
+  flex: 1;
+  border-radius: 16px;
+  border: 1px solid var(--gold-line);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+    inset 0 0 90px rgba(0, 0, 0, 0.55),
+    0 14px 40px rgba(0, 0, 0, 0.5);
+  overflow: auto;
+}
+.map-scroll--game .map-canvas {
+  border: none;
+  border-radius: 16px;
+  min-width: 0;
+}
+
+/* 节点 = 游戏圆形徽记（覆盖之前的圆角矩形） */
+.map-node-anchor {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+}
+.map-node-anchor .map-node {
+  position: static;
+  transform: none;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  grid-template-rows: 1fr;
+  padding: 0;
+}
+.map-node-anchor .map-node span {
+  display: none;
+}
+.map-node-anchor:hover {
+  z-index: 9;
+}
+.map-node-anchor .map-node.is-available {
+  transform: none;
+}
+.map-node-anchor .map-node.is-available:hover {
+  transform: scale(1.12);
+}
+.map-node-anchor .map-node.node-tone--boss {
+  width: 80px;
+  height: 80px;
 }
 
 @media (prefers-reduced-motion: reduce) {
