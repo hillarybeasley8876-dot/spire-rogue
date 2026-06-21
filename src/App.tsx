@@ -1726,13 +1726,12 @@ function routePreviewLabel(node: MapNode, nodeById: Map<string, MapNode>): strin
 }
 
 function mapEdgePath(node: MapNode, child: MapNode): string {
-  const midY = Number(((node.y + child.y) / 2).toFixed(2));
   const startX = Number(node.x.toFixed(2));
   const startY = Number(node.y.toFixed(2));
   const endX = Number(child.x.toFixed(2));
   const endY = Number(child.y.toFixed(2));
-  const elbow = Math.abs(startX - endX) < 0.8 ? "" : ` H ${endX}`;
-  return `M ${startX} ${startY} V ${midY}${elbow} V ${endY}`;
+  // 平滑直连：直接从父节点连到子节点（杀戮尖塔式对角线）
+  return `M ${startX} ${startY} L ${endX} ${endY}`;
 }
 
 function routeStructureLabel(node: MapNode): string {

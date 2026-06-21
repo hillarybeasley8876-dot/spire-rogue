@@ -63,8 +63,8 @@ const MAX_LOG_LINES = 9;
 const MAX_HAND_SIZE = 10;
 const FINAL_ACT = 2;
 const ACT_MAP_SEED_STEP = 8191;
-const MAP_ROUTE_FLOORS = 11;
-const MAP_VIRTUAL_LANES = 7;
+const MAP_ROUTE_FLOORS = 9;
+const MAP_VIRTUAL_LANES = 5;
 const INVALID_CARD_DEF: CardDef = {
   id: "invalid_card",
   name: "失效卡牌",
@@ -3896,93 +3896,87 @@ function generateMap(seed: number): MapNode[] {
     localSeed = nextSeed;
     return value;
   };
-  const randomIntLocal = (min: number, max: number) => Math.floor(roll() * (max - min + 1)) + min;
+
+  // —— 杀戮尖塔式网格：固定列、无抖动、只连相邻列 ——
   const floorCounts = randomMapFloorCounts(() => roll());
+  const byFloor: MapNode[][] = [];
 
   for (let floor = 0; floor < MAP_ROUTE_FLOORS; floor += 1) {
-    const count = floorCounts[floor] ?? randomMapFloorNodeCount(floor, roll());
-    const lanes = randomMapLanes(count, () => roll());
+    const count = clamp(2, MAP_VIRTUAL_LANES, floorCounts[floor] ?? 3);
+    // 选连续居中的 lane 集合，节点不横向散布
+    const startLane = Math.floor((MAP_VIRTUAL_LANES - count) / 2 + (roll() - 0.5) * 1.2);
+    const baseLane = clamp(0, MAP_VIRTUAL_LANES - count, startLane);
     const floorTypes = randomMapFloorTypes(floor, count, () => roll());
+    const floorNodes: MapNode[] = [];
 
     for (let index = 0; index < count; index += 1) {
-      const lane = lanes[index];
+      const lane = baseLane + index;
       const type = floorTypes[index];
-      const xJitter = floor === 0 || floor === MAP_ROUTE_FLOORS - 1 ? 0 : (roll() - 0.5) * 3.2;
-      const yJitter = floor === 0 || floor === MAP_ROUTE_FLOORS - 1 ? 0 : (roll() - 0.5) * 1.2;
-      nodes.push({
+      floorNodes.push({
         id: `n-${floor}-${index}`,
         floor,
         lane,
-        x: clamp(10, 90, 12 + (lane / (MAP_VIRTUAL_LANES - 1)) * 76 + xJitter),
-        y: clamp(10, 92, 91 - floor * 7.6 + yJitter),
+        x: clamp(12, 88, 50 + (lane - (MAP_VIRTUAL_LANES - 1) / 2) * 16),
+        y: clamp(8, 92, 88 - floor * (80 / MAP_ROUTE_FLOORS)),
         type,
         zone: mapZoneForNode(floor, lane, type, () => roll()),
         children: [],
       });
     }
+    byFloor.push(floorNodes);
+    nodes.push(...floorNodes);
   }
 
   ensureMapTypeMinimums(nodes, () => roll());
   refreshMapZones(nodes, () => roll());
 
-  nodes.push({
+  const boss: MapNode = {
     id: "boss",
     floor: MAP_ROUTE_FLOORS,
-    lane: Math.floor(MAP_VIRTUAL_LANES / 2),
+    lane: Math.floor((MAP_VIRTUAL_LANES - 1) / 2),
     x: 50,
-    y: 5,
+    y: 4,
     type: "boss",
     zone: "heart",
     children: [],
-  });
+  };
+  nodes.push(boss);
+  byFloor.push([boss]);
 
+  // —— 连接：每个节点连到下一层最近的 1-2 个节点（仅相邻列） ——
   for (let floor = 0; floor < MAP_ROUTE_FLOORS; floor += 1) {
-    const currentFloor = nodes.filter((node) => node.floor === floor);
-    const nextFloor = nodes.filter((node) => node.floor === floor + 1);
+    const current = byFloor[floor];
+    const next = byFloor[floor + 1];
 
-    for (const node of currentFloor) {
+    for (const node of current) {
       if (floor === MAP_ROUTE_FLOORS - 1) {
         node.children = ["boss"];
         continue;
       }
-
-      const candidates = nextFloor
-        .map((child) => ({ child, distance: Math.abs(child.lane - node.lane) }))
-        .filter(({ distance }) => distance <= 3)
-        .sort((a, b) => a.distance - b.distance || a.child.lane - b.child.lane);
-      const pool = candidates.length > 0 ? candidates : nextFloor.map((child) => ({ child, distance: 99 }));
+      // 按列距离排序，优先连最近的
+      const sorted = next
+        .map((child) => ({ child, dist: Math.abs(child.lane - node.lane) }))
+        .sort((a, b) => a.dist - b.dist || a.child.lane - b.child.lane);
       const children = new Set<string>();
-      const primaryChild = pool[Math.min(pool.length - 1, Math.floor(roll() * Math.min(2, pool.length)))].child;
-      pullMapNodeTowardParent(primaryChild, node, () => roll());
-      children.add(primaryChild.id);
-
-      const branchChance = floor < 2 ? 0.48 : floor > 8 ? 0.3 : 0.58;
-      if (pool.length > 1 && roll() < branchChance) {
-        const child = weightedMapChild(pool, () => roll());
-        pullMapNodeTowardParent(child, node, () => roll());
-        children.add(child.id);
+      children.add(sorted[0].child.id);
+      // 50% 概率再连第二近的（产生分叉），但只允许列距 ≤ 2
+      if (sorted.length > 1 && sorted[1].dist <= 2 && roll() < 0.5) {
+        children.add(sorted[1].child.id);
       }
-      if (pool.length > 2 && floor >= 3 && floor <= 8 && roll() < 0.16) {
-        const child = weightedMapChild(pool, () => roll());
-        pullMapNodeTowardParent(child, node, () => roll());
-        children.add(child.id);
-      }
-
       node.children = [...children];
     }
 
+    // 保证下一层每个节点都有父节点（连通性）
     if (floor < MAP_ROUTE_FLOORS - 1) {
-      for (const child of nextFloor) {
-        const parents = currentFloor.filter((node) => node.children.includes(child.id));
-        if (parents.length > 0) {
+      for (const child of next) {
+        const hasParent = current.some((node) => node.children.includes(child.id));
+        if (hasParent) {
           continue;
         }
-        const nearestParents = currentFloor
-          .map((node) => ({ node, distance: Math.abs(node.lane - child.lane) }))
-          .sort((a, b) => a.distance - b.distance || a.node.lane - b.node.lane);
-        const parent = nearestParents[Math.min(nearestParents.length - 1, randomIntLocal(0, Math.min(1, nearestParents.length - 1)))].node;
-        pullMapNodeTowardParent(child, parent, () => roll());
-        parent.children.push(child.id);
+        const nearest = current
+          .map((node) => ({ node, dist: Math.abs(node.lane - child.lane) }))
+          .sort((a, b) => a.dist - b.dist)[0].node;
+        nearest.children.push(child.id);
       }
     }
   }
@@ -3992,41 +3986,30 @@ function generateMap(seed: number): MapNode[] {
 }
 
 function randomMapFloorCounts(roll: () => number): number[] {
-  const profiles = [
-    [3, 4, 5, 4, 2, 4, 5, 3, 4, 5, 3],
-    [4, 3, 5, 2, 4, 4, 5, 2, 4, 3, 3],
-    [3, 5, 4, 3, 5, 2, 4, 5, 3, 2, 4],
-    [4, 5, 3, 4, 2, 5, 4, 3, 5, 4, 3],
-    [3, 4, 3, 5, 4, 2, 5, 3, 4, 5, 2],
-  ];
-  const counts = [...profiles[Math.floor(roll() * profiles.length)]];
-  counts[0] = roll() < 0.24 ? 4 : 3;
-  counts[MAP_ROUTE_FLOORS - 1] = roll() < 0.22 ? 2 : roll() < 0.76 ? 3 : 4;
-
-  for (let floor = 1; floor < MAP_ROUTE_FLOORS - 1; floor += 1) {
-    if (roll() < 0.28) {
-      counts[floor] = clamp(2, 5, counts[floor] + (roll() < 0.5 ? -1 : 1));
+  // 9 层节点数：首层窄、中段宽、临 Boss 收窄，制造分叉-汇合节奏
+  const counts: number[] = [];
+  for (let floor = 0; floor < MAP_ROUTE_FLOORS; floor += 1) {
+    if (floor === 0) {
+      counts.push(roll() < 0.4 ? 3 : 2);
+    } else if (floor === MAP_ROUTE_FLOORS - 1) {
+      counts.push(roll() < 0.5 ? 2 : 3);
+    } else {
+      const r = roll();
+      counts.push(r < 0.25 ? 2 : r < 0.7 ? 3 : 4);
     }
   }
-
-  const chokeFloor = 3 + Math.floor(roll() * 6);
+  // 中段保证一个宽层(4)和一个窄口(2)，制造分叉-汇合节奏
+  const midFloors = MAP_ROUTE_FLOORS - 2; // 可调整的中段层数
+  const wideFloor = 1 + Math.floor(roll() * Math.max(1, Math.floor(midFloors / 2)));
+  counts[wideFloor] = 4;
+  let chokeFloor = wideFloor + 2 + Math.floor(roll() * 2);
+  if (chokeFloor >= MAP_ROUTE_FLOORS - 1) {
+    chokeFloor = MAP_ROUTE_FLOORS - 2;
+  }
+  if (chokeFloor === wideFloor) {
+    chokeFloor = Math.min(MAP_ROUTE_FLOORS - 2, wideFloor + 1);
+  }
   counts[chokeFloor] = 2;
-  if (roll() < 0.46) {
-    const secondChoke = 4 + Math.floor(roll() * 5);
-    if (Math.abs(secondChoke - chokeFloor) > 1) {
-      counts[secondChoke] = 2;
-    }
-  }
-
-  const wideFloor = 2 + Math.floor(roll() * 7);
-  counts[wideFloor] = Math.max(counts[wideFloor], 5);
-
-  for (let floor = 2; floor < MAP_ROUTE_FLOORS - 1; floor += 1) {
-    if (counts[floor] === 2 && counts[floor - 1] === 2) {
-      counts[floor] = 3;
-    }
-  }
-
   return counts;
 }
 

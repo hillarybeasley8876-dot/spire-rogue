@@ -2550,15 +2550,14 @@ button.inventory-chip:focus-visible {
   border: 1px solid rgba(255, 224, 163, 0.18);
   border-radius: 8px;
   background:
-    radial-gradient(ellipse at 50% 8%, rgba(255, 224, 163, 0.22), transparent 30%),
-    radial-gradient(ellipse at 50% 96%, rgba(240, 109, 89, 0.16), transparent 26%),
-    linear-gradient(180deg, rgba(9, 13, 17, 0.45), rgba(6, 9, 12, 0.9)),
+    radial-gradient(ellipse at 50% 8%, rgba(255, 224, 163, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(7, 10, 14, 0.88), rgba(5, 8, 11, 0.94)),
     var(--rift-bg-url) center / cover,
-    rgba(0, 0, 0, 0.18);
+    rgba(0, 0, 0, 0.5);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.045),
-    inset 0 0 80px rgba(0, 0, 0, 0.28),
-    inset 0 -100px 110px rgba(0, 0, 0, 0.62);
+    inset 0 0 80px rgba(0, 0, 0, 0.4),
+    inset 0 -100px 110px rgba(0, 0, 0, 0.7);
   overflow: hidden;
 }
 
@@ -2729,50 +2728,54 @@ button.inventory-chip:focus-visible {
 
 .map-line {
   fill: none;
-  stroke: rgba(157, 245, 229, 0.4);
-  stroke-width: 2;
+  stroke: rgba(230, 244, 240, 0.82);
+  stroke-width: 3.5;
   stroke-linecap: round;
   stroke-linejoin: round;
-  opacity: 0.78;
+  opacity: 0.95;
   filter:
-    drop-shadow(0 0 1px rgba(0, 0, 0, 0.7))
-    drop-shadow(0 0 5px rgba(91, 210, 191, 0.22));
+    drop-shadow(0 0 2px rgba(0, 0, 0, 1))
+    drop-shadow(0 0 3px rgba(0, 0, 0, 0.95))
+    drop-shadow(0 1px 1px rgba(0, 0, 0, 1));
   vector-effect: non-scaling-stroke;
 }
 
 .map-line[class*="map-zone--"] {
-  stroke: rgba(var(--zone-rgb, 157, 245, 229), 0.32);
+  stroke: rgba(214, 235, 230, 0.7);
 }
 
 .map-line--active {
-  stroke: rgba(240, 190, 85, 0.78);
-  stroke-width: 2.1;
-  opacity: 0.96;
+  stroke: rgba(255, 213, 117, 0.95);
+  stroke-width: 3.4;
+  opacity: 1;
+  filter:
+    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9))
+    drop-shadow(0 0 6px rgba(240, 190, 85, 0.5));
 }
 
 .map-line--available {
-  stroke: rgba(255, 224, 163, 0.92);
-  stroke-dasharray: 4.5 2;
-  stroke-width: 2.4;
+  stroke: rgba(255, 224, 163, 1);
+  stroke-dasharray: 6 3;
+  stroke-width: 3.8;
   opacity: 1;
   filter:
-    drop-shadow(0 0 1px rgba(0, 0, 0, 0.76))
-    drop-shadow(0 0 8px rgba(240, 190, 85, 0.48));
+    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9))
+    drop-shadow(0 0 9px rgba(240, 190, 85, 0.7));
 }
 
 .map-line--preview {
-  stroke: rgba(255, 224, 163, 0.98);
-  stroke-dasharray: 5 2.2;
+  stroke: rgba(255, 232, 180, 1);
+  stroke-dasharray: 6 3;
   animation: map-route-preview 1400ms linear infinite;
 }
 
 .map-line--completed {
-  stroke: rgba(91, 210, 191, 0.82);
-  stroke-width: 2.05;
-  opacity: 0.96;
+  stroke: rgba(120, 230, 210, 0.95);
+  stroke-width: 3.2;
+  opacity: 1;
   filter:
-    drop-shadow(0 0 1px rgba(0, 0, 0, 0.72))
-    drop-shadow(0 0 6px rgba(91, 210, 191, 0.36));
+    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.85))
+    drop-shadow(0 0 7px rgba(91, 210, 191, 0.5));
 }
 
 .map-node {
