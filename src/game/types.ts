@@ -10,6 +10,8 @@ export type Phase =
   | "defeat";
 
 export type NodeType = "fight" | "elite" | "rest" | "shop" | "event" | "boss";
+export type MapZone = "outer" | "wild" | "forge" | "sanctum" | "rift" | "heart";
+export type MapRouteKind = "start" | "branch" | "converge" | "choke" | "crossroad" | "summit";
 export type CardType = "Attack" | "Skill" | "Power" | "Status";
 export type Rarity = "starter" | "common" | "uncommon" | "rare" | "boss" | "status";
 export type DifficultyKey = "story" | "standard" | "hard" | "nightmare";
@@ -402,6 +404,8 @@ export interface MapNode {
   x: number;
   y: number;
   type: NodeType;
+  zone?: MapZone;
+  routeKind?: MapRouteKind;
   children: string[];
   completed?: boolean;
 }

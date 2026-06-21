@@ -30,6 +30,7 @@ import type {
   EventState,
   ExhaustCardsEffect,
   MapNode,
+  MapRouteKind,
   NodeType,
   Phase,
   PotionEffect,
@@ -3889,14 +3890,16 @@ function generateMap(seed: number): MapNode[] {
     return value;
   };
   const randomIntLocal = (min: number, max: number) => Math.floor(roll() * (max - min + 1)) + min;
+  const floorCounts = randomMapFloorCounts(() => roll());
 
   for (let floor = 0; floor < MAP_ROUTE_FLOORS; floor += 1) {
-    const count = randomMapFloorNodeCount(floor, roll());
+    const count = floorCounts[floor] ?? randomMapFloorNodeCount(floor, roll());
     const lanes = randomMapLanes(count, () => roll());
     const floorTypes = randomMapFloorTypes(floor, count, () => roll());
 
     for (let index = 0; index < count; index += 1) {
       const lane = lanes[index];
+      const type = floorTypes[index];
       const xJitter = floor === 0 || floor === MAP_ROUTE_FLOORS - 1 ? 0 : (roll() - 0.5) * 3.2;
       const yJitter = floor === 0 || floor === MAP_ROUTE_FLOORS - 1 ? 0 : (roll() - 0.5) * 1.2;
       nodes.push({
@@ -3905,13 +3908,15 @@ function generateMap(seed: number): MapNode[] {
         lane,
         x: clamp(10, 90, 12 + (lane / (MAP_VIRTUAL_LANES - 1)) * 76 + xJitter),
         y: clamp(10, 92, 91 - floor * 7.6 + yJitter),
-        type: floorTypes[index],
+        type,
+        zone: mapZoneForNode(floor, lane, type, () => roll()),
         children: [],
       });
     }
   }
 
   ensureMapTypeMinimums(nodes, () => roll());
+  refreshMapZones(nodes, () => roll());
 
   nodes.push({
     id: "boss",
@@ -3920,6 +3925,7 @@ function generateMap(seed: number): MapNode[] {
     x: 50,
     y: 5,
     type: "boss",
+    zone: "heart",
     children: [],
   });
 
@@ -3974,7 +3980,47 @@ function generateMap(seed: number): MapNode[] {
     }
   }
 
+  annotateMapRouteKinds(nodes);
   return nodes;
+}
+
+function randomMapFloorCounts(roll: () => number): number[] {
+  const profiles = [
+    [3, 4, 5, 4, 2, 4, 5, 3, 4, 5, 3],
+    [4, 3, 5, 2, 4, 4, 5, 2, 4, 3, 3],
+    [3, 5, 4, 3, 5, 2, 4, 5, 3, 2, 4],
+    [4, 5, 3, 4, 2, 5, 4, 3, 5, 4, 3],
+    [3, 4, 3, 5, 4, 2, 5, 3, 4, 5, 2],
+  ];
+  const counts = [...profiles[Math.floor(roll() * profiles.length)]];
+  counts[0] = roll() < 0.24 ? 4 : 3;
+  counts[MAP_ROUTE_FLOORS - 1] = roll() < 0.22 ? 2 : roll() < 0.76 ? 3 : 4;
+
+  for (let floor = 1; floor < MAP_ROUTE_FLOORS - 1; floor += 1) {
+    if (roll() < 0.28) {
+      counts[floor] = clamp(2, 5, counts[floor] + (roll() < 0.5 ? -1 : 1));
+    }
+  }
+
+  const chokeFloor = 3 + Math.floor(roll() * 6);
+  counts[chokeFloor] = 2;
+  if (roll() < 0.46) {
+    const secondChoke = 4 + Math.floor(roll() * 5);
+    if (Math.abs(secondChoke - chokeFloor) > 1) {
+      counts[secondChoke] = 2;
+    }
+  }
+
+  const wideFloor = 2 + Math.floor(roll() * 7);
+  counts[wideFloor] = Math.max(counts[wideFloor], 5);
+
+  for (let floor = 2; floor < MAP_ROUTE_FLOORS - 1; floor += 1) {
+    if (counts[floor] === 2 && counts[floor - 1] === 2) {
+      counts[floor] = 3;
+    }
+  }
+
+  return counts;
 }
 
 function randomMapFloorNodeCount(floor: number, roll: number): number {
@@ -3983,6 +4029,9 @@ function randomMapFloorNodeCount(floor: number, roll: number): number {
   }
   if (floor === MAP_ROUTE_FLOORS - 1) {
     return roll < 0.22 ? 2 : roll < 0.76 ? 3 : 4;
+  }
+  if ((floor === 4 || floor === 7 || floor === 9) && roll < 0.16) {
+    return 2;
   }
   if (roll < 0.18) {
     return 3;
@@ -4025,6 +4074,75 @@ function randomMapFloorTypes(floor: number, count: number, roll: () => number): 
   }
 
   return shuffleMapTypes(types, roll);
+}
+
+function mapZoneForNode(floor: number, lane: number, type: NodeType, roll: () => number): MapNode["zone"] {
+  if (type === "boss") {
+    return "heart";
+  }
+  if (floor <= 1) {
+    return "outer";
+  }
+  if (type === "rest" || type === "shop") {
+    return roll() < 0.72 ? "sanctum" : floor >= 8 ? "rift" : "forge";
+  }
+  if (type === "elite") {
+    return floor >= 8 || roll() < 0.36 ? "rift" : "forge";
+  }
+  if (type === "event") {
+    return floor >= 7 || roll() < 0.48 ? "rift" : lane <= 2 ? "wild" : "outer";
+  }
+  if (floor <= 4) {
+    return lane <= 2 ? "wild" : lane >= 4 ? "forge" : roll() < 0.58 ? "wild" : "forge";
+  }
+  if (floor <= 7) {
+    return lane <= 1 ? "wild" : lane >= 5 ? "rift" : roll() < 0.62 ? "forge" : "wild";
+  }
+  return roll() < 0.62 ? "rift" : "forge";
+}
+
+function refreshMapZones(nodes: MapNode[], roll: () => number): void {
+  for (const node of nodes) {
+    node.zone = mapZoneForNode(node.floor, node.lane, node.type, roll);
+  }
+}
+
+function annotateMapRouteKinds(nodes: MapNode[]): void {
+  const parentIdsByNode = new Map<string, string[]>();
+  const nodeCountByFloor = new Map<number, number>();
+  for (const node of nodes) {
+    nodeCountByFloor.set(node.floor, (nodeCountByFloor.get(node.floor) ?? 0) + 1);
+    for (const childId of node.children) {
+      parentIdsByNode.set(childId, [...(parentIdsByNode.get(childId) ?? []), node.id]);
+    }
+  }
+
+  for (const node of nodes) {
+    const parents = parentIdsByNode.get(node.id) ?? [];
+    node.routeKind = mapRouteKindForNode(node, parents.length, nodeCountByFloor.get(node.floor) ?? 0);
+  }
+}
+
+function mapRouteKindForNode(node: MapNode, parentCount: number, floorCount: number): MapRouteKind {
+  if (node.type === "boss") {
+    return "summit";
+  }
+  if (node.floor === 0) {
+    return "start";
+  }
+  if (node.children.length >= 2 && parentCount >= 2) {
+    return "crossroad";
+  }
+  if (node.children.length >= 2) {
+    return "branch";
+  }
+  if (parentCount >= 2) {
+    return "converge";
+  }
+  if (floorCount <= 2) {
+    return "choke";
+  }
+  return "choke";
 }
 
 function ensureMapTypeMinimums(nodes: MapNode[], roll: () => number): void {

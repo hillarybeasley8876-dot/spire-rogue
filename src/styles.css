@@ -1773,7 +1773,7 @@ button {
 
 .map-intel {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
   gap: 8px;
   margin: 8px 0 10px;
 }
@@ -1851,6 +1851,14 @@ button {
   overflow-wrap: anywhere;
 }
 
+.route-option__chips {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-width: 0;
+}
+
 .route-option strong {
   font-size: 14px;
 }
@@ -1875,6 +1883,63 @@ button {
 
 .route-option small.route-option__signal {
   color: #8fe6ce;
+}
+
+.route-option__zone {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 3px 6px;
+  width: fit-content;
+  color: #101216;
+  border-color: rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: var(--zone-color, var(--gold));
+}
+
+.route-option__route {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 3px 6px;
+  width: fit-content;
+  color: #101216;
+  border-radius: 999px;
+  background: var(--route-color, #d5f2ed);
+}
+
+.route-option small.route-option__structure {
+  color: #d5f2ed;
+}
+
+.route-kind--start {
+  --route-color: #9df5e5;
+  --route-rgb: 157, 245, 229;
+}
+
+.route-kind--branch {
+  --route-color: #ffe0a3;
+  --route-rgb: 255, 224, 163;
+}
+
+.route-kind--converge {
+  --route-color: #d9b6ff;
+  --route-rgb: 217, 182, 255;
+}
+
+.route-kind--choke {
+  --route-color: #ff9fb3;
+  --route-rgb: 255, 159, 179;
+}
+
+.route-kind--crossroad {
+  --route-color: #87d9ff;
+  --route-rgb: 135, 217, 255;
+}
+
+.route-kind--summit {
+  --route-color: #ff6f6a;
+  --route-rgb: 255, 111, 106;
 }
 
 .route-option:hover {
@@ -1933,9 +1998,70 @@ button {
   overflow: hidden;
 }
 
+.map-zone--outer {
+  --zone-color: #9df5e5;
+  --zone-rgb: 157, 245, 229;
+}
+
+.map-zone--wild {
+  --zone-color: #aef2a5;
+  --zone-rgb: 174, 242, 165;
+}
+
+.map-zone--forge {
+  --zone-color: #ffc072;
+  --zone-rgb: 255, 192, 114;
+}
+
+.map-zone--sanctum {
+  --zone-color: #ead6ff;
+  --zone-rgb: 234, 214, 255;
+}
+
+.map-zone--rift {
+  --zone-color: #ff9fb3;
+  --zone-rgb: 255, 159, 179;
+}
+
+.map-zone--heart {
+  --zone-color: #ff6f6a;
+  --zone-rgb: 255, 111, 106;
+}
+
+.map-zone-bands {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.map-zone-band {
+  position: absolute;
+  right: 0;
+  left: 0;
+  display: block;
+  border-top: 1px solid rgba(var(--zone-rgb, 157, 245, 229), 0.14);
+  border-bottom: 1px solid rgba(var(--zone-rgb, 157, 245, 229), 0.08);
+  background:
+    linear-gradient(90deg, rgba(var(--zone-rgb, 157, 245, 229), 0.12), transparent 30%, transparent 72%, rgba(var(--zone-rgb, 157, 245, 229), 0.08)),
+    repeating-linear-gradient(90deg, transparent 0 52px, rgba(var(--zone-rgb, 157, 245, 229), 0.035) 52px 53px);
+  opacity: 0.54;
+}
+
+.map-zone-band b {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  color: rgba(var(--zone-rgb, 157, 245, 229), 0.76);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.42);
+}
+
 .map-ruler {
   position: absolute;
-  z-index: 2;
+  z-index: 4;
   inset: 18px auto 18px 12px;
   width: 26px;
   pointer-events: none;
@@ -1985,6 +2111,7 @@ button {
 .map-lines {
   position: absolute;
   inset: 0;
+  z-index: 2;
   width: 100%;
   height: 100%;
 }
@@ -1993,6 +2120,10 @@ button {
   stroke: rgba(157, 245, 229, 0.18);
   stroke-width: 0.55;
   filter: drop-shadow(0 0 3px rgba(91, 210, 191, 0.16));
+}
+
+.map-line[class*="map-zone--"] {
+  stroke: rgba(var(--zone-rgb, 157, 245, 229), 0.24);
 }
 
 .map-line--active {
@@ -2015,7 +2146,7 @@ button {
 
 .map-node {
   position: absolute;
-  z-index: 2;
+  z-index: 3;
   display: grid;
   width: clamp(66px, 7vw, 78px);
   height: 48px;
@@ -2040,9 +2171,37 @@ button {
     box-shadow 160ms ease;
 }
 
+.map-node[class*="map-zone--"] {
+  border-color: rgba(var(--zone-rgb, 157, 245, 229), 0.34);
+}
+
+.map-node[class*="route-kind--"] {
+  box-shadow:
+    0 0 0 1px rgba(var(--route-rgb, 157, 245, 229), 0.1),
+    0 10px 24px rgba(0, 0, 0, 0.34),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.22);
+}
+
 .map-node span {
   font-size: 12px;
   font-weight: 800;
+}
+
+.map-node__route {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  color: #101216;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  background: var(--route-color, #d5f2ed);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.32);
+  font-size: 10px;
+  font-weight: 950;
 }
 
 .map-node::before {
@@ -2059,8 +2218,10 @@ button {
   cursor: pointer;
   opacity: 1;
   box-shadow:
+    0 0 0 1px rgba(var(--route-rgb, 255, 224, 163), 0.5),
+    0 0 0 1px rgba(var(--zone-rgb, 255, 224, 163), 0.42),
     0 0 0 3px rgba(240, 190, 85, 0.15),
-    0 0 22px rgba(240, 190, 85, 0.16),
+    0 0 22px rgba(var(--zone-rgb, 240, 190, 85), 0.2),
     0 16px 24px rgba(0, 0, 0, 0.24);
   animation: available-node-pulse 1.8s ease-in-out infinite;
 }
@@ -2729,10 +2890,16 @@ button {
 .pixel-sprite__aura,
 .pixel-sprite__guard,
 .pixel-sprite__slash,
+.pixel-sprite__horn,
 .pixel-sprite__head,
+.pixel-sprite__eye,
+.pixel-sprite__mouth,
+.pixel-sprite__core,
 .pixel-sprite__body,
 .pixel-sprite__arm,
 .pixel-sprite__leg,
+.pixel-sprite__tail,
+.pixel-sprite__wing,
 .pixel-sprite__spark,
 .pixel-sprite__status {
   position: absolute;
@@ -2778,6 +2945,95 @@ button {
   transform-origin: 50% 50%;
 }
 
+.pixel-sprite__horn,
+.pixel-sprite__eye,
+.pixel-sprite__mouth,
+.pixel-sprite__core,
+.pixel-sprite__tail,
+.pixel-sprite__wing {
+  opacity: 0;
+}
+
+.pixel-sprite__horn {
+  top: 3px;
+  width: 10px;
+  height: 14px;
+  background: var(--sprite-light);
+  box-shadow: 0 4px 0 var(--sprite-dark);
+}
+
+.pixel-sprite__horn--left {
+  left: 22px;
+  transform: skewX(-18deg);
+}
+
+.pixel-sprite__horn--right {
+  right: 22px;
+  transform: skewX(18deg);
+}
+
+.pixel-sprite__eye {
+  top: 18px;
+  width: 5px;
+  height: 5px;
+  background: #101216;
+  box-shadow: 0 0 8px var(--sprite-spark);
+}
+
+.pixel-sprite__eye--left {
+  left: 32px;
+}
+
+.pixel-sprite__eye--right {
+  right: 32px;
+}
+
+.pixel-sprite__mouth {
+  left: 32px;
+  top: 27px;
+  width: 12px;
+  height: 4px;
+  background: var(--sprite-dark);
+  box-shadow: 6px 4px 0 rgba(255, 255, 255, 0.16);
+}
+
+.pixel-sprite__core {
+  left: 34px;
+  top: 42px;
+  width: 9px;
+  height: 9px;
+  background: var(--sprite-spark);
+  box-shadow: 0 0 10px var(--sprite-spark);
+}
+
+.pixel-sprite__tail {
+  right: 2px;
+  top: 48px;
+  width: 18px;
+  height: 8px;
+  background: var(--sprite-dark);
+  box-shadow: 8px 6px 0 rgba(0, 0, 0, 0.12);
+  transform: rotate(24deg);
+}
+
+.pixel-sprite__wing {
+  top: 31px;
+  width: 19px;
+  height: 22px;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.pixel-sprite__wing--left {
+  left: 4px;
+  transform: skewY(-12deg);
+}
+
+.pixel-sprite__wing--right {
+  right: 4px;
+  transform: skewY(12deg);
+}
+
 .pixel-sprite__head {
   left: 25px;
   top: 8px;
@@ -2799,6 +3055,512 @@ button {
     -4px 6px 0 var(--sprite-dark),
     5px 8px 0 -2px var(--sprite-light),
     21px 8px 0 -2px var(--sprite-light);
+}
+
+.pixel-sprite--enemy .pixel-sprite__eye {
+  opacity: 0.92;
+}
+
+.pixel-sprite--shape-slime .pixel-sprite__head,
+.pixel-sprite--shape-slime .pixel-sprite__arm,
+.pixel-sprite--shape-slime .pixel-sprite__leg {
+  opacity: 0;
+}
+
+.pixel-sprite--shape-slime .pixel-sprite__body {
+  left: 16px;
+  top: 29px;
+  width: 45px;
+  height: 30px;
+  background: var(--sprite-main);
+  box-shadow:
+    -5px 9px 0 var(--sprite-dark),
+    9px -9px 0 -4px var(--sprite-light),
+    28px -5px 0 -5px var(--sprite-light),
+    34px 8px 0 -4px var(--sprite-dark);
+}
+
+.pixel-sprite--shape-slime .pixel-sprite__eye {
+  top: 38px;
+}
+
+.pixel-sprite--shape-slime .pixel-sprite__mouth {
+  top: 48px;
+  opacity: 0.82;
+}
+
+.pixel-sprite--shape-cultist .pixel-sprite__head {
+  left: 22px;
+  top: 6px;
+  width: 32px;
+  height: 29px;
+  background: var(--sprite-dark);
+  box-shadow:
+    0 5px 0 var(--sprite-main),
+    9px 12px 0 -4px var(--sprite-spark),
+    21px 12px 0 -4px var(--sprite-spark);
+}
+
+.pixel-sprite--shape-cultist .pixel-sprite__body {
+  left: 18px;
+  top: 34px;
+  width: 40px;
+  height: 31px;
+  background: var(--sprite-dark);
+  clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
+  box-shadow:
+    inset 0 7px 0 rgba(255, 255, 255, 0.08),
+    12px 5px 0 -4px var(--sprite-main);
+}
+
+.pixel-sprite--shape-cultist .pixel-sprite__eye {
+  opacity: 1;
+  background: var(--sprite-spark);
+}
+
+.pixel-sprite--shape-cultist .pixel-sprite__leg {
+  opacity: 0;
+}
+
+.pixel-sprite--shape-beast .pixel-sprite__horn,
+.pixel-sprite--shape-beast .pixel-sprite__mouth,
+.pixel-sprite--shape-beast .pixel-sprite__tail {
+  opacity: 1;
+}
+
+.pixel-sprite--shape-beast .pixel-sprite__body {
+  left: 17px;
+  top: 35px;
+  width: 43px;
+  height: 24px;
+  box-shadow:
+    0 8px 0 var(--sprite-dark),
+    8px 4px 0 var(--sprite-light),
+    31px 2px 0 -3px var(--sprite-dark);
+}
+
+.pixel-sprite--shape-beast .pixel-sprite__head {
+  left: 21px;
+  width: 34px;
+  box-shadow:
+    -5px 6px 0 var(--sprite-dark),
+    6px 8px 0 -2px var(--sprite-light),
+    23px 8px 0 -2px var(--sprite-light),
+    18px 17px 0 -5px var(--sprite-dark);
+}
+
+.pixel-sprite--shape-scar .pixel-sprite__mouth,
+.pixel-sprite--shape-scar .pixel-sprite__core,
+.pixel-sprite--shape-scar .pixel-sprite__slash {
+  opacity: 0.86;
+}
+
+.pixel-sprite--shape-scar .pixel-sprite__core {
+  background: #ff6f6a;
+  box-shadow: 0 0 12px rgba(255, 111, 106, 0.78);
+}
+
+.pixel-sprite--shape-spore .pixel-sprite__head {
+  left: 17px;
+  top: 3px;
+  width: 43px;
+  height: 22px;
+  background:
+    radial-gradient(circle at 25% 30%, rgba(255, 255, 255, 0.36), transparent 18%),
+    var(--sprite-main);
+  box-shadow:
+    0 8px 0 var(--sprite-dark),
+    11px 12px 0 -5px var(--sprite-light),
+    28px 10px 0 -6px var(--sprite-light);
+}
+
+.pixel-sprite--shape-spore .pixel-sprite__status {
+  color: #aef2a5;
+  opacity: 0.82;
+  animation: pixel-status-rise 1100ms steps(4, end) infinite;
+}
+
+.pixel-sprite--shape-wisp .pixel-sprite__head,
+.pixel-sprite--shape-wisp .pixel-sprite__arm,
+.pixel-sprite--shape-wisp .pixel-sprite__leg {
+  opacity: 0;
+}
+
+.pixel-sprite--shape-wisp .pixel-sprite__body {
+  left: 25px;
+  top: 20px;
+  width: 28px;
+  height: 32px;
+  background: var(--sprite-main);
+  box-shadow:
+    0 0 0 5px rgba(255, 255, 255, 0.05),
+    0 0 18px var(--sprite-spark),
+    8px 8px 0 -4px var(--sprite-light);
+}
+
+.pixel-sprite--shape-wisp .pixel-sprite__core,
+.pixel-sprite--shape-wisp .pixel-sprite__wing,
+.pixel-sprite--shape-wisp .pixel-sprite__spark {
+  opacity: 0.9;
+}
+
+.pixel-sprite--shape-hulk {
+  width: 86px;
+}
+
+.pixel-sprite--shape-hulk .pixel-sprite__body {
+  left: 16px;
+  top: 30px;
+  width: 54px;
+  height: 34px;
+  box-shadow:
+    0 -5px 0 rgba(255, 255, 255, 0.12),
+    0 10px 0 var(--sprite-dark),
+    11px 5px 0 var(--sprite-light),
+    38px 4px 0 var(--sprite-dark);
+}
+
+.pixel-sprite--shape-hulk .pixel-sprite__head {
+  left: 28px;
+  top: 8px;
+}
+
+.pixel-sprite--shape-hulk .pixel-sprite__core {
+  opacity: 0.88;
+}
+
+.pixel-sprite--shape-sentry .pixel-sprite__head {
+  left: 22px;
+  top: 9px;
+  width: 34px;
+  height: 24px;
+  background: var(--sprite-dark);
+  box-shadow:
+    inset 0 0 0 4px var(--sprite-main),
+    12px 8px 0 -4px var(--sprite-spark);
+}
+
+.pixel-sprite--shape-sentry .pixel-sprite__body {
+  left: 20px;
+  top: 35px;
+  width: 38px;
+  height: 28px;
+  background: var(--sprite-main);
+  box-shadow:
+    inset 0 0 0 5px rgba(0, 0, 0, 0.18),
+    0 8px 0 var(--sprite-dark);
+}
+
+.pixel-sprite--shape-sentry .pixel-sprite__core {
+  opacity: 0.9;
+  top: 44px;
+}
+
+.pixel-sprite--shape-mimic .pixel-sprite__head {
+  opacity: 0;
+}
+
+.pixel-sprite--shape-mimic .pixel-sprite__body {
+  left: 14px;
+  top: 28px;
+  width: 50px;
+  height: 34px;
+  background:
+    linear-gradient(0deg, var(--sprite-dark) 0 8px, var(--sprite-main) 8px 100%);
+  box-shadow:
+    inset 0 13px 0 rgba(255, 255, 255, 0.12),
+    0 -6px 0 var(--sprite-light),
+    12px 15px 0 -5px #101216,
+    28px 15px 0 -5px #101216;
+}
+
+.pixel-sprite--shape-mimic .pixel-sprite__mouth {
+  left: 23px;
+  top: 44px;
+  width: 30px;
+  height: 6px;
+  opacity: 1;
+  background: #101216;
+  box-shadow:
+    4px -4px 0 -2px #fff1c4,
+    13px -4px 0 -2px #fff1c4,
+    22px -4px 0 -2px #fff1c4;
+}
+
+.pixel-sprite--shape-rogue .pixel-sprite__tail {
+  left: 9px;
+  right: auto;
+  top: 25px;
+  opacity: 0.82;
+  background: var(--sprite-spark);
+  transform: rotate(-18deg);
+}
+
+.pixel-sprite--shape-heart {
+  width: 94px;
+  height: 88px;
+}
+
+.pixel-sprite--shape-heart .pixel-sprite__head,
+.pixel-sprite--shape-heart .pixel-sprite__leg {
+  opacity: 0;
+}
+
+.pixel-sprite--shape-heart .pixel-sprite__body {
+  left: 25px;
+  top: 19px;
+  width: 45px;
+  height: 42px;
+  background: var(--sprite-main);
+  clip-path: polygon(50% 100%, 5% 45%, 13% 13%, 38% 8%, 50% 22%, 62% 8%, 87% 13%, 95% 45%);
+  box-shadow:
+    0 8px 0 var(--sprite-dark),
+    13px 14px 0 -6px var(--sprite-light),
+    28px 13px 0 -7px var(--sprite-light);
+}
+
+.pixel-sprite--shape-heart .pixel-sprite__core,
+.pixel-sprite--shape-heart .pixel-sprite__wing,
+.pixel-sprite--shape-heart .pixel-sprite__tail {
+  opacity: 0.92;
+}
+
+.pixel-sprite--shape-heart .pixel-sprite__tail {
+  right: 2px;
+  top: 60px;
+  width: 34px;
+  background: var(--sprite-dark);
+}
+
+.pixel-sprite--tier-elite {
+  scale: 1.05;
+  filter:
+    drop-shadow(0 12px 0 rgba(0, 0, 0, 0.14))
+    drop-shadow(0 0 10px rgba(255, 224, 163, 0.22));
+}
+
+.pixel-sprite--tier-boss {
+  scale: 1.1;
+  filter:
+    drop-shadow(0 12px 0 rgba(0, 0, 0, 0.14))
+    drop-shadow(0 0 14px rgba(255, 111, 106, 0.32));
+}
+
+.pixel-sprite--variant-acid-slime {
+  --sprite-main: #72d666;
+  --sprite-dark: #1f4d31;
+  --sprite-light: #d9ffd6;
+}
+
+.pixel-sprite--variant-acid-slime .pixel-sprite__body {
+  top: 33px;
+  height: 28px;
+  box-shadow:
+    -7px 8px 0 var(--sprite-dark),
+    10px -8px 0 -4px var(--sprite-light),
+    27px -3px 0 -5px #f7ffd1,
+    38px 8px 0 -4px var(--sprite-dark);
+}
+
+.pixel-sprite--variant-cultist .pixel-sprite__wing,
+.pixel-sprite--variant-hex-mage .pixel-sprite__wing,
+.pixel-sprite--variant-null-oracle .pixel-sprite__wing {
+  opacity: 0.72;
+  border-color: rgba(217, 182, 255, 0.38);
+}
+
+.pixel-sprite--variant-hex-mage {
+  --sprite-main: #c991ff;
+  --sprite-dark: #34204d;
+  --sprite-spark: #ffcf7a;
+}
+
+.pixel-sprite--variant-null-oracle .pixel-sprite__core,
+.pixel-sprite--variant-hex-mage .pixel-sprite__core {
+  opacity: 0.94;
+  top: 22px;
+}
+
+.pixel-sprite--variant-jaw-beast .pixel-sprite__horn,
+.pixel-sprite--variant-gremlin-nob .pixel-sprite__horn,
+.pixel-sprite--variant-rift-lancer .pixel-sprite__horn {
+  opacity: 1;
+}
+
+.pixel-sprite--variant-jaw-beast .pixel-sprite__mouth {
+  width: 18px;
+  height: 6px;
+  opacity: 1;
+  box-shadow:
+    5px 4px 0 rgba(255, 255, 255, 0.2),
+    11px 4px 0 rgba(255, 255, 255, 0.18);
+}
+
+.pixel-sprite--variant-gremlin-nob {
+  --sprite-main: #d88357;
+  --sprite-dark: #512625;
+  --sprite-spark: #ffcf7a;
+}
+
+.pixel-sprite--variant-gremlin-nob .pixel-sprite__body {
+  left: 13px;
+  width: 52px;
+}
+
+.pixel-sprite--variant-rift-lancer .pixel-sprite__tail {
+  top: 36px;
+  right: -4px;
+  width: 28px;
+  opacity: 0.92;
+  background: var(--sprite-spark);
+  transform: rotate(-12deg);
+}
+
+.pixel-sprite--variant-scar-collector .pixel-sprite__slash,
+.pixel-sprite--variant-blood-leech .pixel-sprite__slash {
+  opacity: 0.86;
+  background: #ff6f6a;
+}
+
+.pixel-sprite--variant-blood-leech .pixel-sprite__tail {
+  top: 50px;
+  right: -2px;
+  width: 26px;
+  opacity: 0.95;
+  background: #7a1f2c;
+}
+
+.pixel-sprite--variant-spore-mender .pixel-sprite__status--one,
+.pixel-sprite--variant-plague-mote .pixel-sprite__status--one,
+.pixel-sprite--variant-venom-binder .pixel-sprite__status--one {
+  color: #aef2a5;
+  opacity: 0.95;
+  animation: pixel-status-rise 840ms steps(3, end) infinite;
+}
+
+.pixel-sprite--variant-plague-mote {
+  --sprite-main: #99db76;
+  --sprite-dark: #2c5534;
+  --sprite-spark: #d6ff87;
+}
+
+.pixel-sprite--variant-venom-binder .pixel-sprite__tail {
+  top: 24px;
+  right: 2px;
+  opacity: 0.84;
+  background: #6bdb77;
+}
+
+.pixel-sprite--variant-rift-wisp,
+.pixel-sprite--variant-glass-stalker {
+  --sprite-main: #9cc8ff;
+  --sprite-dark: #283c67;
+  --sprite-spark: #d9b6ff;
+}
+
+.pixel-sprite--variant-rift-wisp .pixel-sprite__body {
+  clip-path: polygon(50% 0, 82% 22%, 73% 82%, 50% 100%, 27% 82%, 18% 22%);
+}
+
+.pixel-sprite--variant-rift-wisp .pixel-sprite__spark,
+.pixel-sprite--variant-glass-stalker .pixel-sprite__spark,
+.pixel-sprite--variant-mirror-duelist .pixel-sprite__spark {
+  opacity: 0.9;
+}
+
+.pixel-sprite--variant-mirror-duelist .pixel-sprite__guard,
+.pixel-sprite--variant-glass-stalker .pixel-sprite__guard {
+  opacity: 0.62;
+  border-color: rgba(217, 244, 255, 0.72);
+}
+
+.pixel-sprite--variant-mirror-duelist .pixel-sprite__tail,
+.pixel-sprite--variant-ash-scout .pixel-sprite__tail,
+.pixel-sprite--variant-rift-tactician .pixel-sprite__tail,
+.pixel-sprite--variant-catalyst-adept .pixel-sprite__tail {
+  opacity: 0.86;
+}
+
+.pixel-sprite--variant-spark-hulk .pixel-sprite__core,
+.pixel-sprite--variant-coil-scrapper .pixel-sprite__core,
+.pixel-sprite--variant-tempo-sentry .pixel-sprite__core,
+.pixel-sprite--variant-sentry .pixel-sprite__core,
+.pixel-sprite--variant-ember-sentinel .pixel-sprite__core {
+  opacity: 0.96;
+  animation: pixel-rhythm 680ms steps(4, end) infinite;
+}
+
+.pixel-sprite--variant-spark-hulk {
+  --sprite-main: #88b8d8;
+  --sprite-dark: #2d4158;
+  --sprite-spark: #87d9ff;
+}
+
+.pixel-sprite--variant-coil-scrapper .pixel-sprite__tail {
+  right: -4px;
+  top: 42px;
+  width: 30px;
+  opacity: 0.9;
+  background: #9cc8ff;
+}
+
+.pixel-sprite--variant-tempo-sentry .pixel-sprite__spark {
+  opacity: 1;
+  animation-duration: 520ms;
+}
+
+.pixel-sprite--variant-ember-sentinel {
+  --sprite-main: #d78a60;
+  --sprite-dark: #533032;
+  --sprite-spark: #ffc072;
+}
+
+.pixel-sprite--variant-clockwork-jailer .pixel-sprite__body,
+.pixel-sprite--variant-runic-colossus .pixel-sprite__body {
+  width: 58px;
+  left: 14px;
+  clip-path: polygon(10% 0, 90% 0, 100% 18%, 100% 100%, 0 100%, 0 18%);
+}
+
+.pixel-sprite--variant-clockwork-jailer .pixel-sprite__guard {
+  opacity: 0.78;
+}
+
+.pixel-sprite--variant-runic-colossus {
+  --sprite-main: #a7b8c4;
+  --sprite-dark: #3d4452;
+  --sprite-spark: #d9b6ff;
+}
+
+.pixel-sprite--variant-runic-colossus .pixel-sprite__core {
+  opacity: 0.95;
+  top: 39px;
+}
+
+.pixel-sprite--variant-supply-mimic .pixel-sprite__body {
+  border: 3px solid rgba(255, 224, 163, 0.32);
+}
+
+.pixel-sprite--variant-supply-mimic .pixel-sprite__spark {
+  opacity: 0.72;
+  background: #ffe0a3;
+}
+
+.pixel-sprite--variant-rift-heart-awakened {
+  --sprite-main: #ff6f6a;
+  --sprite-dark: #5b1f2a;
+  --sprite-spark: #d9b6ff;
+}
+
+.pixel-sprite--variant-rift-heart-awakened .pixel-sprite__wing {
+  opacity: 1;
+  border-color: rgba(217, 182, 255, 0.42);
+}
+
+.pixel-sprite--variant-rift-heart-awakened .pixel-sprite__core {
+  width: 12px;
+  height: 12px;
+  opacity: 1;
 }
 
 .pixel-sprite__body {
@@ -4598,7 +5360,7 @@ button {
   }
 
   .map-intel {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
     gap: 5px;
   }
 

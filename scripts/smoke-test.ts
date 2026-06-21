@@ -108,6 +108,14 @@ function validateMap(run: RunState) {
   for (const node of run.map.filter((item) => item.id !== "boss")) {
     assert(node.lane >= 0 && node.lane <= 6, "map lanes should stay inside the virtual lane range");
     assert(node.x >= 8 && node.x <= 92 && node.y >= 4 && node.y <= 94, "map nodes should stay inside the canvas");
+    assert(
+      ["outer", "wild", "forge", "sanctum", "rift"].includes(String(node.zone)),
+      "generated route nodes should carry a readable map zone",
+    );
+    assert(
+      ["start", "branch", "converge", "choke", "crossroad"].includes(String(node.routeKind)),
+      "generated route nodes should carry a readable route kind",
+    );
     const children = node.children.map((childId) => run.map.find((item) => item.id === childId));
     assert(children.every(Boolean), "map connections should point to real nodes");
     assert(children.length >= 1 && children.length <= 4, "map nodes should offer a readable number of route choices");
@@ -118,6 +126,19 @@ function validateMap(run: RunState) {
   }
 
   const typeCounts = countNodeTypes(run.map);
+  const zoneCount = new Set(run.map.filter((node) => node.id !== "boss").map((node) => node.zone)).size;
+  const floorCounts = Array.from({ length: 11 }, (_, floor) => run.map.filter((node) => node.floor === floor).length);
+  const routeKinds = run.map.reduce<Record<string, number>>((counts, node) => {
+    counts[String(node.routeKind)] = (counts[String(node.routeKind)] ?? 0) + 1;
+    return counts;
+  }, {});
+  assert(zoneCount >= 3, "map should include multiple visual route zones");
+  assert(floorCounts.some((count) => count === 2), "map should include at least one narrow bottleneck floor");
+  assert(floorCounts.some((count) => count >= 5), "map should include at least one wide branch floor");
+  assert((routeKinds.branch ?? 0) + (routeKinds.crossroad ?? 0) >= 4, "map should include visible branch route nodes");
+  assert((routeKinds.converge ?? 0) + (routeKinds.crossroad ?? 0) >= 2, "map should include visible merge route nodes");
+  assert((routeKinds.choke ?? 0) >= 2, "map should include visible choke route nodes");
+  assert(run.map.find((node) => node.id === "boss")?.routeKind === "summit", "boss node should be marked as the summit");
   assert(typeCounts.event >= 4, "map should include enough event nodes");
   assert(typeCounts.elite >= 2, "map should include elite route pressure");
   assert(typeCounts.rest >= 2, "map should include rest opportunities");
@@ -1765,7 +1786,10 @@ assert(bossRewardRun.phase === "map", "finishing first boss reward should enter 
 assert(bossRewardRun.act === 2, "first boss reward should advance to act 2");
 assert(bossRewardRun.floor === 0, "next act should reset local floor progress");
 assert(bossRewardRun.currentNodeId === undefined, "next act should reset current map node");
-assert(getAvailableNodeIds(bossRewardRun).length === 3, "next act should offer fresh starting routes");
+assert(
+  getAvailableNodeIds(bossRewardRun).length >= 3 && getAvailableNodeIds(bossRewardRun).length <= 4,
+  "next act should offer fresh starting routes",
+);
 assert(bossRewardRun.map.every((node) => !node.completed), "next act should start with a fresh uncompleted map");
 
 let finalBossRun = createInitialRun(11233, "map", "standard");

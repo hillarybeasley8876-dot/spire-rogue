@@ -14,6 +14,8 @@ import type {
   EventOption,
   EventState,
   MapNode,
+  MapRouteKind,
+  MapZone,
   NodeType,
   Phase,
   PlayerState,
@@ -105,6 +107,8 @@ const DEFAULT_STATS: RunStats = {
 };
 const ACTIVE_PHASES: Phase[] = ["map", "combat", "reward", "rest", "shop", "event"];
 const NODE_TYPES: NodeType[] = ["fight", "elite", "rest", "shop", "event", "boss"];
+const MAP_ZONES: MapZone[] = ["outer", "wild", "forge", "sanctum", "rift", "heart"];
+const MAP_ROUTE_KINDS: MapRouteKind[] = ["start", "branch", "converge", "choke", "crossroad", "summit"];
 const ENEMY_INTENTS: EnemyMove["intent"][] = ["attack", "defend", "buff", "debuff", "mixed", "unknown"];
 const CARD_DESTINATIONS: Array<Extract<EnemyEffect, { type: "createCard" }>["destination"]> = ["hand", "draw", "discard"];
 
@@ -488,6 +492,8 @@ function normalizeMap(map: MapNode[] | undefined): MapNode[] {
       x: finiteNumber(node.x, 0),
       y: finiteNumber(node.y, 0),
       type: node.type,
+      zone: isMapZone(node.zone) ? node.zone : undefined,
+      routeKind: isMapRouteKind(node.routeKind) ? node.routeKind : undefined,
       children: arrayOrEmpty(node.children).filter((childId) => typeof childId === "string" && childId),
       completed: Boolean(node.completed),
     });
@@ -542,6 +548,14 @@ function isActivePhase(phase: unknown): phase is Phase {
 
 function isNodeType(nodeType: unknown): nodeType is NodeType {
   return typeof nodeType === "string" && NODE_TYPES.includes(nodeType as NodeType);
+}
+
+function isMapZone(zone: unknown): zone is MapZone {
+  return typeof zone === "string" && MAP_ZONES.includes(zone as MapZone);
+}
+
+function isMapRouteKind(routeKind: unknown): routeKind is MapRouteKind {
+  return typeof routeKind === "string" && MAP_ROUTE_KINDS.includes(routeKind as MapRouteKind);
 }
 
 function hasValidMapShape(map: unknown): map is MapNode[] {

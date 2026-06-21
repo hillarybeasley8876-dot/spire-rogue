@@ -62,6 +62,8 @@ import type {
   EnemyState,
   ExhaustCardsEffect,
   MapNode,
+  MapRouteKind,
+  MapZone,
   NodeType,
   PotionInstance,
   PotionEffect,
@@ -140,6 +142,33 @@ const NODE_HINTS: Record<NodeType, string> = {
   shop: "购买/移除/治疗",
   event: "特殊交换",
   boss: "终局检定",
+};
+
+const MAP_ZONE_LABELS: Record<MapZone, string> = {
+  outer: "外缘",
+  wild: "荒巢",
+  forge: "熔炉",
+  sanctum: "圣所",
+  rift: "裂隙",
+  heart: "心核",
+};
+
+const MAP_ROUTE_KIND_LABELS: Record<MapRouteKind, string> = {
+  start: "入口",
+  branch: "分叉",
+  converge: "汇合",
+  choke: "窄口",
+  crossroad: "交汇",
+  summit: "终点",
+};
+
+const MAP_ROUTE_KIND_SHORT: Record<MapRouteKind, string> = {
+  start: "入",
+  branch: "岔",
+  converge: "汇",
+  choke: "窄",
+  crossroad: "枢",
+  summit: "顶",
 };
 
 const BOON_RARITY_LABELS = {
@@ -836,6 +865,15 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
           <span>
             <Layers size={14} /> 分叉 <b>{mapIntel.branchCount}</b>
           </span>
+          <span>
+            <Layers size={14} /> 汇合 <b>{mapIntel.mergeCount}</b>
+          </span>
+          <span>
+            <MapIcon size={14} /> 窄口 <b>{mapIntel.chokeCount}</b>
+          </span>
+          <span>
+            <Sparkles size={14} /> 区域 <b>{mapIntel.zoneCount}</b>
+          </span>
         </div>
 
         <FoldSection
@@ -849,15 +887,22 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
             {availableNodes.map((node) => (
               <button
                 key={node.id}
-                className={`route-option node-tone--${node.type}`}
+                className={`route-option node-tone--${node.type} map-zone--${mapNodeZone(node)}`}
                 type="button"
                 onClick={() => onEnter(node.id)}
               >
                 <NodeIcon type={node.type} size={17} />
                 <strong>{NODE_LABELS[node.type]}</strong>
                 <span>{node.id === "boss" ? `第 ${run.act ?? 1} 幕顶层` : `第 ${node.floor + 1} 层 · ${node.lane + 1} 道`}</span>
+                <div className="route-option__chips">
+                  <small className={`route-option__zone map-zone--${mapNodeZone(node)}`}>{MAP_ZONE_LABELS[mapNodeZone(node)]}</small>
+                  <small className={`route-option__route route-kind--${mapNodeRouteKind(node)}`}>
+                    {MAP_ROUTE_KIND_LABELS[mapNodeRouteKind(node)]}
+                  </small>
+                </div>
                 <em>{NODE_HINTS[node.type]}</em>
                 <small>{routePreviewLabel(node, nodeById)}</small>
+                <small className="route-option__structure">{routeStructureLabel(node)}</small>
                 <small className="route-option__signal">{routeSignalLabel(node, run)}</small>
               </button>
             ))}
@@ -879,6 +924,17 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
 
         <div className="map-scroll">
           <div className="map-canvas">
+            <div className="map-zone-bands" aria-hidden="true">
+              {mapIntel.zoneBands.map((band) => (
+                <span
+                  key={`${band.zone}-${band.startFloor}-${band.endFloor}`}
+                  className={`map-zone-band map-zone--${band.zone}`}
+                  style={{ top: `${band.top}%`, height: `${band.height}%` }}
+                >
+                  <b>{MAP_ZONE_LABELS[band.zone]}</b>
+                </span>
+              ))}
+            </div>
             <div className="map-ruler" aria-hidden="true">
               {mapIntel.floorMarks.map((mark) => (
                 <span key={mark.floor} style={{ top: `${mark.y}%` }}>
@@ -902,7 +958,7 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
                       y1={node.y}
                       x2={child.x}
                       y2={child.y}
-                      className={`map-line ${node.completed ? "map-line--active" : ""} ${
+                      className={`map-line map-zone--${mapNodeZone(child)} ${node.completed ? "map-line--active" : ""} ${
                         isAvailableEdge ? "map-line--available" : ""
                       } ${isCompletedEdge ? "map-line--completed" : ""}`}
                     />
@@ -944,13 +1000,110 @@ function summarizeMapIntel(map: MapNode[]) {
     .sort(([left], [right]) => left - right)
     .filter(([floor], index, floors) => floor === 0 || index === floors.length - 1 || floor % 2 === 0)
     .map(([floor, bucket]) => ({ floor, y: bucket.totalY / bucket.count }));
+  const zoneBands = summarizeMapZoneBands(map, floorBuckets);
+  const routeKinds = map.reduce<Record<MapRouteKind, number>>(
+    (acc, node) => {
+      acc[mapNodeRouteKind(node)] += 1;
+      return acc;
+    },
+    { start: 0, branch: 0, converge: 0, choke: 0, crossroad: 0, summit: 0 },
+  );
 
   return {
     counts,
     floorMarks,
+    zoneBands,
     nodeCount: map.length,
-    branchCount: map.filter((node) => node.children.length > 1).length,
+    branchCount: routeKinds.branch + routeKinds.crossroad,
+    mergeCount: routeKinds.converge + routeKinds.crossroad,
+    chokeCount: routeKinds.choke,
+    zoneCount: new Set(map.filter((node) => node.type !== "boss").map((node) => mapNodeZone(node))).size,
   };
+}
+
+function summarizeMapZoneBands(map: MapNode[], floorBuckets: Map<number, { count: number; totalY: number }>) {
+  const floorZones = Array.from(floorBuckets.keys())
+    .sort((left, right) => left - right)
+    .map((floor) => {
+      const nodes = map.filter((node) => node.floor === floor);
+      return { floor, zone: dominantMapZone(nodes) };
+    });
+  const segments: Array<{ startFloor: number; endFloor: number; zone: MapZone }> = [];
+  for (const item of floorZones) {
+    const previous = segments[segments.length - 1];
+    if (previous && previous.zone === item.zone && item.zone !== "heart") {
+      previous.endFloor = item.floor;
+      continue;
+    }
+    segments.push({ startFloor: item.floor, endFloor: item.floor, zone: item.zone });
+  }
+
+  return segments.map((segment) => {
+    const startY = averageFloorY(segment.startFloor, floorBuckets);
+    const endY = averageFloorY(segment.endFloor, floorBuckets);
+    const top = clampPercent(Math.min(startY, endY) - 3.2);
+    const bottom = clampPercent(Math.max(startY, endY) + 3.2);
+    return {
+      ...segment,
+      top,
+      height: Math.max(5, bottom - top),
+    };
+  });
+}
+
+function dominantMapZone(nodes: MapNode[]): MapZone {
+  const counts = nodes.reduce<Record<MapZone, number>>(
+    (acc, node) => {
+      acc[mapNodeZone(node)] += 1;
+      return acc;
+    },
+    { outer: 0, wild: 0, forge: 0, sanctum: 0, rift: 0, heart: 0 },
+  );
+  return (Object.keys(counts) as MapZone[]).sort((left, right) => counts[right] - counts[left])[0] ?? "outer";
+}
+
+function averageFloorY(floor: number, floorBuckets: Map<number, { count: number; totalY: number }>): number {
+  const bucket = floorBuckets.get(floor);
+  return bucket ? bucket.totalY / bucket.count : 50;
+}
+
+function clampPercent(value: number): number {
+  return Math.max(0, Math.min(100, value));
+}
+
+function mapNodeZone(node: MapNode): MapZone {
+  if (node.zone) {
+    return node.zone;
+  }
+  if (node.type === "boss") {
+    return "heart";
+  }
+  if (node.type === "rest" || node.type === "shop") {
+    return "sanctum";
+  }
+  if (node.floor <= 1) {
+    return "outer";
+  }
+  if (node.floor >= 8) {
+    return "rift";
+  }
+  return node.type === "elite" ? "forge" : node.floor <= 4 ? "wild" : "forge";
+}
+
+function mapNodeRouteKind(node: MapNode): MapRouteKind {
+  if (node.routeKind) {
+    return node.routeKind;
+  }
+  if (node.type === "boss") {
+    return "summit";
+  }
+  if (node.floor === 0) {
+    return "start";
+  }
+  if (node.children.length >= 2) {
+    return "branch";
+  }
+  return "choke";
 }
 
 function RunStatsPanel({ run }: { run: RunState }) {
@@ -992,6 +1145,23 @@ function routePreviewLabel(node: MapNode, nodeById: Map<string, MapNode>): strin
     .join(" / ")}`;
 }
 
+function routeStructureLabel(node: MapNode): string {
+  const routeKind = mapNodeRouteKind(node);
+  if (routeKind === "crossroad") {
+    return `路线：${MAP_ROUTE_KIND_LABELS[routeKind]}，进出都多`;
+  }
+  if (routeKind === "branch") {
+    return `路线：${MAP_ROUTE_KIND_LABELS[routeKind]}，后续选择多`;
+  }
+  if (routeKind === "converge") {
+    return `路线：${MAP_ROUTE_KIND_LABELS[routeKind]}，多线汇入`;
+  }
+  if (routeKind === "choke") {
+    return `路线：${MAP_ROUTE_KIND_LABELS[routeKind]}，容错较低`;
+  }
+  return `路线：${MAP_ROUTE_KIND_LABELS[routeKind]}`;
+}
+
 function routeSignalLabel(node: MapNode, run: RunState): string {
   const hpRatio = run.player.hp / run.player.maxHp;
   const act = run.act ?? 1;
@@ -1022,19 +1192,23 @@ function MapNodeButton({
   available: boolean;
   onEnter: () => void;
 }) {
+  const routeKind = mapNodeRouteKind(node);
   return (
     <button
-      className={`map-node node-tone--${node.type} ${available ? "is-available" : ""} ${
+      className={`map-node node-tone--${node.type} map-zone--${mapNodeZone(node)} route-kind--${routeKind} ${
+        available ? "is-available" : ""
+      } ${
         node.completed ? "is-completed" : ""
       }`}
       style={{ left: `${node.x}%`, top: `${node.y}%` }}
       type="button"
       disabled={!available}
       onClick={onEnter}
-      title={NODE_LABELS[node.type]}
+      title={`${NODE_LABELS[node.type]} · ${MAP_ROUTE_KIND_LABELS[routeKind]} · ${MAP_ZONE_LABELS[mapNodeZone(node)]}`}
     >
       <NodeIcon type={node.type} size={20} />
       <span>{NODE_LABELS[node.type]}</span>
+      <small className="map-node__route">{MAP_ROUTE_KIND_SHORT[routeKind]}</small>
     </button>
   );
 }
@@ -1297,10 +1471,15 @@ function PixelSprite({
 }) {
   const intentClass = intent ? `pixel-sprite--intent-${intent}` : "";
   const powerClass = spritePowerClasses(powers);
+  const shapeClass = spriteShape(variant);
+  const tierClass = spriteTier(variant);
+  const variantClass = spriteVariantClass(variant);
   return (
     <div
       key={pulseKey}
-      className={`pixel-sprite pixel-sprite--${kind} pixel-sprite--${spriteTone(variant)} ${intentClass} ${powerClass} ${
+      className={`pixel-sprite pixel-sprite--${kind} pixel-sprite--${spriteTone(
+        variant,
+      )} ${shapeClass} ${variantClass} ${tierClass} ${intentClass} ${powerClass} ${
         active ? "is-active" : ""
       } ${guarded ? "is-guarded" : ""} ${dead ? "is-dead" : ""}`}
       aria-hidden="true"
@@ -1308,12 +1487,21 @@ function PixelSprite({
       <span className="pixel-sprite__aura" />
       <span className="pixel-sprite__guard" />
       <span className="pixel-sprite__slash" />
+      <span className="pixel-sprite__horn pixel-sprite__horn--left" />
+      <span className="pixel-sprite__horn pixel-sprite__horn--right" />
       <span className="pixel-sprite__head" />
+      <span className="pixel-sprite__eye pixel-sprite__eye--left" />
+      <span className="pixel-sprite__eye pixel-sprite__eye--right" />
+      <span className="pixel-sprite__mouth" />
+      <span className="pixel-sprite__core" />
       <span className="pixel-sprite__body" />
       <span className="pixel-sprite__arm pixel-sprite__arm--left" />
       <span className="pixel-sprite__arm pixel-sprite__arm--right" />
       <span className="pixel-sprite__leg pixel-sprite__leg--left" />
       <span className="pixel-sprite__leg pixel-sprite__leg--right" />
+      <span className="pixel-sprite__tail" />
+      <span className="pixel-sprite__wing pixel-sprite__wing--left" />
+      <span className="pixel-sprite__wing pixel-sprite__wing--right" />
       <span className="pixel-sprite__spark pixel-sprite__spark--one" />
       <span className="pixel-sprite__spark pixel-sprite__spark--two" />
       <span className="pixel-sprite__status pixel-sprite__status--one" />
@@ -1378,6 +1566,38 @@ function spriteTone(variant: string): string {
   }
   if (variant.includes("jaw") || variant.includes("nob") || variant.includes("blood") || variant.includes("scar")) return "beast";
   return "hero";
+}
+
+function spriteTier(variant: string): string {
+  const tier = ENEMIES[variant]?.tier;
+  if (tier === "elite") return "pixel-sprite--tier-elite";
+  if (tier === "boss") return "pixel-sprite--tier-boss";
+  return "";
+}
+
+function spriteShape(variant: string): string {
+  if (variant === "wanderer") return "pixel-sprite--shape-hero";
+  if (variant.includes("slime")) return "pixel-sprite--shape-slime";
+  if (variant.includes("duelist") || variant.includes("stalker")) return "pixel-sprite--shape-rogue";
+  if (variant.includes("cultist") || variant.includes("oracle") || variant.includes("mage")) return "pixel-sprite--shape-cultist";
+  if (variant.includes("jaw") || variant.includes("beast") || variant.includes("nob") || variant.includes("lancer")) {
+    return "pixel-sprite--shape-beast";
+  }
+  if (variant.includes("scar") || variant.includes("blood") || variant.includes("leech")) return "pixel-sprite--shape-scar";
+  if (variant.includes("spore") || variant.includes("plague") || variant.includes("venom")) return "pixel-sprite--shape-spore";
+  if (variant.includes("wisp") || variant.includes("mirror") || variant.includes("glass")) return "pixel-sprite--shape-wisp";
+  if (variant.includes("hulk") || variant.includes("colossus") || variant.includes("jailer")) return "pixel-sprite--shape-hulk";
+  if (variant.includes("sentry") || variant.includes("sentinel") || variant.includes("scrapper") || variant.includes("coil")) {
+    return "pixel-sprite--shape-sentry";
+  }
+  if (variant.includes("mimic")) return "pixel-sprite--shape-mimic";
+  if (variant.includes("tactician") || variant.includes("scout") || variant.includes("adept")) return "pixel-sprite--shape-rogue";
+  if (variant.includes("heart")) return "pixel-sprite--shape-heart";
+  return "pixel-sprite--shape-humanoid";
+}
+
+function spriteVariantClass(variant: string): string {
+  return `pixel-sprite--variant-${variant.replace(/_/g, "-")}`;
 }
 
 function MechanicPanel({
