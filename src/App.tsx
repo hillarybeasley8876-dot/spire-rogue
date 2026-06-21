@@ -488,14 +488,21 @@ function RunSidebar({
   ] as const;
   const activePhase = run.phase === "victory" || run.phase === "defeat" ? "map" : run.phase;
   const inventoryMeta = `${run.player.relics.length} 遗物 · ${run.player.boons.length} 常驻`;
+  const foldResetKey = `${run.phase}-${run.act ?? 1}`;
+  const flowDefaultOpen = run.phase === "map" || run.phase === "reward" || run.phase === "victory" || run.phase === "defeat";
+  const resourceDefaultOpen = run.phase !== "combat";
+  const inventoryDefaultOpen = run.phase !== "combat" && run.player.relics.length + run.player.boons.length <= 4;
 
   return (
     <aside className="game-sidebar">
+      <RunPhaseStatus run={run} />
+      <HudQuickbar run={run} />
       <FoldSection
         title="流程"
         icon={<MapIcon size={16} />}
         meta={`第 ${run.act ?? 1} 幕 · ${Math.max(1, run.floor + 1)} 层`}
-        defaultOpen
+        defaultOpen={flowDefaultOpen}
+        resetKey={foldResetKey}
         className="fold-section--route"
       >
         <div className="route-flow">
@@ -514,12 +521,12 @@ function RunSidebar({
           </div>
         </div>
       </FoldSection>
-      <RunPhaseStatus run={run} />
       <FoldSection
         title="卡牌 / 药水 / 倾向"
         icon={<Layers size={16} />}
         meta={`${run.player.deck.length} 牌 · ${run.player.potions.length}/${run.player.potionSlots} 瓶`}
-        defaultOpen={run.phase !== "combat"}
+        defaultOpen={resourceDefaultOpen}
+        resetKey={foldResetKey}
         className="fold-section--resources"
       >
         <RunResourceDock run={run} onDiscardPotion={onDiscardPotion} />
@@ -528,7 +535,8 @@ function RunSidebar({
         title="遗物 / 常驻"
         icon={<Award size={16} />}
         meta={inventoryMeta}
-        defaultOpen={run.player.relics.length + run.player.boons.length <= 4}
+        defaultOpen={inventoryDefaultOpen}
+        resetKey={foldResetKey}
         className="fold-section--inventory"
       >
         <RunInventoryTray run={run} />
@@ -542,6 +550,7 @@ function FoldSection({
   icon,
   meta,
   defaultOpen = true,
+  resetKey,
   className = "",
   children,
 }: {
@@ -549,10 +558,15 @@ function FoldSection({
   icon: React.ReactNode;
   meta?: string;
   defaultOpen?: boolean;
+  resetKey?: string | number;
   className?: string;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+
+  useEffect(() => {
+    setOpen(defaultOpen);
+  }, [defaultOpen, resetKey]);
 
   return (
     <section className={`fold-section ${open ? "is-open" : ""} ${className}`}>
@@ -564,6 +578,37 @@ function FoldSection({
       </button>
       {open && <div className="fold-section__body">{children}</div>}
     </section>
+  );
+}
+
+function HudQuickbar({ run }: { run: RunState }) {
+  return (
+    <div className="hud-quickbar" aria-label="本局资源">
+      <span className="hud-quickbar__item hud-quickbar__item--hp">
+        <HeartPulse size={14} />
+        <b>
+          {run.player.hp}/{run.player.maxHp}
+        </b>
+        <small>生命</small>
+      </span>
+      <span className="hud-quickbar__item hud-quickbar__item--gold">
+        <Coins size={14} />
+        <b>{run.player.gold}</b>
+        <small>金币</small>
+      </span>
+      <span className="hud-quickbar__item hud-quickbar__item--deck">
+        <Layers size={14} />
+        <b>{run.player.deck.length}</b>
+        <small>牌组</small>
+      </span>
+      <span className="hud-quickbar__item hud-quickbar__item--potion">
+        <FlaskConical size={14} />
+        <b>
+          {run.player.potions.length}/{run.player.potionSlots}
+        </b>
+        <small>药水</small>
+      </span>
+    </div>
   );
 }
 
@@ -850,32 +895,41 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
           </div>
         </div>
 
-        <div className="map-intel" aria-label="地图情报">
-          <span>
-            <MapIcon size={14} /> 节点 <b>{mapIntel.nodeCount}</b>
-          </span>
-          <span>
-            <Skull size={14} /> 精英 <b>{mapIntel.counts.elite}</b>
-          </span>
-          <span>
-            <Sparkles size={14} /> 事件 <b>{mapIntel.counts.event}</b>
-          </span>
-          <span>
-            <HeartPulse size={14} /> 补给 <b>{mapIntel.counts.rest + mapIntel.counts.shop}</b>
-          </span>
-          <span>
-            <Layers size={14} /> 分叉 <b>{mapIntel.branchCount}</b>
-          </span>
-          <span>
-            <Layers size={14} /> 汇合 <b>{mapIntel.mergeCount}</b>
-          </span>
-          <span>
-            <MapIcon size={14} /> 窄口 <b>{mapIntel.chokeCount}</b>
-          </span>
-          <span>
-            <Sparkles size={14} /> 区域 <b>{mapIntel.zoneCount}</b>
-          </span>
-        </div>
+        <FoldSection
+          title="地图情报"
+          icon={<Layers size={16} />}
+          meta={`${mapIntel.nodeCount} 节点 · ${mapIntel.counts.elite} 精英 · ${mapIntel.counts.event} 事件`}
+          defaultOpen={false}
+          resetKey={`${run.act ?? 1}-${run.floor}`}
+          className="map-intel-command"
+        >
+          <div className="map-intel" aria-label="地图情报">
+            <span>
+              <MapIcon size={14} /> 节点 <b>{mapIntel.nodeCount}</b>
+            </span>
+            <span>
+              <Skull size={14} /> 精英 <b>{mapIntel.counts.elite}</b>
+            </span>
+            <span>
+              <Sparkles size={14} /> 事件 <b>{mapIntel.counts.event}</b>
+            </span>
+            <span>
+              <HeartPulse size={14} /> 补给 <b>{mapIntel.counts.rest + mapIntel.counts.shop}</b>
+            </span>
+            <span>
+              <Layers size={14} /> 分叉 <b>{mapIntel.branchCount}</b>
+            </span>
+            <span>
+              <Layers size={14} /> 汇合 <b>{mapIntel.mergeCount}</b>
+            </span>
+            <span>
+              <MapIcon size={14} /> 窄口 <b>{mapIntel.chokeCount}</b>
+            </span>
+            <span>
+              <Sparkles size={14} /> 区域 <b>{mapIntel.zoneCount}</b>
+            </span>
+          </div>
+        </FoldSection>
 
         <FoldSection
           title="可前往路线"
@@ -1249,6 +1303,8 @@ function CombatScreen({
   const selectedNeedsTarget = Boolean(selectedCard && selectedCardDef && cardNeedsTarget(selectedCard));
   const selectedPotionDef = selectedPotion ? POTIONS[selectedPotion.potionId] : undefined;
   const selectedPotionNeedsTarget = Boolean(selectedPotion && selectedPotionDef && potionNeedsTarget(selectedPotion));
+  const incoming = estimateIncomingDamage(run);
+  const blockGap = Math.max(0, incoming - combat.playerBlock);
   const targetingName = selectedCard
     ? `${selectedCardDef?.name ?? "失效卡牌"}${selectedCard.upgraded && selectedCardDef ? "+" : ""}`
     : selectedPotion
@@ -1396,14 +1452,55 @@ function CombatScreen({
         </div>
       </div>
 
-      <aside className="combat-log">
-        <MechanicPanel run={run} selectedCard={selectedCard} selectedPotion={selectedPotion} />
-        <PanelTitle icon={<Sparkles size={17} />} title="战斗记录" />
-        <ol>
-          {combat.log.map((line, index) => (
-            <li key={`${line}-${index}`}>{line}</li>
-          ))}
-        </ol>
+      <aside className="combat-log combat-console">
+        <div className="combat-console__summary" aria-label="战斗摘要">
+          <span className={incoming > 0 ? "is-danger" : ""}>
+            <Sword size={14} />
+            <b>{incoming}</b>
+            <small>入伤</small>
+          </span>
+          <span className={blockGap > 0 ? "is-warning" : ""}>
+            <Shield size={14} />
+            <b>{blockGap}</b>
+            <small>缺口</small>
+          </span>
+          <span>
+            <Zap size={14} />
+            <b>{combat.energy}</b>
+            <small>能量</small>
+          </span>
+          <span>
+            <BookOpen size={14} />
+            <b>{combat.hand.length}</b>
+            <small>手牌</small>
+          </span>
+        </div>
+
+        <FoldSection
+          title="战斗指挥"
+          icon={<Layers size={16} />}
+          meta={`第 ${combat.turn} 回合 · ${combat.enemies.filter((enemy) => enemy.hp > 0).length} 敌`}
+          defaultOpen
+          resetKey={run.phase}
+          className="fold-section--combat"
+        >
+          <MechanicPanel run={run} selectedCard={selectedCard} selectedPotion={selectedPotion} />
+        </FoldSection>
+
+        <FoldSection
+          title="行动日志"
+          icon={<Sparkles size={16} />}
+          meta={`${combat.log.length} 条`}
+          defaultOpen={false}
+          resetKey={run.phase}
+          className="fold-section--log"
+        >
+          <ol className="combat-log__list">
+            {combat.log.map((line, index) => (
+              <li key={`${line}-${index}`}>{line}</li>
+            ))}
+          </ol>
+        </FoldSection>
       </aside>
     </section>
   );
@@ -1653,7 +1750,6 @@ function MechanicPanel({
 
   return (
     <div className="mechanic-panel">
-      <PanelTitle icon={<Layers size={17} />} title="机制" />
       <div className="mechanic-forecast">
         <span className={incoming > 0 ? "is-danger" : ""}>
           <Sword size={14} /> 入伤 {incoming}
