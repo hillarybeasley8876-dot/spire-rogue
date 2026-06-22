@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { useI18n } from "./i18n";
+import { useI18n, currentLang } from "./i18n";
 import {
   getLocalizedDifficulty,
   cardName,
@@ -26,6 +26,7 @@ import {
   actionTargetLabel,
   powerToneLabel,
   mechTag,
+  tr,
 } from "./i18n/labels";
 import {
   Award,
@@ -116,10 +117,10 @@ import type {
 import { clearSavedRun, isActiveRun, loadSavedRun, saveRun } from "./game/persistence";
 
 const CARD_TYPE_LABELS = {
-  Attack: "攻击",
-  Skill: "技能",
-  Power: "能力",
-  Status: "状态",
+  Attack: tr("攻击"),
+  Skill: tr("技能"),
+  Power: tr("能力"),
+  Status: tr("状态"),
 };
 
 const ACTION_TARGET_LABELS = {
@@ -197,9 +198,9 @@ const POWER_TONES: Record<PowerKey, PowerTone> = {
 };
 
 const POWER_TONE_LABELS: Record<PowerTone, string> = {
-  buff: "增益",
-  debuff: "负面",
-  engine: "机制",
+  buff: tr("增益"),
+  debuff: tr("负面"),
+  engine: tr("机制"),
 };
 
 // ---------------------------------------------------------------------------
@@ -405,63 +406,63 @@ function PowerBadge({ power, stacks }: { power: PowerKey; stacks: number }) {
 }
 
 const NODE_LABELS: Record<NodeType, string> = {
-  fight: "战斗",
-  elite: "精英",
-  rest: "休息",
-  shop: "商店",
-  event: "事件",
+  fight: tr("战斗"),
+  elite: tr("精英"),
+  rest: tr("休息"),
+  shop: tr("商店"),
+  event: tr("事件"),
   boss: "Boss",
 };
 
 const NODE_HINTS: Record<NodeType, string> = {
-  fight: "普通奖励",
-  elite: "高风险高收益",
-  rest: "回血/升级/调配",
-  shop: "购买/移除/治疗",
-  event: "特殊交换",
-  boss: "终局检定",
+  fight: tr("普通奖励"),
+  elite: tr("高风险高收益"),
+  rest: tr("回血/升级/调配"),
+  shop: tr("购买/移除/治疗"),
+  event: tr("特殊交换"),
+  boss: tr("终局检定"),
 };
 
 const MAP_ZONE_LABELS: Record<MapZone, string> = {
-  outer: "外缘",
-  wild: "荒巢",
-  forge: "熔炉",
-  sanctum: "圣所",
-  rift: "裂隙",
-  heart: "心核",
+  outer: tr("外缘"),
+  wild: tr("荒巢"),
+  forge: tr("熔炉"),
+  sanctum: tr("圣所"),
+  rift: tr("裂隙"),
+  heart: tr("心核"),
 };
 
 const MAP_ROUTE_KIND_LABELS: Record<MapRouteKind, string> = {
-  start: "入口",
-  branch: "分叉",
-  converge: "汇合",
-  choke: "窄口",
-  crossroad: "交汇",
-  summit: "终点",
+  start: tr("入口"),
+  branch: tr("分叉"),
+  converge: tr("汇合"),
+  choke: tr("窄口"),
+  crossroad: tr("交汇"),
+  summit: tr("终点"),
 };
 
 const MAP_ROUTE_KIND_SHORT: Record<MapRouteKind, string> = {
-  start: "入",
-  branch: "岔",
-  converge: "汇",
-  choke: "窄",
-  crossroad: "枢",
-  summit: "顶",
+  start: tr("入"),
+  branch: tr("岔"),
+  converge: tr("汇"),
+  choke: tr("窄"),
+  crossroad: tr("枢"),
+  summit: tr("顶"),
 };
 
 const BOON_RARITY_LABELS = {
-  common: "普通",
-  uncommon: "罕见",
-  rare: "稀有",
+  common: tr("普通"),
+  uncommon: tr("罕见"),
+  rare: tr("稀有"),
 };
 
 const RARITY_LABELS = {
-  starter: "初始",
-  common: "普通",
-  uncommon: "罕见",
-  rare: "稀有",
-  boss: "首领",
-  status: "状态",
+  starter: tr("初始"),
+  common: tr("普通"),
+  uncommon: tr("罕见"),
+  rare: tr("稀有"),
+  boss: tr("首领"),
+  status: tr("状态"),
 };
 
 const BOON_MECHANIC_TAGS: Record<BoonId, string[]> = {
@@ -838,13 +839,24 @@ function RunSidebar({
   onPotionClick: (potion: PotionInstance) => void;
   onDiscardPotion: (potionUid: string) => void;
 }) {
+  const langCode = currentLang;
+  const actNum = run.act ?? 1;
+  const floorNum = Math.max(1, run.floor + 1);
   const flowItems = [
-    { key: "map", label: "路线", detail: `第 ${run.act ?? 1} 幕 · 层 ${Math.max(1, run.floor + 1)}` },
-    { key: "combat", label: "战斗", detail: run.combat?.encounterName ?? "下一场遭遇" },
-    { key: "reward", label: "战利品", detail: run.reward?.title ?? "战斗后结算" },
-    { key: "rest", label: "营火", detail: "休息 / 升级 / 调配" },
-    { key: "shop", label: "商店", detail: `${run.player.gold} 金币` },
-    { key: "event", label: "事件", detail: run.event?.title ?? "特殊交换" },
+    {
+      key: "map",
+      label: tr("路线"),
+      detail: langCode === "en" ? `Act ${actNum} · Floor ${floorNum}` : `第 ${actNum} 幕 · 层 ${floorNum}`,
+    },
+    { key: "combat", label: tr("战斗"), detail: run.combat?.encounterName ?? tr("下一场遭遇") },
+    { key: "reward", label: tr("战利品"), detail: run.reward?.title ?? tr("战斗后结算") },
+    { key: "rest", label: tr("营火"), detail: tr("休息 / 升级 / 调配") },
+    {
+      key: "shop",
+      label: tr("商店"),
+      detail: langCode === "en" ? `${run.player.gold} Gold` : `${run.player.gold} 金币`,
+    },
+    { key: "event", label: tr("事件"), detail: run.event?.title ?? tr("特殊交换") },
   ] as const;
   const activePhase = run.phase === "victory" || run.phase === "defeat" ? "map" : run.phase;
   const inventoryMeta = `${run.player.relics.length} 遗物 · ${run.player.boons.length} 常驻`;
@@ -858,9 +870,9 @@ function RunSidebar({
       <RunPhaseStatus run={run} />
       <HudQuickbar run={run} />
       <FoldSection
-        title="流程"
+        title={tr("流程")}
         icon={<MapIcon size={16} />}
-        meta={`第 ${run.act ?? 1} 幕 · ${Math.max(1, run.floor + 1)} 层`}
+        meta={currentLang === "en" ? `Act ${run.act ?? 1} · Floor ${Math.max(1, run.floor + 1)}` : `第 ${run.act ?? 1} 幕 · ${Math.max(1, run.floor + 1)} 层`}
         defaultOpen={flowDefaultOpen}
         resetKey={foldResetKey}
         className="fold-section--route"
@@ -882,7 +894,7 @@ function RunSidebar({
         </div>
       </FoldSection>
       <FoldSection
-        title="卡牌 / 药水 / 倾向"
+        title={tr("卡牌 / 药水 / 倾向")}
         icon={<Layers size={16} />}
         meta={`${run.player.deck.length} 牌 · ${run.player.potions.length}/${run.player.potionSlots} 瓶`}
         defaultOpen={resourceDefaultOpen}
@@ -897,7 +909,7 @@ function RunSidebar({
         />
       </FoldSection>
       <FoldSection
-        title="遗物 / 常驻"
+        title={tr("遗物 / 常驻")}
         icon={<Award size={16} />}
         meta={inventoryMeta}
         defaultOpen={inventoryDefaultOpen}
@@ -948,30 +960,30 @@ function FoldSection({
 
 function HudQuickbar({ run }: { run: RunState }) {
   return (
-    <div className="hud-quickbar" aria-label="本局资源">
+    <div className="hud-quickbar" aria-label={tr("本局资源")}>
       <span className="hud-quickbar__item hud-quickbar__item--hp">
         <HeartPulse size={14} />
         <b>
           {run.player.hp}/{run.player.maxHp}
         </b>
-        <small>生命</small>
+        <small>{tr("生命")}</small>
       </span>
       <span className="hud-quickbar__item hud-quickbar__item--gold">
         <Coins size={14} />
         <b>{run.player.gold}</b>
-        <small>金币</small>
+        <small>{tr("金币")}</small>
       </span>
       <span className="hud-quickbar__item hud-quickbar__item--deck">
         <Layers size={14} />
         <b>{run.player.deck.length}</b>
-        <small>牌组</small>
+        <small>{tr("牌组")}</small>
       </span>
       <span className="hud-quickbar__item hud-quickbar__item--potion">
         <FlaskConical size={14} />
         <b>
           {run.player.potions.length}/{run.player.potionSlots}
         </b>
-        <small>药水</small>
+        <small>{tr("药水")}</small>
       </span>
     </div>
   );
@@ -980,48 +992,48 @@ function HudQuickbar({ run }: { run: RunState }) {
 function RunPhaseStatus({ run }: { run: RunState }) {
   const phaseCopy = {
     map: {
-      title: "选择路线",
+      title: tr("选择路线"),
       detail: `可前往 ${getAvailableNodeIds(run).length} 个节点`,
       icon: <MapIcon size={16} />,
     },
     combat: {
-      title: "处理回合",
+      title: tr("处理回合"),
       detail: run.combat ? `${run.combat.encounterName} · 第 ${run.combat.turn} 回合` : "遭遇准备中",
       icon: <Sword size={16} />,
     },
     reward: {
-      title: "领取战利品",
-      detail: run.reward?.title ?? "战斗奖励",
+      title: tr("领取战利品"),
+      detail: run.reward?.title ?? tr("战斗奖励"),
       icon: <Award size={16} />,
     },
     rest: {
-      title: "营火整备",
-      detail: "休息 / 升级 / 调配",
+      title: tr("营火整备"),
+      detail: tr("休息 / 升级 / 调配"),
       icon: <HeartPulse size={16} />,
     },
     shop: {
-      title: "商店采购",
+      title: tr("商店采购"),
       detail: `${run.player.gold} 金币可用`,
       icon: <ShoppingBag size={16} />,
     },
     event: {
-      title: "事件抉择",
-      detail: run.event?.title ?? "特殊交换",
+      title: tr("事件抉择"),
+      detail: run.event?.title ?? tr("特殊交换"),
       icon: <Sparkles size={16} />,
     },
     victory: {
-      title: "胜利结算",
-      detail: "本局完成",
+      title: tr("胜利结算"),
+      detail: tr("本局完成"),
       icon: <Award size={16} />,
     },
     defeat: {
-      title: "失败结算",
-      detail: "复盘构筑",
+      title: tr("失败结算"),
+      detail: tr("复盘构筑"),
       icon: <Skull size={16} />,
     },
     title: {
-      title: "标题",
-      detail: "选择难度",
+      title: tr("标题"),
+      detail: tr("选择难度"),
       icon: <Flame size={16} />,
     },
   }[run.phase];
@@ -1063,7 +1075,7 @@ function RunResourceDock({
           <strong>{summary.total}</strong>
         </div>
         <div className="resource-dock__metrics">
-          <span>均费 {summary.avgCost}</span>
+          <span>{tr("均费")} {summary.avgCost}</span>
           <span>升级 {summary.upgraded}</span>
           <span className={summary.typeCounts.Status > 0 ? "is-warning" : ""}>状态 {summary.typeCounts.Status}</span>
         </div>
@@ -1103,13 +1115,13 @@ function RunResourceDock({
       <section className="resource-dock__panel resource-dock__panel--signal">
         <div className="resource-dock__head">
           <span>
-            <Target size={15} /> 倾向
+            <Target size={15} /> {tr("倾向")}
           </span>
           <strong>{topArchetype?.score ?? 0}</strong>
         </div>
         <div className="resource-dock__signal">
-          <strong>{topArchetype?.label ?? "基础构筑"}</strong>
-          <span>{topArchetype?.detail ?? "等待核心组件"}</span>
+          <strong>{topArchetype?.label ?? tr("基础构筑")}</strong>
+          <span>{topArchetype?.detail ?? tr("等待核心组件")}</span>
         </div>
       </section>
     </div>
@@ -1138,7 +1150,7 @@ function RunInventoryTray({ run }: { run: RunState }) {
   return (
     <div className="inventory-tray">
       <div>
-        <PanelTitle icon={<Award size={17} />} title="遗物" />
+        <PanelTitle icon={<Award size={17} />} title={tr("遗物")} />
         <div className="inventory-chip-list">
           {relics.map((relicId) => {
             const relic = relicInfo(relicId);
@@ -1147,9 +1159,9 @@ function RunInventoryTray({ run }: { run: RunState }) {
                 key={relicId}
                 content={
                   <TipCard
-                    title={relic?.name ?? "失效遗物"}
+                    title={relic?.name ?? tr("失效遗物")}
                     tone="engine"
-                    body={relic?.text ?? "这个遗物来自旧数据。"}
+                    body={relic?.text ?? tr("这个遗物来自旧数据。")}
                     footer="遗物"
                   />
                 }
@@ -1162,7 +1174,7 @@ function RunInventoryTray({ run }: { run: RunState }) {
                   onClick={() => setSelectedInventory({ kind: "relic", id: relicId })}
                 >
                   <Award size={13} />
-                  {relic?.name ?? "失效遗物"}
+                  {relic?.name ?? tr("失效遗物")}
                 </button>
               </Tooltip>
             );
@@ -1172,7 +1184,7 @@ function RunInventoryTray({ run }: { run: RunState }) {
         </div>
       </div>
       <div>
-        <PanelTitle icon={<Sparkles size={17} />} title="常驻" />
+        <PanelTitle icon={<Sparkles size={17} />} title={tr("常驻")} />
         <div className="inventory-chip-list">
           {boons.map((boonId) => {
             const boon = boonInfo(boonId);
@@ -1181,9 +1193,9 @@ function RunInventoryTray({ run }: { run: RunState }) {
                 key={boonId}
                 content={
                   <TipCard
-                    title={boon?.name ?? "失效常驻"}
+                    title={boon?.name ?? tr("失效常驻")}
                     tone="buff"
-                    body={boon?.text ?? "这项常驻提升来自旧数据。"}
+                    body={boon?.text ?? tr("这项常驻提升来自旧数据。")}
                     footer="常驻提升"
                   />
                 }
@@ -1196,13 +1208,13 @@ function RunInventoryTray({ run }: { run: RunState }) {
                   onClick={() => setSelectedInventory({ kind: "boon", id: boonId })}
                 >
                   <Sparkles size={13} />
-                  {boon?.name ?? "失效常驻"}
+                  {boon?.name ?? tr("失效常驻")}
                 </button>
               </Tooltip>
             );
           })}
           {hiddenBoons > 0 && <span className="inventory-chip inventory-chip--more">+{hiddenBoons}</span>}
-          {boons.length === 0 && <span className="inventory-chip inventory-chip--empty">暂无常驻</span>}
+          {boons.length === 0 && <span className="inventory-chip inventory-chip--empty">{tr("暂无常驻")}</span>}
         </div>
       </div>
       <InventoryInspector selection={activeSelection} />
@@ -1222,10 +1234,10 @@ function InventoryInspector({ selection }: { selection?: InventorySelection }) {
       <div className="inventory-inspector inventory-inspector--relic">
         <div className="inventory-inspector__head">
           <Award size={15} />
-          <strong>{relic?.name ?? "失效遗物"}</strong>
-          <small>{relic ? rarityLabel(relic.rarity) : "失效"} · 被动</small>
+          <strong>{relic?.name ?? tr("失效遗物")}</strong>
+          <small>{relic ? rarityLabel(relic.rarity) : "失效"} · {tr("被动")}</small>
         </div>
-        <p>{relic?.text ?? "旧数据已失效。"}</p>
+        <p>{relic?.text ?? tr("旧数据已失效。")}</p>
         <div className="inventory-inspector__tags">
           {tags.map((tag) => (
             <span key={tag}>{tag}</span>
@@ -1241,10 +1253,10 @@ function InventoryInspector({ selection }: { selection?: InventorySelection }) {
     <div className="inventory-inspector inventory-inspector--boon">
       <div className="inventory-inspector__head">
         <Sparkles size={15} />
-        <strong>{boon?.name ?? "失效常驻"}</strong>
+        <strong>{boon?.name ?? tr("失效常驻")}</strong>
         <small>{boon ? boonRarityLabel(boon.rarity) : "失效"} · 常驻</small>
       </div>
-      <p>{boon?.text ?? "旧数据已失效。"}</p>
+      <p>{boon?.text ?? tr("旧数据已失效。")}</p>
       <div className="inventory-inspector__tags">
         {tags.map((tag) => (
           <span key={tag}>{tag}</span>
@@ -1295,9 +1307,14 @@ function TitleScreen({
   onStart: () => void;
   onContinue: () => void;
 }) {
-  const savedRunLabel = savedRun
-    ? `${DIFFICULTIES[savedRun.difficulty].name} · 第 ${savedRun.act ?? 1} 幕 · 层 ${Math.max(1, savedRun.floor + 1)} · ${savedRun.player.hp}/${savedRun.player.maxHp} 生命 · ${savedRun.player.deck.length} 张牌`
+  const { lang } = useI18n();
+  const savedRunDiff = savedRun ? difficultyInfo(savedRun.difficulty) : null;
+  const savedRunLabel = savedRun && savedRunDiff
+    ? lang === "en"
+      ? `${savedRunDiff.name} · Act ${savedRun.act ?? 1} · Floor ${Math.max(1, savedRun.floor + 1)} · ${savedRun.player.hp}/${savedRun.player.maxHp} HP · ${savedRun.player.deck.length} cards`
+      : `${savedRunDiff.name} · 第 ${savedRun.act ?? 1} 幕 · 层 ${Math.max(1, savedRun.floor + 1)} · ${savedRun.player.hp}/${savedRun.player.maxHp} 生命 · ${savedRun.player.deck.length} 张牌`
     : "";
+  const startedDiff = difficultyInfo(difficulty);
 
   return (
     <section className="title-screen">
@@ -1305,14 +1322,14 @@ function TitleScreen({
         <span className="title-screen__crest">
           <Flame size={34} />
         </span>
-        <div className="title-screen__kicker">卡牌肉鸽 · 随机爬塔原型</div>
-        <h1 className="title-screen__name">裂隙尖塔</h1>
-        <p className="title-screen__tagline">构筑牌组，爬完一座会变形的尖塔</p>
+        <div className="title-screen__kicker">{tr("卡牌肉鸽 · 随机爬塔原型")}</div>
+        <h1 className="title-screen__name">{tr("裂隙尖塔")}</h1>
+        <p className="title-screen__tagline">{tr("构筑牌组，爬完一座会变形的尖塔")}</p>
       </div>
 
-      <div className="title-screen__difficulty" aria-label="难度选择">
+      <div className="title-screen__difficulty" aria-label={tr("难度选择")}>
         {(Object.keys(DIFFICULTIES) as DifficultyKey[]).map((key) => {
-          const option = DIFFICULTIES[key];
+          const option = difficultyInfo(key);
           const selected = difficulty === option.id;
           return (
             <button
@@ -1337,7 +1354,7 @@ function TitleScreen({
                   <Skull size={13} /> {formatPercent(option.enemyDamageMultiplier)}
                 </span>
               </div>
-              {selected && <span className="diff-card__selected-mark">▶ 已选择</span>}
+              {selected && <span className="diff-card__selected-mark">{lang === "en" ? "▶ Selected" : "▶ 已选择"}</span>}
             </button>
           );
         })}
@@ -1346,12 +1363,12 @@ function TitleScreen({
       <div className="title-screen__actions">
         <button className="title-start-button" type="button" onClick={onStart}>
           <ChevronRight size={22} />
-          <span>开始{DIFFICULTIES[difficulty].name}征途</span>
+          <span>{lang === "en" ? `Begin ${startedDiff.name} run` : `开始${startedDiff.name}征途`}</span>
         </button>
         {savedRun && (
           <button className="title-continue-button" type="button" onClick={onContinue}>
             <RotateCcw size={17} />
-            <span>继续存档</span>
+            <span>{tr("继续存档")}</span>
             <small>{savedRunLabel}</small>
           </button>
         )}
@@ -1363,13 +1380,13 @@ function TitleScreen({
 function DifficultyBrief({ difficulty }: { difficulty: DifficultyKey }) {
   const option = DIFFICULTIES[difficulty];
   const stats = [
-    { label: "起始生命", value: `${option.startingHp}`, note: `金币 ${option.startingGold}` },
-    { label: "敌人生命", value: formatPercent(option.enemyHpMultiplier), note: "战斗长度" },
-    { label: "敌人伤害", value: formatPercent(option.enemyDamageMultiplier), note: "入伤压力" },
-    { label: "敌人格挡", value: formatPercent(option.enemyBlockMultiplier), note: "破防压力" },
-    { label: "奖励金币", value: formatPercent(option.rewardGoldMultiplier), note: "路线经济" },
-    { label: "商店价格", value: formatPercent(option.shopPriceMultiplier), note: "采购压力" },
-    { label: "升级奖励", value: formatSignedPercent(option.rewardUpgradeBonus), note: "奖励强化率" },
+    { label: tr("起始生命"), value: `${option.startingHp}`, note: `金币 ${option.startingGold}` },
+    { label: tr("敌人生命"), value: formatPercent(option.enemyHpMultiplier), note: tr("战斗长度") },
+    { label: tr("敌人伤害"), value: formatPercent(option.enemyDamageMultiplier), note: tr("入伤压力") },
+    { label: tr("敌人格挡"), value: formatPercent(option.enemyBlockMultiplier), note: tr("破防压力") },
+    { label: tr("奖励金币"), value: formatPercent(option.rewardGoldMultiplier), note: tr("路线经济") },
+    { label: tr("商店价格"), value: formatPercent(option.shopPriceMultiplier), note: tr("采购压力") },
+    { label: tr("升级奖励"), value: formatSignedPercent(option.rewardUpgradeBonus), note: tr("奖励强化率") },
   ];
 
   return (
@@ -1388,7 +1405,7 @@ function DifficultyBrief({ difficulty }: { difficulty: DifficultyKey }) {
           </span>
         ))}
       </div>
-      <div className="difficulty-brief__flow" aria-label="核心流程">
+      <div className="difficulty-brief__flow" aria-label={tr("核心流程")}>
         <span>路线节点</span>
         <span>遭遇战</span>
         <span>奖励/事件</span>
@@ -1425,7 +1442,7 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
       <div className="map-panel map-panel--game">
         <div className="map-hud">
           <div className="map-hud__title">
-            <h2>第 {run.act ?? 1} 幕</h2>
+            <h2>{currentLang === "en" ? `Act ${run.act ?? 1}` : `第 ${run.act ?? 1} 幕`}</h2>
             <span>{actPressureText(run)}</span>
           </div>
           <div className="map-hud__legend">
@@ -1441,11 +1458,11 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
           <div className="map-hud__progress">
             <Layers size={14} />
             <b>{mapIntel.nodeCount}</b>
-            <small>节点</small>
+            <small>{tr("节点")}</small>
             <span className="map-hud__sep" />
             <Skull size={14} />
             <b>{mapIntel.counts.elite}</b>
-            <small>精英</small>
+            <small>{tr("精英")}</small>
           </div>
         </div>
 
@@ -1453,7 +1470,7 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
           <div className="boss-warning boss-warning--game">
             <Skull size={19} />
             <div>
-              <strong>第 {run.act ?? 1} 幕最终战已开启</strong>
+              <strong>{currentLang === "en" ? `Act ${run.act ?? 1} boss fight is open` : `第 ${run.act ?? 1} 幕最终战已开启`}</strong>
               <span>
                 生命 {run.player.hp}/{run.player.maxHp} · 药水 {run.player.potions.length}/{run.player.potionSlots} ·
                 牌组 {run.player.deck.length} 张
@@ -1551,12 +1568,12 @@ function MapReadPanel({
     .join(" · ");
 
   return (
-    <div className="map-read-panel" aria-label="爬塔读法">
+    <div className="map-read-panel" aria-label={tr("爬塔读法")}>
       <div className="map-read-panel__top">
         <div>
           <span>当前位置</span>
           <strong>
-            第 {run.act ?? 1} 幕 · 待选第 {nextFloor} 层
+            {currentLang === "en" ? `Act ${run.act ?? 1} · Choosing floor ${nextFloor}` : `第 ${run.act ?? 1} 幕 · 待选第 ${nextFloor} 层`}
           </strong>
           <small>{currentLabel}</small>
         </div>
@@ -1723,14 +1740,14 @@ function mapNodeRouteKind(node: MapNode): MapRouteKind {
 function RunStatsPanel({ run }: { run: RunState }) {
   return (
     <div className="run-stats-panel">
-      <PanelTitle icon={<MapIcon size={17} />} title="本局记录" />
+      <PanelTitle icon={<MapIcon size={17} />} title={tr("本局记录")} />
       <div>
-        <span>节点 <b>{run.stats.nodesCleared}</b></span>
-        <span>战斗 <b>{run.stats.fights}</b></span>
-        <span>精英 <b>{run.stats.elites}</b></span>
+        <span>{tr("节点")} <b>{run.stats.nodesCleared}</b></span>
+        <span>{tr("战斗")} <b>{run.stats.fights}</b></span>
+        <span>{tr("精英")} <b>{run.stats.elites}</b></span>
         <span>Boss <b>{run.stats.bosses}</b></span>
-        <span>伤害 <b>{run.stats.damageDealt}</b></span>
-        <span>金币 <b>{run.stats.goldEarned}</b></span>
+        <span>{tr("伤害")} <b>{run.stats.damageDealt}</b></span>
+        <span>{tr("金币")} <b>{run.stats.goldEarned}</b></span>
       </div>
     </div>
   );
@@ -1738,13 +1755,13 @@ function RunStatsPanel({ run }: { run: RunState }) {
 
 function routePreviewLabel(node: MapNode, nodeById: Map<string, MapNode>): string {
   if (node.type === "boss") {
-    return "终点";
+    return tr("终点");
   }
   const nextTypes = node.children
     .map((childId) => nodeById.get(childId)?.type)
     .filter((type): type is NodeType => Boolean(type));
   if (nextTypes.length === 0) {
-    return "后续路线待定";
+    return tr("后续路线待定");
   }
   const counts = nextTypes.reduce<Record<NodeType, number>>(
     (acc, type) => {
@@ -1820,9 +1837,9 @@ function MapNodeButton({
   const routeKind = mapNodeRouteKind(node);
   const tip = (
     <TipCard
-      title={node.id === "boss" ? `第 ${run.act ?? 1} 幕 · 首领` : nodeLabel(node.type)}
-      body={`${nodeHint(node.type)}${node.id === "boss" ? "" : ` · 第 ${node.floor + 1} 层`}`}
-      footer={available ? "▶ 可前往" : `${zoneLabel(mapNodeZone(node))} · ${routeKindLabel(routeKind)}`}
+      title={node.id === "boss" ? (currentLang === "en" ? `Act ${run.act ?? 1} · Boss` : `第 ${run.act ?? 1} 幕 · 首领`) : nodeLabel(node.type)}
+      body={`${nodeHint(node.type)}${node.id === "boss" ? "" : currentLang === "en" ? ` · Floor ${node.floor + 1}` : ` · 第 ${node.floor + 1} 层`}`}
+      footer={available ? (currentLang === "en" ? "▶ Go" : "▶ 可前往") : `${zoneLabel(mapNodeZone(node))} · ${routeKindLabel(routeKind)}`}
     />
   );
   return (
@@ -1888,9 +1905,9 @@ function CombatScreen({
   const incoming = estimateIncomingDamage(run);
   const blockGap = Math.max(0, incoming - combat.playerBlock);
   const targetingName = selectedCard
-    ? `${selectedCardDef?.name ?? "失效卡牌"}${selectedCard.upgraded && selectedCardDef ? "+" : ""}`
+    ? `${selectedCardDef?.name ?? tr("失效卡牌")}${selectedCard.upgraded && selectedCardDef ? "+" : ""}`
     : selectedPotion
-      ? selectedPotionDef?.name ?? "失效药水"
+      ? selectedPotionDef?.name ?? tr("失效药水")
       : undefined;
   const targetPreviews = useMemo(() => {
     return new Map(
@@ -2054,7 +2071,7 @@ function CombatScreen({
         {selectedPotion && !selectedPotionNeedsTarget && (
           <div className="targeting-prompt targeting-prompt--confirm">
             <FlaskConical size={15} />
-            <span>{selectedPotionDef?.name ?? "失效药水"}</span>
+            <span>{selectedPotionDef?.name ?? tr("失效药水")}</span>
             <button type="button" onClick={onUseSelectedPotion}>
               <ChevronRight size={14} />
               <span>{t("ui.combat.usePotion")}</span>
@@ -2137,7 +2154,7 @@ function CombatScreen({
 
       <aside className="hud-rail combat-log combat-console">
         <CombatInventoryBar run={run} selectedPotionUid={selectedPotionUid} onPotionClick={onPotionClick} />
-        <div className="combat-console__summary" aria-label="战斗摘要">
+        <div className="combat-console__summary" aria-label={tr("战斗摘要")}>
           <span className={incoming > 0 ? "is-danger" : ""}>
             <Sword size={14} />
             <b>{incoming}</b>
@@ -2163,7 +2180,7 @@ function CombatScreen({
         <CombatReadout run={run} />
 
         <FoldSection
-          title="战斗指挥"
+          title={tr("战斗指挥")}
           icon={<Layers size={16} />}
           meta={`第 ${combat.turn} 回合 · ${combat.enemies.filter((enemy) => enemy.hp > 0).length} 敌`}
           defaultOpen
@@ -2174,7 +2191,7 @@ function CombatScreen({
         </FoldSection>
 
         <FoldSection
-          title="行动日志"
+          title={tr("行动日志")}
           icon={<Sparkles size={16} />}
           meta={`${combat.log.length} 条`}
           defaultOpen={false}
@@ -2203,7 +2220,7 @@ function CombatReadout({ run }: { run: RunState }) {
   const enemyStateCount = powerLedgerEntries(aggregateEnemyPowers(combat.enemies)).length;
 
   return (
-    <div className="combat-readout" aria-label="战斗状态">
+    <div className="combat-readout" aria-label={tr("战斗状态")}>
       <div className={incoming > 0 ? "is-danger" : ""}>
         <small>敌方意图</small>
         <strong>{incoming} 入伤</strong>
@@ -2500,9 +2517,9 @@ function MechanicPanel({
   const selectedCardDef = selectedCard ? CARDS[selectedCard.cardId] : undefined;
   const selectedPotionDef = selectedPotion ? POTIONS[selectedPotion.potionId] : undefined;
   const selectedName = selectedCard
-    ? `${selectedCardDef?.name ?? "失效卡牌"}${selectedCard.upgraded && selectedCardDef ? "+" : ""}`
+    ? `${selectedCardDef?.name ?? tr("失效卡牌")}${selectedCard.upgraded && selectedCardDef ? "+" : ""}`
     : selectedPotion
-      ? selectedPotionDef?.name ?? "失效药水"
+      ? selectedPotionDef?.name ?? tr("失效药水")
       : undefined;
   const selectedTags = selectedCard && selectedCardDef
     ? cardMechanicTags(selectedCard)
@@ -2576,9 +2593,9 @@ function CombatStatusLedger({ combat }: { combat: NonNullable<RunState["combat"]
   const enemyTotals = aggregateEnemyPowers(combat.enemies);
 
   return (
-    <div className="status-ledger" aria-label="状态账本">
-      <StatusLedgerColumn title="我方状态" subtitle="影响出牌、防御和回合结算" powers={combat.playerPowers} />
-      <StatusLedgerColumn title="敌方状态" subtitle="所有存活敌人的状态合计" powers={enemyTotals} />
+    <div className="status-ledger" aria-label={tr("状态账本")}>
+      <StatusLedgerColumn title={tr("我方状态")} subtitle={tr("影响出牌、防御和回合结算")} powers={combat.playerPowers} />
+      <StatusLedgerColumn title={tr("敌方状态")} subtitle={tr("所有存活敌人的状态合计")} powers={enemyTotals} />
     </div>
   );
 }
@@ -2657,18 +2674,18 @@ function cardTargetRuleLine(card: CardInstance, run: RunState): string {
   const livingEnemies = combat?.enemies.filter((enemy) => enemy.hp > 0).length ?? 0;
 
   if (level.unplayable) {
-    return "状态牌不可主动打出，只按自身规则触发。";
+    return tr("状态牌不可主动打出，只按自身规则触发。");
   }
   if (level.target === "enemy") {
     return livingEnemies === 1 ? "敌方目标：只命中敌人；单敌时自动锁定。" : "敌方目标：只命中选中的敌人，不会作用自身。";
   }
   if (level.target === "allEnemies") {
-    return "全体目标：结算到所有存活敌人，不会作用自身。";
+    return tr("全体目标：结算到所有存活敌人，不会作用自身。");
   }
   if (level.target === "self") {
-    return "自身目标：只结算到角色，不会给敌人格挡或增益。";
+    return tr("自身目标：只结算到角色，不会给敌人格挡或增益。");
   }
-  return "无目标：直接结算卡牌效果。";
+  return tr("无目标：直接结算卡牌效果。");
 }
 
 function CatalystInsightPanel({ insight }: { insight?: CatalystInsight }) {
@@ -2736,7 +2753,7 @@ function PileInsight({ combat }: { combat: NonNullable<RunState["combat"]> }) {
 
 function cardDisplayName(card: CardInstance): string {
   const def = CARDS[card.cardId];
-  return `${def?.name ?? "失效卡牌"}${card.upgraded && def ? "+" : ""}`;
+  return `${def?.name ?? tr("失效卡牌")}${card.upgraded && def ? "+" : ""}`;
 }
 
 function TempoPanel({
@@ -2751,12 +2768,12 @@ function TempoPanel({
     <div className="tempo-panel">
       <div className="tempo-cell">
         <BookOpen size={14} />
-        <span>本回合</span>
+        <span>{tr("本回合")}</span>
         <strong>{combat.cardsPlayedThisTurn}</strong>
       </div>
       <div className="tempo-cell">
         <Sword size={14} />
-        <span>攻击</span>
+        <span>{tr("攻击")}</span>
         <strong>{combat.attacksPlayedThisTurn}</strong>
       </div>
       <div className="tempo-cell">
@@ -2805,7 +2822,7 @@ function MechanicChainPanel({
 }) {
   const rows = [
     {
-      label: "爆发链",
+      label: tr("爆发链"),
       value: (playerPowers.combo ?? 0) * 2 + (playerPowers.strength ?? 0) * 3 + (enemyTotals.mark ?? 0) * 2,
       parts: [
         ["连击", playerPowers.combo ?? 0],
@@ -2814,7 +2831,7 @@ function MechanicChainPanel({
       ] as [string, number][],
     },
     {
-      label: "防守链",
+      label: tr("防守链"),
       value: (playerPowers.charge ?? 0) * 2 + (playerPowers.platedArmor ?? 0) * 4 + (playerPowers.regen ?? 0) * 3,
       parts: [
         ["蓄能", playerPowers.charge ?? 0],
@@ -2823,7 +2840,7 @@ function MechanicChainPanel({
       ] as [string, number][],
     },
     {
-      label: "节拍链",
+      label: tr("节拍链"),
       value: (playerPowers.combo ?? 0) * 3 + (playerPowers.charge ?? 0) * 2,
       parts: [
         ["连击", playerPowers.combo ?? 0],
@@ -2832,7 +2849,7 @@ function MechanicChainPanel({
       ] as [string, number][],
     },
     {
-      label: "连锁链",
+      label: tr("连锁链"),
       value: cardsPlayed * 4 + (playerPowers.combo ?? 0) * 2 + (playerPowers.charge ?? 0),
       parts: [
         ["本回合", cardsPlayed],
@@ -2841,7 +2858,7 @@ function MechanicChainPanel({
       ] as [string, number][],
     },
     {
-      label: "热控链",
+      label: tr("热控链"),
       value: (playerPowers.bleed ?? 0) * 4 + (playerPowers.charge ?? 0) * 2 + (playerPowers.platedArmor ?? 0) * 3,
       parts: [
         ["流血", playerPowers.bleed ?? 0],
@@ -2850,7 +2867,7 @@ function MechanicChainPanel({
       ] as [string, number][],
     },
     {
-      label: "线圈链",
+      label: tr("线圈链"),
       value:
         (playerPowers.charge ?? 0) * 3 +
         (playerPowers.platedArmor ?? 0) * 3 +
@@ -2864,7 +2881,7 @@ function MechanicChainPanel({
       ] as [string, number][],
     },
     {
-      label: "持续链",
+      label: tr("持续链"),
       value: (enemyTotals.poison ?? 0) * 2 + (enemyTotals.bleed ?? 0) * 2 + (enemyTotals.spark ?? 0) * 2,
       parts: [
         ["中毒", enemyTotals.poison ?? 0],
@@ -2907,15 +2924,15 @@ function MechanicAuditPanel({
   const detailLines = selectedCard ? cardMechanicDetails(selectedCard, { phase: "combat", combat } as RunState).slice(1, 4) : [];
   const rows = [
     {
-      label: "攻击叠加",
+      label: tr("攻击叠加"),
       value: `基础 + 力量 ${combat.playerPowers.strength ?? 0} + 破绽 ${enemyTotals.mark ?? 0}，再算虚弱/易伤`,
     },
     {
-      label: "防守叠加",
+      label: tr("防守叠加"),
       value: `基础 + 敏捷 ${combat.playerPowers.dexterity ?? 0}${(combat.playerPowers.frail ?? 0) > 0 ? "，脆弱 x0.75" : ""}，金属化 ${combat.playerPowers.platedArmor ?? 0} 回合初生效`,
     },
     {
-      label: "触发顺序",
+      label: tr("触发顺序"),
       value: "出牌计数 -> 连击/蓄能 -> 卡牌效果 -> 生命伤害触发流血/电弧/金属化",
     },
     ...detailLines.map((line, index) => ({ label: index === 0 ? "当前牌" : "校验", value: line })),
@@ -3754,13 +3771,13 @@ function RewardScreen({
         </span>
         {reward.relicId && (
           <span>
-            <Award size={16} /> {RELICS[reward.relicId]?.name ?? "失效遗物"}
+            <Award size={16} /> {RELICS[reward.relicId]?.name ?? tr("失效遗物")}
           </span>
         )}
       </div>
       {!cardResolved && (
         <div className="reward-section">
-          <PanelTitle icon={<BookOpen size={17} />} title="卡牌" />
+          <PanelTitle icon={<BookOpen size={17} />} title={tr("卡牌")} />
           <div className="card-choice-row">
             {reward.cards.map((offer, index) => (
               <CardView
@@ -3789,11 +3806,11 @@ function RewardScreen({
           const tags = potion ? potionMechanicTags({ uid: `reward-${reward.potionId}`, potionId: reward.potionId! }).slice(0, 4) : [];
           return (
             <div className="reward-section">
-              <PanelTitle icon={<FlaskConical size={17} />} title="药水" />
+              <PanelTitle icon={<FlaskConical size={17} />} title={tr("药水")} />
               <button className="reward-potion" type="button" onClick={onPickPotion}>
                 <PackagePotionIcon />
-                <strong>{potion?.name ?? "失效药水"}</strong>
-                <span>{potion?.text ?? "这瓶药水来自旧数据，领取后会被清理。"}</span>
+                <strong>{potion?.name ?? tr("失效药水")}</strong>
+                <span>{potion?.text ?? tr("这瓶药水来自旧数据，领取后会被清理。")}</span>
                 {tags.length > 0 && (
                   <div className="offer-tags">
                     {tags.map((tag) => (
@@ -3807,7 +3824,7 @@ function RewardScreen({
         })()}
       {showBoons && (
         <div className="reward-section">
-          <PanelTitle icon={<Sparkles size={17} />} title="常驻提升" />
+          <PanelTitle icon={<Sparkles size={17} />} title={tr("常驻提升")} />
           <div className="boon-choice-row">
             {boonOffers.map((offer, index) => {
               const owned = run.player.boons.includes(offer.boonId);
@@ -3816,8 +3833,8 @@ function RewardScreen({
               return (
                 <button className="boon-card" type="button" key={offer.boonId} disabled={owned} onClick={() => onPickBoon(index)}>
                   <Sparkles size={18} />
-                  <strong>{boon?.name ?? "失效常驻"}</strong>
-                  <span>{boon?.text ?? "这个常驻提升来自旧数据，已无法领取。"}</span>
+                  <strong>{boon?.name ?? tr("失效常驻")}</strong>
+                  <span>{boon?.text ?? tr("这个常驻提升来自旧数据，已无法领取。")}</span>
                   {tags.length > 0 && (
                     <div className="offer-tags">
                       {tags.map((tag) => (
@@ -3863,7 +3880,7 @@ function RestScreen({
   return (
     <section className="rest-layout">
       <div className="choice-heading">
-        <p>营火</p>
+        <p>{tr("营火")}</p>
         <h2>休息或锻造</h2>
       </div>
       <div className="rest-actions">
@@ -3930,12 +3947,12 @@ function ShopScreen({
   return (
     <section className="shop-layout">
       <div className="choice-heading">
-        <p>商店</p>
+        <p>{tr("商店")}</p>
         <h2>把金币换成下一场战斗的答案</h2>
       </div>
       <div className="shop-grid">
         <div>
-          <PanelTitle icon={<BookOpen size={17} />} title="卡牌" />
+          <PanelTitle icon={<BookOpen size={17} />} title={tr("卡牌")} />
           <div className="shop-cards">
             {shop.cards.map((offer, index) => {
               const canPrice = validPrice(offer.price);
@@ -3945,7 +3962,7 @@ function ShopScreen({
                   <div key={`${offer.cardId}-${index}`} className="shop-card is-sold">
                     <div className="game-card game-card--status is-disabled">
                       <div className="game-card__top">
-                        <strong>失效卡牌</strong>
+                        <strong>{tr("失效卡牌")}</strong>
                       </div>
                       <p>这张商店卡牌来自旧数据，已无法购买。</p>
                     </div>
@@ -3971,7 +3988,7 @@ function ShopScreen({
           </div>
         </div>
         <div className="shop-side">
-          <PanelTitle icon={<Award size={17} />} title="遗物" />
+          <PanelTitle icon={<Award size={17} />} title={tr("遗物")} />
           {shop.relics.map((offer, index) => {
             const relic = relicInfo(offer.relicId);
             return (
@@ -3983,13 +4000,13 @@ function ShopScreen({
                 onClick={() => onBuyRelic(index)}
               >
                 <Award size={18} />
-                <strong>{relic?.name ?? "失效遗物"}</strong>
-                <span>{relic?.text ?? "这个遗物来自旧数据，已无法购买。"}</span>
+                <strong>{relic?.name ?? tr("失效遗物")}</strong>
+                <span>{relic?.text ?? tr("这个遗物来自旧数据，已无法购买。")}</span>
                 <small>{offer.sold ? "已售" : relic ? priceText(offer.price) : "失效"}</small>
               </button>
             );
           })}
-          <PanelTitle icon={<Sparkles size={17} />} title="常驻提升" />
+          <PanelTitle icon={<Sparkles size={17} />} title={tr("常驻提升")} />
           {(shop.boons ?? []).map((offer, index) => {
             const boon = boonInfo(offer.boonId);
             const tags = boon ? boonMechanicTags(offer.boonId).slice(0, 3) : [];
@@ -4002,8 +4019,8 @@ function ShopScreen({
                 onClick={() => onBuyBoon(index)}
               >
                 <Sparkles size={18} />
-                <strong>{boon?.name ?? "失效常驻"}</strong>
-                <span>{boon?.text ?? "这个常驻提升来自旧数据，已无法购买。"}</span>
+                <strong>{boon?.name ?? tr("失效常驻")}</strong>
+                <span>{boon?.text ?? tr("这个常驻提升来自旧数据，已无法购买。")}</span>
                 {tags.length > 0 && (
                   <div className="offer-tags">
                     {tags.map((tag) => (
@@ -4015,7 +4032,7 @@ function ShopScreen({
               </button>
             );
           })}
-          <PanelTitle icon={<FlaskConical size={17} />} title="药水" />
+          <PanelTitle icon={<FlaskConical size={17} />} title={tr("药水")} />
           <div className="shop-potions">
             {shop.potions.map((offer, index) => {
               const potion = POTIONS[offer.potionId];
@@ -4034,8 +4051,8 @@ function ShopScreen({
                   onClick={() => onBuyPotion(index)}
                 >
                   <FlaskConical size={16} />
-                  <strong>{potion?.name ?? "失效药水"}</strong>
-                  <span>{potion?.text ?? "这瓶药水来自旧数据，已无法购买。"}</span>
+                  <strong>{potion?.name ?? tr("失效药水")}</strong>
+                  <span>{potion?.text ?? tr("这瓶药水来自旧数据，已无法购买。")}</span>
                   {tags.length > 0 && (
                     <div className="offer-tags">
                       {tags.map((tag) => (
@@ -4056,10 +4073,10 @@ function ShopScreen({
           >
             <HeartPulse size={18} />
             <strong>治疗药剂</strong>
-            <span>回复 14 点生命。</span>
+            <span>{tr("回复 14 点生命。")}</span>
             <small>{shop.healSold ? "已售" : priceText(shop.healPrice)}</small>
           </button>
-          <PanelTitle icon={<BookOpen size={17} />} title="牌组服务" />
+          <PanelTitle icon={<BookOpen size={17} />} title={tr("牌组服务")} />
           <div className="shop-remove-list">
             {run.player.deck.map((card) => (
               <button
@@ -4106,7 +4123,7 @@ function EventScreen({ run, onChoose }: { run: RunState; onChoose: (optionId: st
   return (
     <section className="event-layout">
       <div className="event-copy">
-        <p>事件</p>
+        <p>{tr("事件")}</p>
         <h2>{event.title}</h2>
         <span>{event.text}</span>
       </div>
@@ -4130,7 +4147,7 @@ function EventScreen({ run, onChoose }: { run: RunState; onChoose: (optionId: st
                 </div>
               )}
               <span>{option.text}</span>
-              {option.disabled && <small>{option.disabledReason ?? "条件不足"}</small>}
+              {option.disabled && <small>{option.disabledReason ?? tr("条件不足")}</small>}
               <ChevronRight size={17} />
             </button>
           );
@@ -4495,7 +4512,7 @@ function cardEffectDetail(effect: CardEffect, card: CardInstance, run?: RunState
   if (effect.type === "draw") return `抽牌：抽 ${effect.amount} 张`;
   if (effect.type === "gainEnergy") return `能量：获得 ${effect.amount}`;
   if (effect.type === "heal") return `回复：恢复 ${effect.amount} 生命`;
-  if (effect.type === "cleanseDebuffs") return "净化：移除自身负面状态";
+  if (effect.type === "cleanseDebuffs") return tr("净化：移除自身负面状态");
   if (effect.type === "createCard") return `生成：${cardName(effect.cardId)} -> ${destinationLabel(effect.destination)}`;
   if (effect.type === "returnFromDiscard") return `回收：从弃牌堆取回 ${effect.amount} 张${effect.cardType ? cardTypeLabel(effect.cardType) : ""}牌`;
   if (effect.type === "exhaustCards") {
@@ -4506,34 +4523,34 @@ function cardEffectDetail(effect: CardEffect, card: CardInstance, run?: RunState
 }
 
 function effectTargetLabel(target: ActionTarget | "enemy" | "allEnemies" | "self"): string {
-  if (target === "enemy") return "目标";
-  if (target === "allEnemies") return "全体敌人";
-  if (target === "self") return "自身";
-  return "无目标";
+  if (target === "enemy") return tr("目标");
+  if (target === "allEnemies") return tr("全体敌人");
+  if (target === "self") return tr("自身");
+  return tr("无目标");
 }
 
 function destinationLabel(destination: "hand" | "draw" | "discard"): string {
-  if (destination === "hand") return "手牌";
-  if (destination === "draw") return "抽牌堆顶";
-  return "弃牌堆";
+  if (destination === "hand") return tr("手牌");
+  if (destination === "draw") return tr("抽牌堆顶");
+  return tr("弃牌堆");
 }
 
 function exhaustZoneLabel(zone: "hand" | "discard" | "handAndDiscard"): string {
-  if (zone === "hand") return "手牌";
-  if (zone === "discard") return "弃牌堆";
-  return "手牌/弃牌";
+  if (zone === "hand") return tr("手牌");
+  if (zone === "discard") return tr("弃牌堆");
+  return tr("手牌/弃牌");
 }
 
 function cardPlayPenalty(run: RunState, card: CardInstance): string | undefined {
   const level = getCardLevel(card);
   if (level.unplayable) {
-    return "不可打出";
+    return tr("不可打出");
   }
   if (!run.combat || run.phase !== "combat") {
-    return "非战斗";
+    return tr("非战斗");
   }
   if (run.combat.energy < level.cost) {
-    return "能量不足";
+    return tr("能量不足");
   }
   return undefined;
 }
@@ -4582,7 +4599,7 @@ function ResourceOverview({
   const hiddenBoonCount = Math.max(0, run.player.boons.length - visibleBoons.length);
 
   return (
-    <div className="resource-overview" aria-label="资源总览">
+    <div className="resource-overview" aria-label={tr("资源总览")}>
       <section className="resource-panel resource-panel--cards">
         <div className="resource-panel__head">
           <span>
@@ -4591,7 +4608,7 @@ function ResourceOverview({
           <strong>{summary.total}</strong>
         </div>
         <div className="resource-panel__meta">
-          <span>均费 {summary.avgCost}</span>
+          <span>{tr("均费")} {summary.avgCost}</span>
           <span>升级 {summary.upgraded}</span>
           <span className={statusCount > 0 ? "is-warning" : ""}>状态 {statusCount}</span>
         </div>
@@ -4632,21 +4649,21 @@ function ResourceOverview({
           {visibleBoons.map((boonId) => {
             const boon = boonInfo(boonId);
             return (
-              <span className="resource-mini-item" key={boonId} title={boon?.text ?? "这项常驻提升来自旧数据。"}>
-                <strong>{boon?.name ?? "失效常驻"}</strong>
+              <span className="resource-mini-item" key={boonId} title={boon?.text ?? tr("这项常驻提升来自旧数据。")}>
+                <strong>{boon?.name ?? tr("失效常驻")}</strong>
                 <small>{boonMechanicTags(boonId).slice(0, 2).join(" · ")}</small>
               </span>
             );
           })}
           {hiddenBoonCount > 0 && <span className="resource-mini-item is-more">+{hiddenBoonCount} 个常驻</span>}
-          {visibleBoons.length === 0 && <span className="resource-mini-item is-empty">暂无常驻提升</span>}
+          {visibleBoons.length === 0 && <span className="resource-mini-item is-empty">{tr("暂无常驻提升")}</span>}
         </div>
       </section>
 
       <section className="resource-panel resource-panel--synergy">
         <div className="resource-panel__head">
           <span>
-            <Target size={16} /> 构筑倾向
+            <Target size={16} /> {tr("构筑倾向")}
           </span>
           <strong>{archetypes[0]?.score ?? 0}</strong>
         </div>
@@ -4685,7 +4702,7 @@ function ResourcePotionSlot({
     return (
       <div className="resource-slot is-empty">
         <FlaskConical size={14} />
-        <span>空槽</span>
+        <span>{tr("空槽")}</span>
       </div>
     );
   }
@@ -4696,20 +4713,20 @@ function ResourcePotionSlot({
     return (
       <div
         className={`resource-slot is-invalid ${canUsePotion ? "is-usable" : ""} ${selected ? "is-selected" : ""}`}
-        title="这瓶药水来自旧数据，战斗中点击会清理，战斗外可丢弃。"
+        title={tr("这瓶药水来自旧数据，战斗中点击会清理，战斗外可丢弃。")}
       >
         <button
           className="resource-slot__main"
           type="button"
           disabled={!canUsePotion}
           onClick={() => onUsePotion?.(potion)}
-          aria-label="清理失效药水"
+          aria-label={tr("清理失效药水")}
         >
           <FlaskConical size={14} />
-          <span>失效药水</span>
+          <span>{tr("失效药水")}</span>
         </button>
         {onDiscardPotion && (
-          <button className="resource-slot__trash" type="button" aria-label="丢弃失效药水" onClick={() => onDiscardPotion(potion.uid)}>
+          <button className="resource-slot__trash" type="button" aria-label={tr("丢弃失效药水")} onClick={() => onDiscardPotion(potion.uid)}>
             <Trash2 size={13} />
           </button>
         )}
@@ -4742,7 +4759,7 @@ function ResourcePotionSlot({
 function actPressureText(run: Pick<RunState, "act">): string {
   const depth = Math.max(0, (run.act ?? 1) - 1);
   if (depth === 0) {
-    return "敌方基础强度";
+    return tr("敌方基础强度");
   }
   return `敌方生命 +${depth * 18}% · 伤害 +${depth * 12}% · 格挡 +${depth * 10}%`;
 }
@@ -4763,11 +4780,11 @@ function BuildSummary({ deck, compact = false }: { deck: CardInstance[]; compact
   return (
     <div className={`build-summary ${compact ? "build-summary--compact" : ""}`}>
       <div className="build-summary__head">
-        <PanelTitle icon={<BookOpen size={17} />} title="构筑概览" />
+        <PanelTitle icon={<BookOpen size={17} />} title={tr("构筑概览")} />
         <span>{summary.total} 张</span>
       </div>
       <div className="build-summary__stats">
-        <span>均费 {summary.avgCost}</span>
+        <span>{tr("均费")} {summary.avgCost}</span>
         <span>升级 {summary.upgraded}</span>
       </div>
       <div className="build-type-grid">
@@ -4882,7 +4899,7 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
 
   const signals: ArchetypeSignal[] = [
     {
-      label: "攻击节奏",
+      label: tr("攻击节奏"),
       score:
         tag("连击") +
         tag("连击伤害") * 2 +
@@ -4916,7 +4933,7 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
       ),
     },
     {
-      label: "蓄能电弧",
+      label: tr("蓄能电弧"),
       score:
         tag("蓄能") +
         tagStartsWith("蓄能") +
@@ -4953,7 +4970,7 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
       ),
     },
     {
-      label: "毒血持续",
+      label: tr("毒血持续"),
       score:
         tag("中毒") * 2 +
         tag("流血") * 2 +
@@ -4977,7 +4994,7 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
       ),
     },
     {
-      label: "守备反击",
+      label: tr("守备反击"),
       score:
         tag("格挡") +
         tag("金属化") * 2 +
@@ -5013,7 +5030,7 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
       ),
     },
     {
-      label: "资源循环",
+      label: tr("资源循环"),
       score:
         tag("抽牌") * 2 +
         tag("能量") * 2 +
@@ -5057,7 +5074,7 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
       ),
     },
     {
-      label: "净化压缩",
+      label: tr("净化压缩"),
       score:
         tag("净化") * 2 +
         tag("消耗堆") * 2 +
@@ -5090,9 +5107,9 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
     ? activeSignals
     : [
         {
-          label: "均衡过渡",
+          label: tr("均衡过渡"),
           score: 1,
-          detail: "基础牌组 · 等待核心组件",
+          detail: tr("基础牌组 · 等待核心组件"),
         },
       ];
 }
@@ -5159,11 +5176,11 @@ function RelicList({ relicIds }: { relicIds: string[] }) {
       {relicIds.map((relicId) => {
         const relic = relicInfo(relicId);
         return (
-          <div className="relic-row" key={relicId} title={relic?.text ?? "这件遗物来自旧数据。"}>
+          <div className="relic-row" key={relicId} title={relic?.text ?? tr("这件遗物来自旧数据。")}>
             <Award size={16} />
             <div>
-              <strong>{relic?.name ?? "失效遗物"}</strong>
-              <span>{relic?.text ?? "旧数据已失效。"}</span>
+              <strong>{relic?.name ?? tr("失效遗物")}</strong>
+              <span>{relic?.text ?? tr("旧数据已失效。")}</span>
             </div>
           </div>
         );
@@ -5175,16 +5192,16 @@ function RelicList({ relicIds }: { relicIds: string[] }) {
 function BoonList({ boonIds }: { boonIds: BoonId[] }) {
   return (
     <div className="boon-list">
-      {boonIds.length === 0 && <div className="boon-empty">暂无常驻提升</div>}
+      {boonIds.length === 0 && <div className="boon-empty">{tr("暂无常驻提升")}</div>}
       {boonIds.map((boonId) => {
         const boon = boonInfo(boonId);
         const tags = boonMechanicTags(boonId).slice(0, 3);
         return (
-          <div className="boon-row" key={boonId} title={boon?.text ?? "这项常驻提升来自旧数据。"}>
+          <div className="boon-row" key={boonId} title={boon?.text ?? tr("这项常驻提升来自旧数据。")}>
             <Sparkles size={16} />
             <div>
-              <strong>{boon?.name ?? "失效常驻"}</strong>
-              <span>{boon?.text ?? "旧数据已失效。"}</span>
+              <strong>{boon?.name ?? tr("失效常驻")}</strong>
+              <span>{boon?.text ?? tr("旧数据已失效。")}</span>
               <div className="boon-row__tags">
                 {tags.map((tag) => (
                   <em key={tag}>{tag}</em>
@@ -5242,7 +5259,7 @@ function CombatInventoryBar({
               <Tooltip
                 key={relicId}
                 placement="bottom"
-                content={<TipCard title={relic?.name ?? "遗物"} tone="engine" body={relic?.text ?? "效果未知"} footer="遗物 · 自动生效" />}
+                content={<TipCard title={relic?.name ?? tr("遗物")} tone="engine" body={relic?.text ?? tr("效果未知")} footer="遗物 · 自动生效" />}
               >
                 <span className="combat-relic">
                   <Award size={16} />
@@ -5267,7 +5284,7 @@ function CombatInventoryBar({
               <Tooltip
                 key={potion.uid}
                 placement="bottom"
-                content={<TipCard title={def?.name ?? "药水"} tone="buff" body={def?.text ?? "效果未知"} footer="▶ 点击使用" />}
+                content={<TipCard title={def?.name ?? tr("药水")} tone="buff" body={def?.text ?? tr("效果未知")} footer="▶ 点击使用" />}
               >
                 <button
                   className={`combat-potion ${selectedPotionUid === potion.uid ? "is-selected" : ""}`}
@@ -5322,7 +5339,7 @@ function IntentBadge({ run, enemy }: { run: RunState; enemy: EnemyState }) {
       const who = effect.target === "self" ? "自身" : "你";
       lines.push(`给${who}施加 ${effect.amount} 层${powerLabel(effect.power)}`);
     } else if (effect.type === "summon") {
-      lines.push(`召唤 ${ENEMIES[effect.enemyId]?.name ?? "敌人"}`);
+      lines.push(`召唤 ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`);
     } else if (effect.type === "createCard") {
       lines.push(`往你牌堆塞入「${cardName(effect.cardId)}」`);
     }
@@ -5361,12 +5378,12 @@ function intentSummary(move: EnemyMove): string {
         return `${powerLabel(effect.power)} ${effect.amount}`;
       }
       if (effect.type === "summon") {
-        return `召唤 ${ENEMIES[effect.enemyId]?.name ?? "敌人"}`;
+        return `召唤 ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`;
       }
       if (effect.type === "createCard") {
         return `加入 ${cardName(effect.cardId)}`;
       }
-      return "特殊行动";
+      return tr("特殊行动");
     })
     .join("，");
 }
@@ -5415,21 +5432,21 @@ function intentPrimaryKind(move: EnemyMove): {
 } {
   const hasDamage = move.effects.some((e) => e.type === "damage");
   if (hasDamage) {
-    return { kind: "attack", label: "攻击" };
+    return { kind: "attack", label: tr("攻击") };
   }
   if (move.effects.some((e) => e.type === "block")) {
-    return { kind: "block", label: "防御" };
+    return { kind: "block", label: tr("防御") };
   }
   if (move.effects.some((e) => e.type === "summon")) {
-    return { kind: "summon", label: "召唤" };
+    return { kind: "summon", label: tr("召唤") };
   }
   if (move.effects.some((e) => e.type === "applyPower" && e.target === "self")) {
-    return { kind: "buff", label: "强化" };
+    return { kind: "buff", label: tr("强化") };
   }
   if (move.effects.some((e) => (e.type === "applyPower" && e.target === "player") || e.type === "createCard")) {
-    return { kind: "debuff", label: "削弱" };
+    return { kind: "debuff", label: tr("削弱") };
   }
-  return { kind: "special", label: "未知" };
+  return { kind: "special", label: tr("未知") };
 }
 
 function HealthBar({ current, max }: { current: number; max: number }) {
@@ -5465,7 +5482,7 @@ function combatFloatClass(kind: CombatFloatKind): string {
 }
 
 function combatFloatLabel(fx: CombatFloat): string {
-  if (fx.kind === "ko") return "击破";
+  if (fx.kind === "ko") return tr("击破");
   if (fx.kind === "damage") return `-${fx.value}`;
   if (fx.kind === "heal") return `+${fx.value}`;
   if (fx.kind === "blockGain") return `护盾 +${fx.value}`;
@@ -5512,11 +5529,11 @@ function PotionBelt({
               className={`potion-slot is-empty ${selectedPotionUid === potion.uid ? "is-selected" : ""}`}
               type="button"
               key={potion.uid}
-              title="这瓶药水来自旧数据，使用后会被清理。"
+              title={tr("这瓶药水来自旧数据，使用后会被清理。")}
               onClick={() => onPotionClick(potion)}
             >
               <FlaskConical size={15} />
-              <span>失效</span>
+              <span>{tr("失效")}</span>
             </button>
           );
         }
@@ -5559,7 +5576,7 @@ function PotionInventory({
             return (
               <div className="potion-inventory__slot is-empty" key={`empty-${index}`}>
                 <FlaskConical size={15} />
-                <span>空槽</span>
+                <span>{tr("空槽")}</span>
               </div>
             );
           }
@@ -5570,10 +5587,10 @@ function PotionInventory({
               <div className="potion-inventory__slot is-empty" key={potion.uid}>
                 <FlaskConical size={15} />
                 <div>
-                  <strong>失效药水</strong>
+                  <strong>{tr("失效药水")}</strong>
                   <span>来自旧数据，已无法使用。</span>
                 </div>
-                <button type="button" title="丢弃药水" onClick={() => onDiscard(potion.uid)}>
+                <button type="button" title={tr("丢弃药水")} onClick={() => onDiscard(potion.uid)}>
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -5586,7 +5603,7 @@ function PotionInventory({
                 <strong>{def.name}</strong>
                 <span>{def.text}</span>
               </div>
-              <button type="button" title="丢弃药水" onClick={() => onDiscard(potion.uid)}>
+              <button type="button" title={tr("丢弃药水")} onClick={() => onDiscard(potion.uid)}>
                 <Trash2 size={14} />
               </button>
             </div>

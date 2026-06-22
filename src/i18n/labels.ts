@@ -1,8 +1,18 @@
 import { currentLang } from "./index";
 import type { NodeType, MapZone, MapRouteKind } from "../game/types";
+import { UI_STRINGS } from "./locales/ui-strings";
 
 type Pair = { zh: string; en: string };
 const pick = (p: Pair) => (currentLang === "en" ? p.en : p.zh);
+
+// 通用 UI 文案直查：英文模式查 UI_STRINGS，缺则回落原中文。
+// 用于把 JSX 里硬编码的中文界面文案运行时切成英文。
+export function tr(zh: string): string {
+  if (currentLang !== "en") {
+    return zh;
+  }
+  return UI_STRINGS[zh] ?? zh;
+}
 
 // —— 节点类型 ——
 const NODE_LABEL: Record<NodeType, Pair> = {

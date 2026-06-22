@@ -16,3 +16,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .vercel
+
+
+# 本地批量替换临时备份
+*.bak
+*.bak2
