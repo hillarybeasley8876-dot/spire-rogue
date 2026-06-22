@@ -15,6 +15,19 @@ import {
   difficultyInfo,
 } from "./i18n/resolve";
 import {
+  nodeLabel,
+  nodeHint,
+  zoneLabel,
+  routeKindLabel,
+  routeKindShort,
+  rarityLabel,
+  boonRarityLabel,
+  cardTypeLabel,
+  actionTargetLabel,
+  powerToneLabel,
+  mechTag,
+} from "./i18n/labels";
+import {
   Award,
   BatteryCharging,
   BookOpen,
@@ -379,7 +392,7 @@ function PowerBadge({ power, stacks }: { power: PowerKey; stacks: number }) {
           title={`${powerLabel(power)} · ${stacks}`}
           tone={tone}
           body={powerHint(power)}
-          footer={POWER_TONE_LABELS[tone]}
+          footer={powerToneLabel(tone)}
         />
       }
     >
@@ -1210,7 +1223,7 @@ function InventoryInspector({ selection }: { selection?: InventorySelection }) {
         <div className="inventory-inspector__head">
           <Award size={15} />
           <strong>{relic?.name ?? "失效遗物"}</strong>
-          <small>{relic ? RARITY_LABELS[relic.rarity] : "失效"} · 被动</small>
+          <small>{relic ? rarityLabel(relic.rarity) : "失效"} · 被动</small>
         </div>
         <p>{relic?.text ?? "旧数据已失效。"}</p>
         <div className="inventory-inspector__tags">
@@ -1229,7 +1242,7 @@ function InventoryInspector({ selection }: { selection?: InventorySelection }) {
       <div className="inventory-inspector__head">
         <Sparkles size={15} />
         <strong>{boon?.name ?? "失效常驻"}</strong>
-        <small>{boon ? BOON_RARITY_LABELS[boon.rarity] : "失效"} · 常驻</small>
+        <small>{boon ? boonRarityLabel(boon.rarity) : "失效"} · 常驻</small>
       </div>
       <p>{boon?.text ?? "旧数据已失效。"}</p>
       <div className="inventory-inspector__tags">
@@ -1265,7 +1278,7 @@ function relicMechanicTags(relicId: string): string[] {
   if (text.includes("蓄能")) tags.add("蓄能");
   if (text.includes("金属化")) tags.add("金属化");
   if (text.includes("电弧")) tags.add("电弧");
-  tags.add(RARITY_LABELS[relic.rarity]);
+  tags.add(rarityLabel(relic.rarity));
   return [...tags];
 }
 
@@ -1417,10 +1430,10 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
           </div>
           <div className="map-hud__legend">
             {(["fight", "elite", "rest", "shop", "event", "boss"] as NodeType[]).map((type) => (
-              <Tooltip key={type} content={<TipCard title={NODE_LABELS[type]} body={NODE_HINTS[type]} />}>
+              <Tooltip key={type} content={<TipCard title={nodeLabel(type)} body={nodeHint(type)} />}>
                 <span className={`map-hud__legend-item node-tone--${type}`}>
                   <NodeIcon type={type} size={15} />
-                  <small>{NODE_LABELS[type]}</small>
+                  <small>{nodeLabel(type)}</small>
                 </span>
               </Tooltip>
             ))}
@@ -1463,7 +1476,7 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
                   className={`map-zone-band map-zone--${band.zone}`}
                   style={{ top: `${band.top}%`, height: `${band.height}%` }}
                 >
-                  <b>{MAP_ZONE_LABELS[band.zone]}</b>
+                  <b>{zoneLabel(band.zone)}</b>
                 </span>
               ))}
             </div>
@@ -1530,8 +1543,8 @@ function MapReadPanel({
   const totalFloors = Math.max(1, mapIntel.maxFloor + 1);
   const completedFloor = currentNode ? currentNode.floor + 1 : Math.max(0, nextFloor - 1);
   const progress = clampPercent(Math.round((Math.min(completedFloor, totalFloors) / totalFloors) * 100));
-  const routeTypes = Array.from(new Set(availableNodes.map((node) => NODE_LABELS[node.type]))).join(" / ") || "暂无";
-  const currentLabel = currentNode ? `上一节点：第 ${completedFloor} 层 · ${NODE_LABELS[currentNode.type]}` : "入口起点";
+  const routeTypes = Array.from(new Set(availableNodes.map((node) => nodeLabel(node.type)))).join(" / ") || "暂无";
+  const currentLabel = currentNode ? `上一节点：第 ${completedFloor} 层 · ${nodeLabel(currentNode.type)}` : "入口起点";
   const riskSignals = availableNodes
     .slice(0, 3)
     .map((node) => routeSignalLabel(node, run))
@@ -1742,7 +1755,7 @@ function routePreviewLabel(node: MapNode, nodeById: Map<string, MapNode>): strin
   );
   return `后续：${(Object.keys(counts) as NodeType[])
     .filter((type) => counts[type] > 0)
-    .map((type) => `${NODE_LABELS[type]}${counts[type] > 1 ? `x${counts[type]}` : ""}`)
+    .map((type) => `${nodeLabel(type)}${counts[type] > 1 ? `x${counts[type]}` : ""}`)
     .join(" / ")}`;
 }
 
@@ -1758,18 +1771,18 @@ function mapEdgePath(node: MapNode, child: MapNode): string {
 function routeStructureLabel(node: MapNode): string {
   const routeKind = mapNodeRouteKind(node);
   if (routeKind === "crossroad") {
-    return `路线：${MAP_ROUTE_KIND_LABELS[routeKind]}，进出都多`;
+    return `路线：${routeKindLabel(routeKind)}，进出都多`;
   }
   if (routeKind === "branch") {
-    return `路线：${MAP_ROUTE_KIND_LABELS[routeKind]}，后续选择多`;
+    return `路线：${routeKindLabel(routeKind)}，后续选择多`;
   }
   if (routeKind === "converge") {
-    return `路线：${MAP_ROUTE_KIND_LABELS[routeKind]}，多线汇入`;
+    return `路线：${routeKindLabel(routeKind)}，多线汇入`;
   }
   if (routeKind === "choke") {
-    return `路线：${MAP_ROUTE_KIND_LABELS[routeKind]}，容错较低`;
+    return `路线：${routeKindLabel(routeKind)}，容错较低`;
   }
-  return `路线：${MAP_ROUTE_KIND_LABELS[routeKind]}`;
+  return `路线：${routeKindLabel(routeKind)}`;
 }
 
 function routeSignalLabel(node: MapNode, run: RunState): string {
@@ -1807,9 +1820,9 @@ function MapNodeButton({
   const routeKind = mapNodeRouteKind(node);
   const tip = (
     <TipCard
-      title={node.id === "boss" ? `第 ${run.act ?? 1} 幕 · 首领` : NODE_LABELS[node.type]}
-      body={`${NODE_HINTS[node.type]}${node.id === "boss" ? "" : ` · 第 ${node.floor + 1} 层`}`}
-      footer={available ? "▶ 可前往" : `${MAP_ZONE_LABELS[mapNodeZone(node)]} · ${MAP_ROUTE_KIND_LABELS[routeKind]}`}
+      title={node.id === "boss" ? `第 ${run.act ?? 1} 幕 · 首领` : nodeLabel(node.type)}
+      body={`${nodeHint(node.type)}${node.id === "boss" ? "" : ` · 第 ${node.floor + 1} 层`}`}
+      footer={available ? "▶ 可前往" : `${zoneLabel(mapNodeZone(node))} · ${routeKindLabel(routeKind)}`}
     />
   );
   return (
@@ -1825,7 +1838,7 @@ function MapNodeButton({
         onClick={onEnter}
       >
         <NodeIcon type={node.type} size={20} />
-        <span>{NODE_LABELS[node.type]}</span>
+        <span>{nodeLabel(node.type)}</span>
       </button>
     </Tooltip>
   );
@@ -1865,6 +1878,7 @@ function CombatScreen({
   onEndTurn: () => void;
 }) {
   const combat = run.combat!;
+  const { t } = useI18n();
   const panelCard = selectedCard ?? inspectedCard ?? combat.hand[0];
   const selectedCardDef = selectedCard ? CARDS[selectedCard.cardId] : undefined;
   const selectedCardTarget = selectedCard ? getCardTarget(selectedCard) : undefined;
@@ -1989,7 +2003,7 @@ function CombatScreen({
         </div>
         <div className="combat-heading">
           <div>
-            <p>遭遇</p>
+            <p>{t("ui.combat.encounter")}</p>
             <h2>{combat.encounterName}</h2>
           </div>
           <div className="heading-chips">
@@ -2032,7 +2046,7 @@ function CombatScreen({
             <span>选择目标：{targetingName}</span>
             <button type="button" onClick={onClearSelection}>
               <RotateCcw size={14} />
-              <span>取消</span>
+              <span>{t("ui.common.cancel")}</span>
             </button>
           </div>
         )}
@@ -2043,11 +2057,11 @@ function CombatScreen({
             <span>{selectedPotionDef?.name ?? "失效药水"}</span>
             <button type="button" onClick={onUseSelectedPotion}>
               <ChevronRight size={14} />
-              <span>使用药水</span>
+              <span>{t("ui.combat.usePotion")}</span>
             </button>
             <button type="button" onClick={onClearSelection}>
               <RotateCcw size={14} />
-              <span>取消</span>
+              <span>{t("ui.common.cancel")}</span>
             </button>
           </div>
         )}
@@ -2065,8 +2079,8 @@ function CombatScreen({
                 pulseKey={`${run.player.hp}-${combat.playerBlock}-${combat.energy}-${combat.turn}`}
               />
               <div>
-                <span className="mini-label">角色</span>
-                <h3>流亡者</h3>
+                <span className="mini-label">{t("ui.combat.role")}</span>
+                <h3>{t("ui.combat.wanderer")}</h3>
               </div>
             </div>
             <HealthBar current={run.player.hp} max={run.player.maxHp} />
@@ -2096,7 +2110,7 @@ function CombatScreen({
             />
             <button className="end-turn-button" type="button" onClick={onEndTurn}>
               <ChevronRight size={17} />
-              <span>结束回合</span>
+              <span>{t("ui.combat.endTurn")}</span>
             </button>
           </div>
         </div>
@@ -2127,22 +2141,22 @@ function CombatScreen({
           <span className={incoming > 0 ? "is-danger" : ""}>
             <Sword size={14} />
             <b>{incoming}</b>
-            <small>入伤</small>
+            <small>{t("ui.combat.incoming")}</small>
           </span>
           <span className={blockGap > 0 ? "is-warning" : ""}>
             <Shield size={14} />
             <b>{blockGap}</b>
-            <small>缺口</small>
+            <small>{t("ui.combat.gap")}</small>
           </span>
           <span>
             <Zap size={14} />
             <b>{combat.energy}</b>
-            <small>能量</small>
+            <small>{t("ui.combat.energy")}</small>
           </span>
           <span>
             <BookOpen size={14} />
             <b>{combat.hand.length}</b>
-            <small>手牌</small>
+            <small>{t("ui.combat.hand")}</small>
           </span>
         </div>
 
@@ -2570,6 +2584,7 @@ function CombatStatusLedger({ combat }: { combat: NonNullable<RunState["combat"]
 }
 
 function StatusLedgerColumn({ title, subtitle, powers }: { title: string; subtitle: string; powers: PowerMap }) {
+  const { t } = useI18n();
   const entries = powerLedgerEntries(powers);
 
   return (
@@ -2579,7 +2594,7 @@ function StatusLedgerColumn({ title, subtitle, powers }: { title: string; subtit
         <small>{subtitle}</small>
       </div>
       {entries.length === 0 ? (
-        <div className="status-ledger__empty">无状态</div>
+        <div className="status-ledger__empty">{t("ui.combat.noStatus")}</div>
       ) : (
         <div className="power-badge-row">
           {entries.map(([power, value]) => (
@@ -2615,7 +2630,7 @@ function CardInspectorPanel({ card, run }: { card: CardInstance; run: RunState }
     <div className={`card-inspector card-inspector--${level.target}`}>
       <div className="card-inspector__head">
         <strong>{cardDisplayName(card)}</strong>
-        <span className={`game-card__target game-card__target--${level.target}`}>{ACTION_TARGET_LABELS[level.target]}</span>
+        <span className={`game-card__target game-card__target--${level.target}`}>{actionTargetLabel(level.target)}</span>
         <b>{level.cost}费</b>
       </div>
       <p className={penalty ? "is-warning" : ""}>{penalty ?? cardTargetRuleLine(card, run)}</p>
@@ -2920,6 +2935,7 @@ function MechanicAuditPanel({
 }
 
 function TargetPreview({ preview }: { preview: TargetPreview }) {
+  const { t } = useI18n();
   const powerEntries = Object.entries(preview.powerAdds).filter(([, value]) => (value ?? 0) > 0) as [PowerKey, number][];
   return (
     <div className={`target-preview ${preview.lethal ? "is-lethal" : ""}`}>
@@ -2943,7 +2959,7 @@ function TargetPreview({ preview }: { preview: TargetPreview }) {
           <Sparkles size={13} /> {powerLabel(power)} +{value}
         </span>
       ))}
-      {preview.lethal && <strong>击破</strong>}
+      {preview.lethal && <strong>{t("ui.combat.defeated")}</strong>}
     </div>
   );
 }
@@ -3304,11 +3320,11 @@ function summarizeCardAction(run: RunState, card: CardInstance): ActionSummary {
       summary.creates.push(cardName(effect.cardId));
     }
     if (effect.type === "returnFromDiscard") {
-      summary.recovers.push(effect.cardType ? `${CARD_TYPE_LABELS[effect.cardType]}牌` : effect.excludeStatus ? "非状态牌" : "弃牌");
+      summary.recovers.push(effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : effect.excludeStatus ? "非状态牌" : "弃牌");
     }
     if (effect.type === "exhaustCards") {
       const exhausted = estimateExhaustCount(combat, effect);
-      const label = effect.cardType ? `${CARD_TYPE_LABELS[effect.cardType]}牌` : "手牌";
+      const label = effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : "手牌";
       summary.consumes.push(exhausted > 0 ? `${label} ${exhausted}` : label);
       if (exhausted > 0) {
         if (effect.gainBlockPerCard) {
@@ -3389,11 +3405,11 @@ function summarizePotionAction(run: RunState, potion: PotionInstance): ActionSum
       }
     }
     if (effect.type === "returnFromDiscard") {
-      summary.recovers.push(effect.cardType ? `${CARD_TYPE_LABELS[effect.cardType]}牌` : effect.excludeStatus ? "非状态牌" : "弃牌");
+      summary.recovers.push(effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : effect.excludeStatus ? "非状态牌" : "弃牌");
     }
     if (effect.type === "exhaustCards") {
       const exhausted = combat ? estimateExhaustCount(combat, effect) : effect.amount;
-      const label = effect.cardType ? `${CARD_TYPE_LABELS[effect.cardType]}牌` : "牌";
+      const label = effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : "牌";
       summary.consumes.push(exhausted > 0 ? `${label} ${exhausted}` : label);
       if (effect.gainBlockPerCard) {
         const rawBlock = effect.gainBlockPerCard * exhausted;
@@ -3698,7 +3714,7 @@ function potionMechanicTags(potion: PotionInstance): string[] {
 
 function boonMechanicTags(boonId: BoonId): string[] {
   const boon = boonInfo(boonId);
-  return boon ? BOON_MECHANIC_TAGS[boonId] ?? [BOON_RARITY_LABELS[boon.rarity]] : ["失效"];
+  return boon ? BOON_MECHANIC_TAGS[boonId] ?? [boonRarityLabel(boon.rarity)] : ["失效"];
 }
 
 function RewardScreen({
@@ -3809,7 +3825,7 @@ function RewardScreen({
                       ))}
                     </div>
                   )}
-                  <small>{owned ? "已拥有" : boon ? BOON_RARITY_LABELS[boon.rarity] : "失效"}</small>
+                  <small>{owned ? "已拥有" : boon ? boonRarityLabel(boon.rarity) : "失效"}</small>
                 </button>
               );
             })}
@@ -4226,7 +4242,7 @@ function CardView({
   const level = getCardLevel(card);
   const tags = cardMechanicTags(card);
   const visualClass = cardVisualClass(def);
-  const targetLabel = ACTION_TARGET_LABELS[level.target];
+  const targetLabel = actionTargetLabel(level.target);
   const details = cardMechanicDetails(card, run);
   const mechanicTitle = details.length > 0 ? `机制验证\n${details.join("\n")}` : level.text;
   return (
@@ -4255,7 +4271,7 @@ function CardView({
         {def.type === "Status" && <Sparkles size={38} />}
       </div>
       <div className="game-card__meta">
-        <span className="game-card__type">{CARD_TYPE_LABELS[def.type]}</span>
+        <span className="game-card__type">{cardTypeLabel(def.type)}</span>
         <span className={`game-card__target game-card__target--${level.target}`}>{targetLabel}</span>
       </div>
       <p>{cardText(def.id, card.upgraded)}</p>
@@ -4295,7 +4311,7 @@ function cardMechanicDetails(card: CardInstance, run?: RunState): string[] {
   if (combat) {
     details.push(`费用 ${level.cost} / 当前能量 ${combat.energy}`);
   } else {
-    details.push(`费用 ${level.cost} · ${CARD_TYPE_LABELS[def.type]}`);
+    details.push(`费用 ${level.cost} · ${cardTypeLabel(def.type)}`);
   }
 
   if (def.type === "Attack") {
@@ -4481,7 +4497,7 @@ function cardEffectDetail(effect: CardEffect, card: CardInstance, run?: RunState
   if (effect.type === "heal") return `回复：恢复 ${effect.amount} 生命`;
   if (effect.type === "cleanseDebuffs") return "净化：移除自身负面状态";
   if (effect.type === "createCard") return `生成：${cardName(effect.cardId)} -> ${destinationLabel(effect.destination)}`;
-  if (effect.type === "returnFromDiscard") return `回收：从弃牌堆取回 ${effect.amount} 张${effect.cardType ? CARD_TYPE_LABELS[effect.cardType] : ""}牌`;
+  if (effect.type === "returnFromDiscard") return `回收：从弃牌堆取回 ${effect.amount} 张${effect.cardType ? cardTypeLabel(effect.cardType) : ""}牌`;
   if (effect.type === "exhaustCards") {
     const count = combat ? estimateExhaustCount(combat, effect) : effect.amount;
     return `消耗：${exhaustZoneLabel(effect.zone)} ${count}/${effect.amount} 张${effect.gainEnergyPerCard ? "，按张给能量" : ""}`;
@@ -4761,7 +4777,7 @@ function BuildSummary({ deck, compact = false }: { deck: CardInstance[]; compact
             {type === "Skill" && <Shield size={15} />}
             {type === "Power" && <Flame size={15} />}
             {type === "Status" && <Sparkles size={15} />}
-            <span>{CARD_TYPE_LABELS[type]}</span>
+            <span>{cardTypeLabel(type)}</span>
             <strong>{summary.typeCounts[type]}</strong>
           </div>
         ))}
@@ -5183,9 +5199,10 @@ function BoonList({ boonIds }: { boonIds: BoonId[] }) {
 }
 
 function PowerBadges({ powers }: { powers: PowerMap }) {
+  const { t } = useI18n();
   const entries = Object.entries(powers).filter(([, value]) => (value ?? 0) > 0) as [PowerKey, number][];
   if (entries.length === 0) {
-    return <div className="power-row is-empty">无状态</div>;
+    return <div className="power-row is-empty">{t("ui.combat.noStatus")}</div>;
   }
 
   return (
