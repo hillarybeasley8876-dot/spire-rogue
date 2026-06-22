@@ -1263,64 +1263,61 @@ function TitleScreen({
     : "";
 
   return (
-    <section className="title-layout">
-      <div className="title-copy">
-        <div className="kicker">卡牌肉鸽 · 随机爬塔原型</div>
-        <h2>构筑牌组，爬完一座会变形的尖塔。</h2>
-        <p>
-          每次选择路线节点，进入战斗、事件、商店或营火；打牌消耗能量，状态按回合叠加结算，奖励会继续改变卡牌、药水和常驻能力。
-        </p>
-        <div className="title-actions">
-          {savedRun && (
-            <div className="saved-run">
-              <button className="secondary-button" type="button" onClick={onContinue}>
-                <RotateCcw size={18} />
-                <span>继续存档</span>
-              </button>
-              <small>{savedRunLabel}</small>
-            </div>
-          )}
-          <button className="primary-button" type="button" onClick={onStart}>
-            <ChevronRight size={18} />
-            <span>开始{DIFFICULTIES[difficulty].name}难度</span>
-          </button>
-        </div>
-        <div className="difficulty-picker" aria-label="难度选择">
-          {(Object.keys(DIFFICULTIES) as DifficultyKey[]).map((key) => {
-            const option = DIFFICULTIES[key];
-            return (
-              <button
-                key={option.id}
-                className={`difficulty-option ${difficulty === option.id ? "is-selected" : ""}`}
-                type="button"
-                onClick={() => onDifficultyChange(option.id)}
-              >
+    <section className="title-screen">
+      <div className="title-screen__hero">
+        <span className="title-screen__crest">
+          <Flame size={34} />
+        </span>
+        <div className="title-screen__kicker">卡牌肉鸽 · 随机爬塔原型</div>
+        <h1 className="title-screen__name">裂隙尖塔</h1>
+        <p className="title-screen__tagline">构筑牌组，爬完一座会变形的尖塔</p>
+      </div>
+
+      <div className="title-screen__difficulty" aria-label="难度选择">
+        {(Object.keys(DIFFICULTIES) as DifficultyKey[]).map((key) => {
+          const option = DIFFICULTIES[key];
+          const selected = difficulty === option.id;
+          return (
+            <button
+              key={option.id}
+              className={`diff-card diff-card--${option.id} ${selected ? "is-selected" : ""}`}
+              type="button"
+              onClick={() => onDifficultyChange(option.id)}
+            >
+              <div className="diff-card__head">
                 <strong>{option.name}</strong>
                 <small>{option.tagline}</small>
-                <span>{option.text}</span>
-              </button>
-            );
-          })}
-        </div>
-        <DifficultyBrief difficulty={difficulty} />
+              </div>
+              <p className="diff-card__text">{option.text}</p>
+              <div className="diff-card__stats">
+                <span>
+                  <HeartPulse size={13} /> {option.startingHp}
+                </span>
+                <span>
+                  <Coins size={13} /> {option.startingGold}
+                </span>
+                <span>
+                  <Skull size={13} /> {formatPercent(option.enemyDamageMultiplier)}
+                </span>
+              </div>
+              {selected && <span className="diff-card__selected-mark">▶ 已选择</span>}
+            </button>
+          );
+        })}
       </div>
-      <div className="title-board" aria-hidden="true">
-        <div className="title-card title-card--attack">
-          <span>打击</span>
-          <strong>6</strong>
-        </div>
-        <div className="title-card title-card--skill">
-          <span>防御</span>
-          <strong>5</strong>
-        </div>
-        <div className="title-card title-card--power">
-          <span>燃起</span>
-          <strong>力</strong>
-        </div>
-        <div className="title-enemy">
-          <Skull size={54} />
-          <span>裂隙心核</span>
-        </div>
+
+      <div className="title-screen__actions">
+        <button className="title-start-button" type="button" onClick={onStart}>
+          <ChevronRight size={22} />
+          <span>开始{DIFFICULTIES[difficulty].name}征途</span>
+        </button>
+        {savedRun && (
+          <button className="title-continue-button" type="button" onClick={onContinue}>
+            <RotateCcw size={17} />
+            <span>继续存档</span>
+            <small>{savedRunLabel}</small>
+          </button>
+        )}
       </div>
     </section>
   );
