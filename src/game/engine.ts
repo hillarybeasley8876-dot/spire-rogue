@@ -3916,7 +3916,7 @@ function generateMap(seed: number): MapNode[] {
         id: `n-${floor}-${index}`,
         floor,
         lane,
-        x: clamp(12, 88, 50 + (lane - (MAP_VIRTUAL_LANES - 1) / 2) * 16),
+        x: clamp(10, 90, 50 + (lane - (MAP_VIRTUAL_LANES - 1) / 2) * 19),
         y: clamp(8, 92, 88 - floor * (80 / MAP_ROUTE_FLOORS)),
         type,
         zone: mapZoneForNode(floor, lane, type, () => roll()),
