@@ -998,7 +998,7 @@ function RunPhaseStatus({ run }: { run: RunState }) {
     },
     combat: {
       title: tr("处理回合"),
-      detail: run.combat ? `${run.combat.encounterName} · 第 ${run.combat.turn} 回合` : "遭遇准备中",
+      detail: run.combat ? (currentLang === "en" ? `${tr(run.combat.encounterName)} · Turn ${run.combat.turn}` : `${run.combat.encounterName} · 第 ${run.combat.turn} 回合`) : tr("遭遇准备中"),
       icon: <Sword size={16} />,
     },
     reward: {
@@ -1070,19 +1070,19 @@ function RunResourceDock({
       <section className="resource-dock__panel">
         <div className="resource-dock__head">
           <span>
-            <BookOpen size={15} /> 卡牌
+            <BookOpen size={15} /> {tr("卡牌")}
           </span>
           <strong>{summary.total}</strong>
         </div>
         <div className="resource-dock__metrics">
           <span>{tr("均费")} {summary.avgCost}</span>
-          <span>升级 {summary.upgraded}</span>
+          <span>{tr("升级")} {summary.upgraded}</span>
           <span className={summary.typeCounts.Status > 0 ? "is-warning" : ""}>状态 {summary.typeCounts.Status}</span>
         </div>
         <div className="resource-dock__tags">
           {summary.topTags.slice(0, 4).map(({ tag, count }) => (
             <span key={tag}>
-              {tag} <b>{count}</b>
+              {tr(tag)} <b>{count}</b>
             </span>
           ))}
           {summary.topTags.length === 0 && <span>基础牌组</span>}
@@ -1092,7 +1092,7 @@ function RunResourceDock({
       <section className="resource-dock__panel">
         <div className="resource-dock__head">
           <span>
-            <FlaskConical size={15} /> 药水
+            <FlaskConical size={15} /> {tr("药水")}
           </span>
           <strong>
             {run.player.potions.length}/{run.player.potionSlots}
@@ -1162,7 +1162,7 @@ function RunInventoryTray({ run }: { run: RunState }) {
                     title={relic?.name ?? tr("失效遗物")}
                     tone="engine"
                     body={relic?.text ?? tr("这个遗物来自旧数据。")}
-                    footer="遗物"
+                    footer={tr("遗物")}
                   />
                 }
               >
@@ -1240,7 +1240,7 @@ function InventoryInspector({ selection }: { selection?: InventorySelection }) {
         <p>{relic?.text ?? tr("旧数据已失效。")}</p>
         <div className="inventory-inspector__tags">
           {tags.map((tag) => (
-            <span key={tag}>{tag}</span>
+            <span key={tag}>{tr(tag)}</span>
           ))}
         </div>
       </div>
@@ -1259,7 +1259,7 @@ function InventoryInspector({ selection }: { selection?: InventorySelection }) {
       <p>{boon?.text ?? tr("旧数据已失效。")}</p>
       <div className="inventory-inspector__tags">
         {tags.map((tag) => (
-          <span key={tag}>{tag}</span>
+          <span key={tag}>{tr(tag)}</span>
         ))}
       </div>
     </div>
@@ -2021,7 +2021,7 @@ function CombatScreen({
         <div className="combat-heading">
           <div>
             <p>{t("ui.combat.encounter")}</p>
-            <h2>{combat.encounterName}</h2>
+            <h2>{tr(combat.encounterName)}</h2>
           </div>
           <div className="heading-chips">
             <div className="turn-chip">
@@ -2116,9 +2116,9 @@ function CombatScreen({
           </div>
 
           <div className="pile-strip">
-            <PileCount label="抽牌" value={combat.drawPile.length} />
-            <PileCount label="弃牌" value={combat.discardPile.length} />
-            <PileCount label="消耗" value={combat.exhaustPile.length} />
+            <PileCount label={tr("抽牌")} value={combat.drawPile.length} />
+            <PileCount label={tr("弃牌")} value={combat.discardPile.length} />
+            <PileCount label={tr("消耗")} value={combat.exhaustPile.length} />
             <PotionBelt
               potions={run.player.potions}
               slots={run.player.potionSlots}
@@ -2182,7 +2182,7 @@ function CombatScreen({
         <FoldSection
           title={tr("战斗指挥")}
           icon={<Layers size={16} />}
-          meta={`第 ${combat.turn} 回合 · ${combat.enemies.filter((enemy) => enemy.hp > 0).length} 敌`}
+          meta={currentLang === "en" ? `Turn ${combat.turn} · ${combat.enemies.filter((enemy) => enemy.hp > 0).length} enemies` : `第 ${combat.turn} 回合 · ${combat.enemies.filter((enemy) => enemy.hp > 0).length} 敌`}
           defaultOpen
           resetKey={run.phase}
           className="fold-section--combat"
@@ -2193,7 +2193,7 @@ function CombatScreen({
         <FoldSection
           title={tr("行动日志")}
           icon={<Sparkles size={16} />}
-          meta={`${combat.log.length} 条`}
+          meta={currentLang === "en" ? `${combat.log.length} entries` : `${combat.log.length} 条`}
           defaultOpen={false}
           resetKey={run.phase}
           className="fold-section--log"
@@ -2222,31 +2222,31 @@ function CombatReadout({ run }: { run: RunState }) {
   return (
     <div className="combat-readout" aria-label={tr("战斗状态")}>
       <div className={incoming > 0 ? "is-danger" : ""}>
-        <small>敌方意图</small>
-        <strong>{incoming} 入伤</strong>
-        <span>{aliveEnemies} 名敌人行动</span>
+        <small>{tr("敌方意图")}</small>
+        <strong>{incoming} {tr("入伤")}</strong>
+        <span>{aliveEnemies} {tr("名敌人行动")}</span>
       </div>
       <div className={blockGap > 0 ? "is-warning" : "is-good"}>
-        <small>我方防线</small>
-        <strong>{blockGap > 0 ? `缺 ${blockGap}` : "已覆盖"}</strong>
-        <span>格挡 {combat.playerBlock}</span>
+        <small>{tr("我方防线")}</small>
+        <strong>{blockGap > 0 ? (currentLang === "en" ? `Short ${blockGap}` : `缺 ${blockGap}`) : tr("已覆盖")}</strong>
+        <span>{tr("格挡")} {combat.playerBlock}</span>
       </div>
       <div>
-        <small>行动资源</small>
+        <small>{tr("行动资源")}</small>
         <strong>
-          {combat.energy}/{combat.maxEnergy} 能量
+          {combat.energy}/{combat.maxEnergy} {tr("能量")}
         </strong>
         <span>
-          手牌 {combat.hand.length} · 抽牌 {combat.drawPile.length}
+          {tr("手牌")} {combat.hand.length} · {tr("抽牌")} {combat.drawPile.length}
         </span>
       </div>
       <div className={ongoingDamage > 0 || enemyOngoingDamage > 0 ? "is-arc" : ""}>
-        <small>状态结算</small>
+        <small>{tr("状态结算")}</small>
         <strong>
-          我方 {playerStateCount} · 敌方 {enemyStateCount}
+          {tr("我方")} {playerStateCount} · {tr("敌方")} {enemyStateCount}
         </strong>
         <span>
-          持续 {ongoingDamage} · 敌蚀 {enemyOngoingDamage}
+          {tr("持续")} {ongoingDamage} · {tr("敌蚀")} {enemyOngoingDamage}
         </span>
       </div>
     </div>
@@ -2325,7 +2325,7 @@ function EnemyCard({
       />
       <div className="enemy-card__top">
         <div>
-          <span className="mini-label">{dead ? "击破" : "敌人"}</span>
+          <span className="mini-label">{dead ? tr("击破") : tr("敌人")}</span>
           <h3>{enemyName(enemy.defId)}</h3>
         </div>
         <IntentBadge run={run} enemy={enemy} />
@@ -2536,16 +2536,16 @@ function MechanicPanel({
     <div className="mechanic-panel">
       <div className="mechanic-forecast">
         <span className={incoming > 0 ? "is-danger" : ""}>
-          <Sword size={14} /> 入伤 {incoming}
+          <Sword size={14} /> {tr("入伤")} {incoming}
         </span>
         <span className={blockGap > 0 ? "is-warning" : ""}>
-          <Shield size={14} /> 缺口 {blockGap}
+          <Shield size={14} /> {tr("缺口")} {blockGap}
         </span>
         <span className={ongoingDamage > 0 ? "is-danger" : ""}>
-          <Flame size={14} /> 持续 {ongoingDamage}
+          <Flame size={14} /> {tr("持续")} {ongoingDamage}
         </span>
         <span className={enemyOngoingDamage > 0 ? "is-good" : ""}>
-          <Target size={14} /> 敌蚀 {enemyOngoingDamage}
+          <Target size={14} /> {tr("敌蚀")} {enemyOngoingDamage}
         </span>
       </div>
       <CombatStatusLedger combat={combat} />
@@ -2553,19 +2553,19 @@ function MechanicPanel({
       <PileInsight combat={combat} />
       {selectedCard && <CardInspectorPanel card={selectedCard} run={run} />}
       <div className="mechanic-grid">
-        <MechanicMeter label="连击" value={combat.playerPowers.combo ?? 0} text="攻击牌" />
-        <MechanicMeter label="蓄能" value={combat.playerPowers.charge ?? 0} text="技能牌" />
-        <MechanicMeter label="电弧" value={enemyTotals.spark ?? 0} text="弹射" />
-        <MechanicMeter label="流血" value={enemyTotals.bleed ?? 0} text="追伤" />
-        <MechanicMeter label="破绽" value={enemyTotals.mark ?? 0} text="增伤" />
-        <MechanicMeter label="金属化" value={combat.playerPowers.platedArmor ?? 0} text="回合初" />
+        <MechanicMeter label={tr("连击")} value={combat.playerPowers.combo ?? 0} text={tr("攻击牌")} />
+        <MechanicMeter label={tr("蓄能")} value={combat.playerPowers.charge ?? 0} text={tr("技能牌")} />
+        <MechanicMeter label={tr("电弧")} value={enemyTotals.spark ?? 0} text={tr("弹射")} />
+        <MechanicMeter label={tr("流血")} value={enemyTotals.bleed ?? 0} text={tr("追伤")} />
+        <MechanicMeter label={tr("破绽")} value={enemyTotals.mark ?? 0} text={tr("增伤")} />
+        <MechanicMeter label={tr("金属化")} value={combat.playerPowers.platedArmor ?? 0} text={tr("回合初")} />
       </div>
       <MechanicChainPanel playerPowers={combat.playerPowers} enemyTotals={enemyTotals} cardsPlayed={combat.cardsPlayedThisTurn} />
       <MechanicAuditPanel combat={combat} enemyTotals={enemyTotals} selectedCard={selectedCard} />
       <CatalystInsightPanel insight={catalystInsight} />
       {hintPowers.length > 0 && (
         <div className="mechanic-hints">
-          <strong>当前机制</strong>
+          <strong>{tr("当前机制")}</strong>
           {hintPowers.map((power) => (
             <span key={power}>
               <b>{powerLabel(power)}</b>
@@ -2579,7 +2579,7 @@ function MechanicPanel({
           <strong>{selectedName}</strong>
           <div>
             {selectedTags.map((tag) => (
-              <span key={tag}>{tag}</span>
+            <span key={tag}>{tr(tag)}</span>
             ))}
           </div>
           {actionSummary && <ActionSummaryView summary={actionSummary} />}
@@ -2648,7 +2648,7 @@ function CardInspectorPanel({ card, run }: { card: CardInstance; run: RunState }
       <div className="card-inspector__head">
         <strong>{cardDisplayName(card)}</strong>
         <span className={`game-card__target game-card__target--${level.target}`}>{actionTargetLabel(level.target)}</span>
-        <b>{level.cost}费</b>
+        <b>{level.cost}{tr("费")}</b>
       </div>
       <p className={penalty ? "is-warning" : ""}>{penalty ?? cardTargetRuleLine(card, run)}</p>
       <div className="card-inspector__formula">
@@ -2695,7 +2695,7 @@ function CatalystInsightPanel({ insight }: { insight?: CatalystInsight }) {
 
   return (
     <div className="catalyst-insight">
-      <strong>催化候选</strong>
+      <strong>{tr("催化候选")}</strong>
       <span>{insight.enemyName}</span>
       <div>
         {insight.entries.map(([power, value]) => (
@@ -2717,14 +2717,14 @@ function PileInsight({ combat }: { combat: NonNullable<RunState["combat"]> }) {
   return (
     <div className="pile-insight">
       <div className="pile-insight__counts">
-        <span>抽 {combat.drawPile.length}</span>
-        <span>弃 {combat.discardPile.length}</span>
-        <span>消 {combat.exhaustPile.length}</span>
-        <span className={recoverable > 0 ? "is-ready" : ""}>可回收 {recoverable}</span>
-        <span className={statusFuel > 0 ? "is-ready" : ""}>清创 {statusFuel}</span>
+        <span>{currentLang === "en" ? "Draw" : "抽"} {combat.drawPile.length}</span>
+        <span>{currentLang === "en" ? "Disc" : "弃"} {combat.discardPile.length}</span>
+        <span>{currentLang === "en" ? "Exh" : "消"} {combat.exhaustPile.length}</span>
+        <span className={recoverable > 0 ? "is-ready" : ""}>{tr("可回收")} {recoverable}</span>
+        <span className={statusFuel > 0 ? "is-ready" : ""}>{tr("清创")} {statusFuel}</span>
       </div>
       <div className="pile-insight__recent">
-        <strong>即将抽牌</strong>
+        <strong>{tr("即将抽牌")}</strong>
         {nextDraws.length > 0 ? (
           nextDraws.map((card) => (
             <span key={card.uid}>
@@ -2732,11 +2732,11 @@ function PileInsight({ combat }: { combat: NonNullable<RunState["combat"]> }) {
             </span>
           ))
         ) : (
-          <span>空</span>
+          <span>{tr("空")}</span>
         )}
       </div>
       <div className="pile-insight__recent">
-        <strong>最近弃牌</strong>
+        <strong>{tr("最近弃牌")}</strong>
         {recentDiscard.length > 0 ? (
           recentDiscard.map((card) => (
             <span key={card.uid}>
@@ -2744,7 +2744,7 @@ function PileInsight({ combat }: { combat: NonNullable<RunState["combat"]> }) {
             </span>
           ))
         ) : (
-          <span>空</span>
+          <span>{tr("空")}</span>
         )}
       </div>
     </div>
@@ -2753,7 +2753,8 @@ function PileInsight({ combat }: { combat: NonNullable<RunState["combat"]> }) {
 
 function cardDisplayName(card: CardInstance): string {
   const def = CARDS[card.cardId];
-  return `${def?.name ?? tr("失效卡牌")}${card.upgraded && def ? "+" : ""}`;
+  const name = def ? cardName(card.cardId) : tr("失效卡牌");
+  return `${name}${card.upgraded && def ? "+" : ""}`;
 }
 
 function TempoPanel({
@@ -2788,7 +2789,7 @@ function TempoPanel({
       </div>
       {hasPocketWatch && (
         <span className={`tempo-hint ${watchWillTrigger ? "is-ready" : ""}`}>
-          怀表：{watchWillTrigger ? "下回合 +2 抽牌" : "需少打牌"}
+          {tr("怀表")}：{watchWillTrigger ? tr("下回合 +2 抽牌") : tr("需少打牌")}
         </span>
       )}
     </div>
@@ -3017,7 +3018,7 @@ function ActionSummaryView({ summary }: { summary: ActionSummary }) {
       )}
       {summary.draw > 0 && (
         <span>
-          <BookOpen size={13} /> 抽 {summary.draw}
+          <BookOpen size={13} /> {currentLang === "en" ? "Draw" : "抽"} {summary.draw}
         </span>
       )}
       {summary.heal > 0 && (
@@ -4212,18 +4213,18 @@ function EndScreen({
       <p>{result === "victory" ? "胜利" : "失败"}</p>
       <h2>{run.message}</h2>
       <div className="run-summary">
-        <StatPill icon={<MapIcon size={17} />} label={`幕 ${run.act ?? 1}`} tone="floor" />
-        <StatPill icon={<MapIcon size={17} />} label={`节点 ${run.stats.nodesCleared}`} tone="floor" />
-        <StatPill icon={<Sword size={17} />} label={`伤害 ${run.stats.damageDealt}`} tone="deck" />
-        <StatPill icon={<Coins size={17} />} label={`金币 ${run.stats.goldEarned}`} tone="gold" />
-        <StatPill icon={<BookOpen size={17} />} label={`出牌 ${run.stats.cardsPlayed}`} tone="hp" />
+        <StatPill icon={<MapIcon size={17} />} label={currentLang === "en" ? `Act ${run.act ?? 1}` : `幕 ${run.act ?? 1}`} tone="floor" />
+        <StatPill icon={<MapIcon size={17} />} label={currentLang === "en" ? `Nodes ${run.stats.nodesCleared}` : `节点 ${run.stats.nodesCleared}`} tone="floor" />
+        <StatPill icon={<Sword size={17} />} label={currentLang === "en" ? `Damage ${run.stats.damageDealt}` : `伤害 ${run.stats.damageDealt}`} tone="deck" />
+        <StatPill icon={<Coins size={17} />} label={currentLang === "en" ? `Gold ${run.stats.goldEarned}` : `金币 ${run.stats.goldEarned}`} tone="gold" />
+        <StatPill icon={<BookOpen size={17} />} label={currentLang === "en" ? `Plays ${run.stats.cardsPlayed}` : `出牌 ${run.stats.cardsPlayed}`} tone="hp" />
       </div>
       <div className="end-build">
         <BuildSummary deck={run.player.deck} compact />
         <div className="end-inventory">
-          <StatPill icon={<Award size={17} />} label={`遗物 ${run.player.relics.length}`} tone="floor" />
-          <StatPill icon={<Sparkles size={17} />} label={`常驻 ${run.player.boons.length}`} tone="deck" />
-          <StatPill icon={<FlaskConical size={17} />} label={`药水 ${run.player.potions.length}/${run.player.potionSlots}`} tone="gold" />
+          <StatPill icon={<Award size={17} />} label={currentLang === "en" ? `Relics ${run.player.relics.length}` : `遗物 ${run.player.relics.length}`} tone="floor" />
+          <StatPill icon={<Sparkles size={17} />} label={currentLang === "en" ? `Boons ${run.player.boons.length}` : `常驻 ${run.player.boons.length}`} tone="deck" />
+          <StatPill icon={<FlaskConical size={17} />} label={currentLang === "en" ? `Potions ${run.player.potions.length}/${run.player.potionSlots}` : `药水 ${run.player.potions.length}/${run.player.potionSlots}`} tone="gold" />
         </div>
       </div>
       <button className="primary-button" type="button" onClick={onStart}>
@@ -4296,7 +4297,7 @@ function CardView({
       {tags.length > 0 && (
         <div className="game-card__tags">
           {tags.map((tag) => (
-            <span key={tag}>{tag}</span>
+            <span key={tag}>{tr(tag)}</span>
           ))}
         </div>
       )}
@@ -4603,19 +4604,19 @@ function ResourceOverview({
       <section className="resource-panel resource-panel--cards">
         <div className="resource-panel__head">
           <span>
-            <BookOpen size={16} /> 卡牌
+            <BookOpen size={16} /> {tr("卡牌")}
           </span>
           <strong>{summary.total}</strong>
         </div>
         <div className="resource-panel__meta">
           <span>{tr("均费")} {summary.avgCost}</span>
-          <span>升级 {summary.upgraded}</span>
+          <span>{tr("升级")} {summary.upgraded}</span>
           <span className={statusCount > 0 ? "is-warning" : ""}>状态 {statusCount}</span>
         </div>
         <div className="resource-panel__tags">
           {summary.topTags.slice(0, 3).map(({ tag, count }) => (
             <span key={tag}>
-              {tag} <b>{count}</b>
+              {tr(tag)} <b>{count}</b>
             </span>
           ))}
           {summary.topTags.length === 0 && <span>基础牌组</span>}
@@ -4625,7 +4626,7 @@ function ResourceOverview({
       <section className="resource-panel resource-panel--potions">
         <div className="resource-panel__head">
           <span>
-            <FlaskConical size={16} /> 药水
+            <FlaskConical size={16} /> {tr("药水")}
           </span>
           <strong>
             {run.player.potions.length}/{run.player.potionSlots}
@@ -4641,7 +4642,7 @@ function ResourceOverview({
       <section className="resource-panel resource-panel--boons">
         <div className="resource-panel__head">
           <span>
-            <Sparkles size={16} /> 常驻
+            <Sparkles size={16} /> {tr("常驻")}
           </span>
           <strong>{run.player.boons.length}</strong>
         </div>
@@ -4785,7 +4786,7 @@ function BuildSummary({ deck, compact = false }: { deck: CardInstance[]; compact
       </div>
       <div className="build-summary__stats">
         <span>{tr("均费")} {summary.avgCost}</span>
-        <span>升级 {summary.upgraded}</span>
+        <span>{tr("升级")} {summary.upgraded}</span>
       </div>
       <div className="build-type-grid">
         {typeOrder.map((type) => (
@@ -4812,7 +4813,7 @@ function BuildSummary({ deck, compact = false }: { deck: CardInstance[]; compact
         {summary.topTags.length > 0 ? (
           summary.topTags.map(({ tag, count }) => (
             <span key={tag}>
-              {tag} <strong>{count}</strong>
+              {tr(tag)} <strong>{count}</strong>
             </span>
           ))
         ) : (
@@ -5249,7 +5250,7 @@ function CombatInventoryBar({
     <div className="combat-inventory">
       <div className="combat-inventory__group">
         <span className="combat-inventory__label">
-          <Award size={13} /> 遗物
+          <Award size={13} /> {tr("遗物")}
         </span>
         <div className="combat-inventory__items">
           {relics.length === 0 && <span className="combat-inventory__empty">无</span>}
@@ -5259,7 +5260,7 @@ function CombatInventoryBar({
               <Tooltip
                 key={relicId}
                 placement="bottom"
-                content={<TipCard title={relic?.name ?? tr("遗物")} tone="engine" body={relic?.text ?? tr("效果未知")} footer="遗物 · 自动生效" />}
+                content={<TipCard title={relic?.name ?? tr("遗物")} tone="engine" body={relic?.text ?? tr("效果未知")} footer={tr("遗物 · 自动生效")} />}
               >
                 <span className="combat-relic">
                   <Award size={16} />
@@ -5271,7 +5272,7 @@ function CombatInventoryBar({
       </div>
       <div className="combat-inventory__group">
         <span className="combat-inventory__label">
-          <FlaskConical size={13} /> 药水
+          <FlaskConical size={13} /> {tr("药水")}
         </span>
         <div className="combat-inventory__items">
           {Array.from({ length: slots }).map((_, index) => {
@@ -5366,26 +5367,27 @@ function IntentBadge({ run, enemy }: { run: RunState; enemy: EnemyState }) {
 }
 
 function intentSummary(move: EnemyMove): string {
+  const en = currentLang === "en";
   return move.effects
     .map((effect) => {
       if (effect.type === "damage") {
-        return `攻击 ${effect.amount}${effect.hits && effect.hits > 1 ? `x${effect.hits}` : ""}`;
+        return `${en ? "Attack" : "攻击"} ${effect.amount}${effect.hits && effect.hits > 1 ? `x${effect.hits}` : ""}`;
       }
       if (effect.type === "block") {
-        return `格挡 ${effect.amount}`;
+        return `${en ? "Block" : "格挡"} ${effect.amount}`;
       }
       if (effect.type === "applyPower") {
         return `${powerLabel(effect.power)} ${effect.amount}`;
       }
       if (effect.type === "summon") {
-        return `召唤 ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`;
+        return `${en ? "Summon" : "召唤"} ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`;
       }
       if (effect.type === "createCard") {
-        return `加入 ${cardName(effect.cardId)}`;
+        return `${en ? "Add" : "加入"} ${cardName(effect.cardId)}`;
       }
       return tr("特殊行动");
     })
-    .join("，");
+    .join(en ? ", " : "，");
 }
 
 // 计算敌人本回合意图对玩家的【真实伤害】（含力量/虚弱/易伤/破绽），用于头顶意图牌
@@ -5568,7 +5570,7 @@ function PotionInventory({
 }) {
   return (
     <div className="potion-inventory">
-      <PanelTitle icon={<FlaskConical size={17} />} title={`药水槽 ${potions.length}/${slots}`} />
+      <PanelTitle icon={<FlaskConical size={17} />} title={currentLang === "en" ? `Potions ${potions.length}/${slots}` : `药水槽 ${potions.length}/${slots}`} />
       <div className="potion-inventory__grid">
         {Array.from({ length: slots }).map((_, index) => {
           const potion = potions[index];

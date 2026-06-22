@@ -21,4 +21,17 @@ export const uiDict: Dict = {
   "ui.label.potion": { zh: "药水", en: "Potion" },
   "ui.label.relic": { zh: "遗物", en: "Relic" },
   "ui.label.boon": { zh: "常驻", en: "Boon" },
+
+  // —— 战斗界面 ——
+  "ui.combat.encounter": { zh: "遭遇", en: "Encounter" },
+  "ui.combat.usePotion": { zh: "使用药水", en: "Use Potion" },
+  "ui.combat.role": { zh: "角色", en: "Hero" },
+  "ui.combat.wanderer": { zh: "流浪者", en: "Wanderer" },
+  "ui.combat.endTurn": { zh: "结束回合", en: "End Turn" },
+  "ui.combat.incoming": { zh: "入伤", en: "Incoming" },
+  "ui.combat.gap": { zh: "缺口", en: "Gap" },
+  "ui.combat.energy": { zh: "能量", en: "Energy" },
+  "ui.combat.hand": { zh: "手牌", en: "Hand" },
+  "ui.combat.noStatus": { zh: "无状态", en: "No Status" },
+  "ui.combat.defeated": { zh: "击破", en: "Lethal" },
 };
