@@ -1994,6 +1994,7 @@ function CombatScreen({
             <EnemyCard
               key={enemy.uid}
               enemy={enemy}
+              run={run}
               targetable={(selectedNeedsTarget || selectedPotionNeedsTarget) && enemy.hp > 0}
               preview={targetPreviews.get(enemy.uid)}
               onClick={() => onEnemyClick(enemy)}
@@ -2097,6 +2098,7 @@ function CombatScreen({
       </div>
 
       <aside className="hud-rail combat-log combat-console">
+        <CombatInventoryBar run={run} selectedPotionUid={selectedPotionUid} onPotionClick={onPotionClick} />
         <div className="combat-console__summary" aria-label="战斗摘要">
           <span className={incoming > 0 ? "is-danger" : ""}>
             <Sword size={14} />
@@ -2198,11 +2200,13 @@ function CombatReadout({ run }: { run: RunState }) {
 
 function EnemyCard({
   enemy,
+  run,
   targetable,
   preview,
   onClick,
 }: {
   enemy: EnemyState;
+  run: RunState;
   targetable: boolean;
   preview?: TargetPreview;
   onClick: () => void;
@@ -2269,7 +2273,7 @@ function EnemyCard({
           <span className="mini-label">{dead ? "击破" : "敌人"}</span>
           <h3>{enemy.name}</h3>
         </div>
-        <IntentBadge move={enemy.intent} />
+        <IntentBadge run={run} enemy={enemy} />
       </div>
       <HealthBar current={enemy.hp} max={enemy.maxHp} />
       {intentText && <div className="intent-summary">{intentText}</div>}
@@ -5169,32 +5173,134 @@ function PowerBadges({ powers }: { powers: PowerMap }) {
   );
 }
 
-function IntentBadge({ move }: { move: EnemyMove }) {
-  const intentToneMap: Record<string, PowerTone> = {
-    attack: "debuff",
-    debuff: "debuff",
-    defend: "buff",
-    buff: "engine",
-    mixed: "engine",
-  };
+function CombatInventoryBar({
+  run,
+  selectedPotionUid,
+  onPotionClick,
+}: {
+  run: RunState;
+  selectedPotionUid?: string;
+  onPotionClick: (potion: PotionInstance) => void;
+}) {
+  const relics = run.player.relics;
+  const potions = run.player.potions;
+  const slots = run.player.potionSlots;
+
+  return (
+    <div className="combat-inventory">
+      <div className="combat-inventory__group">
+        <span className="combat-inventory__label">
+          <Award size={13} /> 遗物
+        </span>
+        <div className="combat-inventory__items">
+          {relics.length === 0 && <span className="combat-inventory__empty">无</span>}
+          {relics.map((relicId) => {
+            const relic = RELICS[relicId];
+            return (
+              <Tooltip
+                key={relicId}
+                placement="bottom"
+                content={<TipCard title={relic?.name ?? "遗物"} tone="engine" body={relic?.text ?? "效果未知"} footer="遗物 · 自动生效" />}
+              >
+                <span className="combat-relic">
+                  <Award size={16} />
+                </span>
+              </Tooltip>
+            );
+          })}
+        </div>
+      </div>
+      <div className="combat-inventory__group">
+        <span className="combat-inventory__label">
+          <FlaskConical size={13} /> 药水
+        </span>
+        <div className="combat-inventory__items">
+          {Array.from({ length: slots }).map((_, index) => {
+            const potion = potions[index];
+            if (!potion) {
+              return <span className="combat-potion is-empty" key={`empty-${index}`}><FlaskConical size={15} /></span>;
+            }
+            const def = POTIONS[potion.potionId];
+            return (
+              <Tooltip
+                key={potion.uid}
+                placement="bottom"
+                content={<TipCard title={def?.name ?? "药水"} tone="buff" body={def?.text ?? "效果未知"} footer="▶ 点击使用" />}
+              >
+                <button
+                  className={`combat-potion ${selectedPotionUid === potion.uid ? "is-selected" : ""}`}
+                  type="button"
+                  onClick={() => onPotionClick(potion)}
+                >
+                  <FlaskConical size={16} />
+                </button>
+              </Tooltip>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function IntentBadge({ run, enemy }: { run: RunState; enemy: EnemyState }) {
+  const move = enemy.intent;
+  const primary = intentPrimaryKind(move);
+  const dmg = intentRealDamage(run, enemy);
+  const block = move.effects.find((e) => e.type === "block");
+  const blockAmount = block && block.type === "block" ? block.amount : 0;
+
+  // 头顶牌主显示：攻击=真实伤害数字，其它=类型标签
+  const icon =
+    primary.kind === "attack" ? <Sword size={16} /> :
+    primary.kind === "block" ? <Shield size={16} /> :
+    primary.kind === "buff" ? <Flame size={16} /> :
+    primary.kind === "summon" ? <Skull size={16} /> :
+    primary.kind === "debuff" ? <Sparkles size={16} /> :
+    <Target size={16} />;
+
+  const mainText =
+    primary.kind === "attack"
+      ? dmg.hits > 1
+        ? `${dmg.perHit}×${dmg.hits}`
+        : `${dmg.total}`
+      : primary.kind === "block"
+        ? `${blockAmount}`
+        : primary.label;
+
+  // hover 说明：把意图翻译成大白话
+  const lines: string[] = [];
+  for (const effect of move.effects) {
+    if (effect.type === "damage") {
+      const h = effect.hits ?? 1;
+      lines.push(h > 1 ? `造成 ${dmg.perHit} 点伤害，共 ${h} 次（合计 ${dmg.total}）` : `造成 ${dmg.total} 点伤害`);
+    } else if (effect.type === "block") {
+      lines.push(`为自己获得 ${effect.amount} 点格挡`);
+    } else if (effect.type === "applyPower") {
+      const who = effect.target === "self" ? "自身" : "你";
+      lines.push(`给${who}施加 ${effect.amount} 层${POWER_LABELS[effect.power]}`);
+    } else if (effect.type === "summon") {
+      lines.push(`召唤 ${ENEMIES[effect.enemyId]?.name ?? "敌人"}`);
+    } else if (effect.type === "createCard") {
+      lines.push(`往你牌堆塞入「${CARDS[effect.cardId]?.name ?? "状态牌"}」`);
+    }
+  }
+
   return (
     <Tooltip
+      placement="bottom"
       content={
         <TipCard
-          title={move.name}
-          tone={intentToneMap[move.intent] ?? "engine"}
-          body={intentSummary(move)}
-          footer="敌方意图"
+          title={`${move.name}（${primary.label}）`}
+          tone={primary.kind === "attack" || primary.kind === "debuff" ? "debuff" : primary.kind === "block" || primary.kind === "buff" ? "buff" : "engine"}
+          body={lines.join("；")}
+          footer="敌方下回合行动"
         />
       }
     >
-      <span className={`intent intent--${move.intent}`}>
-        {move.intent === "attack" && <Sword size={15} />}
-        {move.intent === "defend" && <Shield size={15} />}
-        {move.intent === "buff" && <Flame size={15} />}
-        {move.intent === "debuff" && <Sparkles size={15} />}
-        {move.intent === "mixed" && <Target size={15} />}
-        {move.name}
+      <span className={`intent-banner intent-banner--${primary.kind}`}>
+        {icon}
+        <strong>{mainText}</strong>
       </span>
     </Tooltip>
   );
@@ -5221,6 +5327,67 @@ function intentSummary(move: EnemyMove): string {
       return "特殊行动";
     })
     .join("，");
+}
+
+// 计算敌人本回合意图对玩家的【真实伤害】（含力量/虚弱/易伤/破绽），用于头顶意图牌
+function intentRealDamage(run: RunState, enemy: EnemyState): { perHit: number; hits: number; total: number } {
+  const combat = run.combat;
+  if (!combat) {
+    return { perHit: 0, hits: 0, total: 0 };
+  }
+  let perHit = 0;
+  let hits = 0;
+  let total = 0;
+  let playerMark = combat.playerPowers.mark ?? 0;
+  for (const effect of enemy.intent.effects) {
+    if (effect.type !== "damage") {
+      continue;
+    }
+    const effectHits = effect.hits ?? 1;
+    for (let hit = 0; hit < effectHits; hit += 1) {
+      let damage = Math.max(0, effect.amount + (enemy.powers.strength ?? 0));
+      if (playerMark > 0 && damage > 0) {
+        damage += playerMark * 2;
+        playerMark = Math.max(0, playerMark - 1);
+      }
+      if ((enemy.powers.weak ?? 0) > 0) {
+        damage = Math.floor(damage * 0.75);
+      }
+      if ((combat.playerPowers.vulnerable ?? 0) > 0) {
+        damage = Math.ceil(damage * 1.5);
+      }
+      if (hit === 0) {
+        perHit = damage;
+      }
+      hits += 1;
+      total += damage;
+    }
+  }
+  return { perHit, hits, total };
+}
+
+// 敌人意图的主类型 + 图标，用于头顶牌
+function intentPrimaryKind(move: EnemyMove): {
+  kind: "attack" | "block" | "buff" | "debuff" | "summon" | "special";
+  label: string;
+} {
+  const hasDamage = move.effects.some((e) => e.type === "damage");
+  if (hasDamage) {
+    return { kind: "attack", label: "攻击" };
+  }
+  if (move.effects.some((e) => e.type === "block")) {
+    return { kind: "block", label: "防御" };
+  }
+  if (move.effects.some((e) => e.type === "summon")) {
+    return { kind: "summon", label: "召唤" };
+  }
+  if (move.effects.some((e) => e.type === "applyPower" && e.target === "self")) {
+    return { kind: "buff", label: "强化" };
+  }
+  if (move.effects.some((e) => (e.type === "applyPower" && e.target === "player") || e.type === "createCard")) {
+    return { kind: "debuff", label: "削弱" };
+  }
+  return { kind: "special", label: "未知" };
 }
 
 function HealthBar({ current, max }: { current: number; max: number }) {

@@ -2728,53 +2728,51 @@ button.inventory-chip:focus-visible {
 
 .map-line {
   fill: none;
-  stroke: rgba(230, 244, 240, 0.82);
-  stroke-width: 3.5;
+  stroke: rgba(180, 200, 196, 0.42);
+  stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
-  opacity: 0.95;
+  opacity: 0.7;
   filter:
     drop-shadow(0 0 2px rgba(0, 0, 0, 1))
-    drop-shadow(0 0 3px rgba(0, 0, 0, 0.95))
     drop-shadow(0 1px 1px rgba(0, 0, 0, 1));
   vector-effect: non-scaling-stroke;
 }
 
 .map-line[class*="map-zone--"] {
-  stroke: rgba(214, 235, 230, 0.7);
+  stroke: rgba(180, 200, 196, 0.42);
 }
 
 .map-line--active {
-  stroke: rgba(255, 213, 117, 0.95);
-  stroke-width: 3.4;
+  stroke: rgba(255, 224, 163, 0.95);
+  stroke-width: 4;
   opacity: 1;
   filter:
-    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9))
-    drop-shadow(0 0 6px rgba(240, 190, 85, 0.5));
+    drop-shadow(0 1px 2px rgba(0, 0, 0, 1))
+    drop-shadow(0 0 8px rgba(240, 190, 85, 0.6));
 }
 
 .map-line--available {
-  stroke: rgba(255, 224, 163, 1);
-  stroke-dasharray: 6 3;
-  stroke-width: 3.8;
+  stroke: rgba(255, 230, 150, 1);
+  stroke-width: 6;
   opacity: 1;
   filter:
-    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9))
-    drop-shadow(0 0 9px rgba(240, 190, 85, 0.7));
+    drop-shadow(0 0 2px rgba(0, 0, 0, 1))
+    drop-shadow(0 0 12px rgba(240, 190, 85, 0.9));
 }
 
 .map-line--preview {
-  stroke: rgba(255, 232, 180, 1);
-  stroke-dasharray: 6 3;
-  animation: map-route-preview 1400ms linear infinite;
+  stroke: rgba(255, 236, 170, 1);
+  stroke-width: 6;
+  animation: map-route-preview 1200ms ease-in-out infinite;
 }
 
 .map-line--completed {
-  stroke: rgba(120, 230, 210, 0.95);
-  stroke-width: 3.2;
+  stroke: rgba(120, 230, 210, 0.9);
+  stroke-width: 3.5;
   opacity: 1;
   filter:
-    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.85))
+    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9))
     drop-shadow(0 0 7px rgba(91, 210, 191, 0.5));
 }
 
@@ -9063,11 +9061,12 @@ body {
     inset 0 0 0 1px rgba(0, 0, 0, 0.5),
     inset 0 0 90px rgba(0, 0, 0, 0.55),
     0 14px 40px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
 }
 .map-scroll--game .map-canvas {
-  height: 100%;
-  min-height: 620px;
+  height: 1560px;
   border: none;
   border-radius: 16px;
   min-width: 0;
@@ -9103,6 +9102,24 @@ body {
 .map-node-anchor .map-node.node-tone--boss {
   width: 80px;
   height: 80px;
+}
+/* 不可走节点压暗去饱和，可走节点突出（一眼看到能去哪） */
+.map-node-anchor .map-node:not(.is-available):not(.is-completed) {
+  opacity: 0.5;
+  filter: saturate(0.7) brightness(0.8);
+}
+.map-node-anchor .map-node.is-available {
+  opacity: 1;
+  filter: none;
+  box-shadow:
+    0 0 0 2px rgba(255, 224, 163, 0.9),
+    0 0 22px rgba(240, 190, 85, 0.55),
+    0 10px 24px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.map-node-anchor .map-node.is-completed {
+  opacity: 0.7;
+  filter: saturate(0.6);
 }
 
 /* ===================================================================== */
@@ -9318,6 +9335,157 @@ body {
   .title-screen__difficulty {
     grid-template-columns: repeat(2, minmax(160px, 1fr));
   }
+}
+
+/* ===================================================================== */
+/* 敌人意图头顶牌（醒目显示下回合行动 + 真实伤害）                       */
+/* ===================================================================== */
+.intent-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line-strong);
+  background: rgba(14, 18, 24, 0.92);
+  cursor: help;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+.intent-banner strong {
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.intent-banner:hover {
+  transform: scale(1.06);
+}
+/* 攻击=红、危险感强 */
+.intent-banner--attack {
+  border-color: rgba(240, 109, 89, 0.85);
+  color: #ffd6d0;
+  background: linear-gradient(180deg, rgba(60, 26, 22, 0.95), rgba(28, 14, 13, 0.95));
+  box-shadow: 0 0 14px rgba(240, 109, 89, 0.35), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+.intent-banner--attack strong {
+  color: #ff8c7e;
+  text-shadow: 0 0 10px rgba(240, 109, 89, 0.5);
+}
+/* 防御=蓝 */
+.intent-banner--block {
+  border-color: rgba(104, 139, 216, 0.8);
+  color: #cfe0ff;
+  background: linear-gradient(180deg, rgba(28, 36, 56, 0.95), rgba(14, 18, 28, 0.95));
+}
+/* 强化=黄 */
+.intent-banner--buff {
+  border-color: rgba(240, 190, 85, 0.8);
+  color: #ffe9bf;
+  background: linear-gradient(180deg, rgba(50, 40, 18, 0.95), rgba(24, 19, 10, 0.95));
+}
+/* 削弱=紫 */
+.intent-banner--debuff {
+  border-color: rgba(160, 117, 204, 0.8);
+  color: #ead6ff;
+  background: linear-gradient(180deg, rgba(40, 28, 56, 0.95), rgba(18, 13, 26, 0.95));
+}
+/* 召唤=深红 */
+.intent-banner--summon {
+  border-color: rgba(212, 87, 69, 0.8);
+  color: #ffd0c8;
+  background: linear-gradient(180deg, rgba(52, 22, 22, 0.95), rgba(22, 11, 11, 0.95));
+}
+.intent-banner--special {
+  border-color: var(--line-strong);
+  color: var(--muted);
+}
+
+/* ===================================================================== */
+/* 战斗内遗物+药水栏（解决"看不到遗物/不知药水在哪用"）                 */
+/* ===================================================================== */
+.combat-inventory {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--gold-line);
+  background: linear-gradient(180deg, rgba(30, 35, 42, 0.7), rgba(14, 17, 22, 0.85));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.combat-inventory__group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.combat-inventory__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+  min-width: 48px;
+}
+.combat-inventory__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.combat-inventory__empty {
+  font-size: 0.74rem;
+  color: var(--line-strong);
+}
+.combat-relic {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  color: var(--gold);
+  border: 1px solid rgba(240, 190, 85, 0.4);
+  background: linear-gradient(180deg, rgba(50, 40, 18, 0.7), rgba(22, 18, 10, 0.85));
+  cursor: help;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+.combat-relic:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 14px rgba(240, 190, 85, 0.45);
+}
+/* 药水：可点击使用，发光引导 */
+.combat-potion {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  color: var(--teal-strong);
+  border: 1px solid rgba(91, 210, 191, 0.5);
+  background: linear-gradient(180deg, rgba(18, 40, 38, 0.8), rgba(10, 20, 19, 0.9));
+  cursor: pointer;
+  animation: combat-potion-glow 2.2s ease-in-out infinite;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+.combat-potion:hover {
+  transform: translateY(-2px) scale(1.08);
+  box-shadow: 0 0 16px rgba(91, 210, 191, 0.6);
+}
+.combat-potion.is-selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold), 0 0 18px rgba(240, 190, 85, 0.6);
+}
+.combat-potion.is-empty {
+  color: var(--line-strong);
+  border-style: dashed;
+  border-color: var(--line);
+  background: rgba(12, 15, 20, 0.5);
+  cursor: default;
+  animation: none;
+}
+@keyframes combat-potion-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(91, 210, 191, 0.2); }
+  50% { box-shadow: 0 0 14px rgba(91, 210, 191, 0.5); }
 }
 
 @media (prefers-reduced-motion: reduce) {
