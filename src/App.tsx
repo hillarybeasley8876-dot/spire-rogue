@@ -1,5 +1,19 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useI18n } from "./i18n";
+import {
+  getLocalizedDifficulty,
+  cardName,
+  cardText,
+  enemyName,
+  moveName,
+  relicInfo,
+  potionInfo,
+  boonInfo,
+  powerLabel,
+  powerHint,
+  difficultyInfo,
+} from "./i18n/resolve";
 import {
   Award,
   BatteryCharging,
@@ -362,9 +376,9 @@ function PowerBadge({ power, stacks }: { power: PowerKey; stacks: number }) {
     <Tooltip
       content={
         <TipCard
-          title={`${POWER_LABELS[power]} · ${stacks}`}
+          title={`${powerLabel(power)} · ${stacks}`}
           tone={tone}
-          body={POWER_HINTS[power]}
+          body={powerHint(power)}
           footer={POWER_TONE_LABELS[tone]}
         />
       }
@@ -530,6 +544,7 @@ type InventorySelection =
     };
 
 function App() {
+  const { t, lang, toggle } = useI18n();
   const [savedRun, setSavedRun] = useState<RunState | undefined>(() => loadSavedRun());
   const [run, setRun] = useState<RunState>(() => createInitialRun(Date.now(), "title"));
   const [difficulty, setDifficulty] = useState<DifficultyKey>("standard");
@@ -682,8 +697,8 @@ function App() {
             <Flame size={18} />
           </span>
           <div>
-            <h1>裂隙尖塔</h1>
-            <p>程序原型</p>
+            <h1>{t("ui.topbar.brand")}</h1>
+            <p>{t("ui.topbar.subtitle")}</p>
           </div>
         </div>
 
@@ -692,17 +707,26 @@ function App() {
             <StatPill icon={<HeartPulse size={17} />} label={`${run.player.hp}/${run.player.maxHp}`} tone="hp" />
             <StatPill icon={<Coins size={17} />} label={`${run.player.gold}`} tone="gold" />
             <StatPill icon={<Layers size={17} />} label={`${run.player.deck.length}`} tone="deck" />
-            <StatPill icon={<MapIcon size={17} />} label={`幕 ${run.act ?? 1} · 层 ${Math.max(1, run.floor + 1)}`} tone="floor" />
-            <StatPill icon={<Skull size={17} />} label={DIFFICULTIES[run.difficulty].name} tone="difficulty" />
+            <StatPill
+              icon={<MapIcon size={17} />}
+              label={`${t("ui.common.act")} ${run.act ?? 1} · ${t("ui.common.floor")} ${Math.max(1, run.floor + 1)}`}
+              tone="floor"
+            />
+            <StatPill icon={<Skull size={17} />} label={getLocalizedDifficulty(run.difficulty, lang).name} tone="difficulty" />
           </div>
         )}
 
-        {run.phase !== "title" && (
-          <button className="icon-button" type="button" onClick={handleAbandonToTitle}>
-            <RotateCcw size={17} />
-            <span>返回标题</span>
+        <div className="topbar__controls">
+          <button className="icon-button lang-toggle" type="button" onClick={toggle} title={t("ui.lang.name")}>
+            <span>{t("ui.lang.toggle")}</span>
           </button>
-        )}
+          {run.phase !== "title" && (
+            <button className="icon-button" type="button" onClick={handleAbandonToTitle}>
+              <RotateCcw size={17} />
+              <span>{t("ui.topbar.backToTitle")}</span>
+            </button>
+          )}
+        </div>
       </header>
 
       {run.message && run.phase !== "combat" && <div className="toast">{run.message}</div>}
@@ -1104,7 +1128,7 @@ function RunInventoryTray({ run }: { run: RunState }) {
         <PanelTitle icon={<Award size={17} />} title="遗物" />
         <div className="inventory-chip-list">
           {relics.map((relicId) => {
-            const relic = RELICS[relicId];
+            const relic = relicInfo(relicId);
             return (
               <Tooltip
                 key={relicId}
@@ -1138,7 +1162,7 @@ function RunInventoryTray({ run }: { run: RunState }) {
         <PanelTitle icon={<Sparkles size={17} />} title="常驻" />
         <div className="inventory-chip-list">
           {boons.map((boonId) => {
-            const boon = BOONS[boonId];
+            const boon = boonInfo(boonId);
             return (
               <Tooltip
                 key={boonId}
@@ -1179,7 +1203,7 @@ function InventoryInspector({ selection }: { selection?: InventorySelection }) {
   }
 
   if (selection.kind === "relic") {
-    const relic = RELICS[selection.id];
+    const relic = relicInfo(selection.id);
     const tags = relicMechanicTags(selection.id).slice(0, 4);
     return (
       <div className="inventory-inspector inventory-inspector--relic">
@@ -1198,7 +1222,7 @@ function InventoryInspector({ selection }: { selection?: InventorySelection }) {
     );
   }
 
-  const boon = BOONS[selection.id];
+  const boon = boonInfo(selection.id);
   const tags = boonMechanicTags(selection.id).slice(0, 4);
   return (
     <div className="inventory-inspector inventory-inspector--boon">
@@ -1218,7 +1242,7 @@ function InventoryInspector({ selection }: { selection?: InventorySelection }) {
 }
 
 function relicMechanicTags(relicId: string): string[] {
-  const relic = RELICS[relicId];
+  const relic = relicInfo(relicId);
   if (!relic) {
     return ["失效"];
   }
@@ -2271,7 +2295,7 @@ function EnemyCard({
       <div className="enemy-card__top">
         <div>
           <span className="mini-label">{dead ? "击破" : "敌人"}</span>
-          <h3>{enemy.name}</h3>
+          <h3>{enemyName(enemy.defId)}</h3>
         </div>
         <IntentBadge run={run} enemy={enemy} />
       </div>
@@ -2513,8 +2537,8 @@ function MechanicPanel({
           <strong>当前机制</strong>
           {hintPowers.map((power) => (
             <span key={power}>
-              <b>{POWER_LABELS[power]}</b>
-              {POWER_HINTS[power]}
+              <b>{powerLabel(power)}</b>
+              {powerHint(power)}
             </span>
           ))}
         </div>
@@ -2644,7 +2668,7 @@ function CatalystInsightPanel({ insight }: { insight?: CatalystInsight }) {
       <div>
         {insight.entries.map(([power, value]) => (
           <em key={power}>
-            {POWER_LABELS[power]} +{value}
+            {powerLabel(power)} +{value}
           </em>
         ))}
       </div>
@@ -2916,7 +2940,7 @@ function TargetPreview({ preview }: { preview: TargetPreview }) {
       )}
       {powerEntries.map(([power, value]) => (
         <span key={power}>
-          <Sparkles size={13} /> {POWER_LABELS[power]} +{value}
+          <Sparkles size={13} /> {powerLabel(power)} +{value}
         </span>
       ))}
       {preview.lethal && <strong>击破</strong>}
@@ -2970,12 +2994,12 @@ function ActionSummaryView({ summary }: { summary: ActionSummary }) {
       )}
       {selfPowers.map(([power, value]) => (
         <span key={`self-${power}`}>
-          <Sparkles size={13} /> 自身 {POWER_LABELS[power]} +{value}
+          <Sparkles size={13} /> 自身 {powerLabel(power)} +{value}
         </span>
       ))}
       {targetPowers.map(([power, value]) => (
         <span key={`target-${power}`}>
-          <Target size={13} /> 目标 {POWER_LABELS[power]} +{value}
+          <Target size={13} /> 目标 {powerLabel(power)} +{value}
         </span>
       ))}
       {summary.consumes.map((item, index) => (
@@ -3185,7 +3209,7 @@ function summarizeCardAction(run: RunState, card: CardInstance): ActionSummary {
       const stacks = Math.max(effect.minimum ?? 0, spent);
       summary.block += estimateBlock(combat.playerPowers, effect.amount * stacks);
       if (spent > 0) {
-        summary.consumes.push(`${POWER_LABELS[effect.power]} ${spent}`);
+        summary.consumes.push(`${powerLabel(effect.power)} ${spent}`);
         playerPowers[effect.power] = Math.max(0, available - spent);
       }
     }
@@ -3200,7 +3224,7 @@ function summarizeCardAction(run: RunState, card: CardInstance): ActionSummary {
       if (gained > 0) {
         addSummaryPower(summary.selfPowers, effect.gainedPower, gained);
         playerPowers[effect.gainedPower] = (playerPowers[effect.gainedPower] ?? 0) + gained;
-        summary.resonates.push(`${POWER_LABELS[effect.sourcePower]} -> ${POWER_LABELS[effect.gainedPower]} +${gained}`);
+        summary.resonates.push(`${powerLabel(effect.sourcePower)} -> ${powerLabel(effect.gainedPower)} +${gained}`);
       }
     }
     if (effect.type === "gainPowerPerCardPlayed") {
@@ -3209,7 +3233,7 @@ function summarizeCardAction(run: RunState, card: CardInstance): ActionSummary {
       if (gained > 0) {
         addSummaryPower(summary.selfPowers, effect.power, gained);
         playerPowers[effect.power] = (playerPowers[effect.power] ?? 0) + gained;
-        summary.chains.push(`${playedCards} 张 -> ${POWER_LABELS[effect.power]} +${gained}`);
+        summary.chains.push(`${playedCards} 张 -> ${powerLabel(effect.power)} +${gained}`);
       }
     }
     if (effect.type === "draw") {
@@ -3228,7 +3252,7 @@ function summarizeCardAction(run: RunState, card: CardInstance): ActionSummary {
       const available = playerPowers[effect.power] ?? 0;
       const removed = Math.min(available, effect.amount);
       if (removed > 0) {
-        summary.cleanses.push(`${POWER_LABELS[effect.power]} ${removed}`);
+        summary.cleanses.push(`${powerLabel(effect.power)} ${removed}`);
         playerPowers[effect.power] = Math.max(0, available - removed);
         if (effect.gainBlockPerStack) {
           summary.block += estimateBlock(combat.playerPowers, effect.gainBlockPerStack * removed);
@@ -3265,19 +3289,19 @@ function summarizeCardAction(run: RunState, card: CardInstance): ActionSummary {
       const available = playerPowers[effect.power] ?? 0;
       const spent = Math.min(available, effect.consume ?? available);
       if (spent > 0) {
-        summary.consumes.push(`${POWER_LABELS[effect.power]} ${spent}`);
+        summary.consumes.push(`${powerLabel(effect.power)} ${spent}`);
         playerPowers[effect.power] = Math.max(0, available - spent);
       }
     }
     if (effect.type === "damagePerPower" && effect.consume && effect.powerTarget === "self") {
       const stacks = playerPowers[effect.power] ?? 0;
       if (stacks > 0) {
-        summary.consumes.push(`${POWER_LABELS[effect.power]} ${stacks}`);
+        summary.consumes.push(`${powerLabel(effect.power)} ${stacks}`);
         playerPowers[effect.power] = 0;
       }
     }
     if (effect.type === "createCard") {
-      summary.creates.push(CARDS[effect.cardId]?.name ?? effect.cardId);
+      summary.creates.push(cardName(effect.cardId));
     }
     if (effect.type === "returnFromDiscard") {
       summary.recovers.push(effect.cardType ? `${CARD_TYPE_LABELS[effect.cardType]}牌` : effect.excludeStatus ? "非状态牌" : "弃牌");
@@ -3330,7 +3354,7 @@ function summarizePotionAction(run: RunState, potion: PotionInstance): ActionSum
       if (gained > 0) {
         addSummaryPower(summary.selfPowers, effect.gainedPower, gained);
         playerPowers[effect.gainedPower] = (playerPowers[effect.gainedPower] ?? 0) + gained;
-        summary.resonates.push(`${POWER_LABELS[effect.sourcePower]} -> ${POWER_LABELS[effect.gainedPower]} +${gained}`);
+        summary.resonates.push(`${powerLabel(effect.sourcePower)} -> ${powerLabel(effect.gainedPower)} +${gained}`);
       }
     }
     if (effect.type === "gainPowerPerCardPlayed") {
@@ -3339,7 +3363,7 @@ function summarizePotionAction(run: RunState, potion: PotionInstance): ActionSum
       if (gained > 0) {
         addSummaryPower(summary.selfPowers, effect.power, gained);
         playerPowers[effect.power] = (playerPowers[effect.power] ?? 0) + gained;
-        summary.chains.push(`${playedCards} 张 -> ${POWER_LABELS[effect.power]} +${gained}`);
+        summary.chains.push(`${playedCards} 张 -> ${powerLabel(effect.power)} +${gained}`);
       }
     }
     if (effect.type === "draw") summary.draw += effect.amount;
@@ -3350,7 +3374,7 @@ function summarizePotionAction(run: RunState, potion: PotionInstance): ActionSum
       const available = playerPowers[effect.power] ?? 0;
       const removed = Math.min(available, effect.amount);
       if (removed > 0) {
-        summary.cleanses.push(`${POWER_LABELS[effect.power]} ${removed}`);
+        summary.cleanses.push(`${powerLabel(effect.power)} ${removed}`);
         playerPowers[effect.power] = Math.max(0, available - removed);
         if (effect.gainBlockPerStack) {
           const rawBlock = effect.gainBlockPerStack * removed;
@@ -3443,7 +3467,7 @@ function estimateAmplifiedPower(current: number, multiplier: number, minimum = 0
 
 function amplifySummaryLabel(power: PowerKey, multiplier: number, minimum = 0, target: string): string {
   const minimumText = minimum > 0 ? `，至少 +${minimum}` : "";
-  return `${target}${POWER_LABELS[power]} x${multiplier}${minimumText}`;
+  return `${target}${powerLabel(power)} x${multiplier}${minimumText}`;
 }
 
 function addSummaryPower(target: Partial<Record<PowerKey, number>>, power: PowerKey, amount: number): void {
@@ -3584,33 +3608,33 @@ function cardMechanicTags(card: CardInstance): string[] {
     if (effect.type === "damage") tags.add(effect.target === "allEnemies" ? "群攻" : "伤害");
     if (effect.type === "damageFromBlock") tags.add("盾击");
     if (effect.type === "damagePerAttackPlayed") tags.add("连击伤害");
-    if (effect.type === "damagePerPower") tags.add(`${POWER_LABELS[effect.power]}爆发`);
-    if (effect.type === "spendPowerDamage") tags.add(`${POWER_LABELS[effect.power]}爆发`);
-    if (effect.type === "amplifyPower") tags.add(`${POWER_LABELS[effect.power]}催化`);
+    if (effect.type === "damagePerPower") tags.add(`${powerLabel(effect.power)}爆发`);
+    if (effect.type === "spendPowerDamage") tags.add(`${powerLabel(effect.power)}爆发`);
+    if (effect.type === "amplifyPower") tags.add(`${powerLabel(effect.power)}催化`);
     if (effect.type === "block") tags.add("格挡");
-    if (effect.type === "blockPerPower") tags.add(`${POWER_LABELS[effect.power]}格挡`);
+    if (effect.type === "blockPerPower") tags.add(`${powerLabel(effect.power)}格挡`);
     if (effect.type === "blockPerExhaustedCard") {
       tags.add("格挡");
       tags.add("消耗堆");
     }
     if (effect.type === "gainPowerPerPower") {
       tags.add("共振");
-      tags.add(POWER_LABELS[effect.sourcePower]);
-      tags.add(POWER_LABELS[effect.gainedPower]);
+      tags.add(powerLabel(effect.sourcePower));
+      tags.add(powerLabel(effect.gainedPower));
     }
     if (effect.type === "gainPowerPerCardPlayed") {
       tags.add("连锁");
-      tags.add(POWER_LABELS[effect.power]);
+      tags.add(powerLabel(effect.power));
     }
     if (effect.type === "cleansePower") {
       tags.add("散热");
       tags.add("净化");
-      tags.add(POWER_LABELS[effect.power]);
-      if (effect.gainPowerPerStack) tags.add(POWER_LABELS[effect.gainPowerPerStack.power]);
+      tags.add(powerLabel(effect.power));
+      if (effect.gainPowerPerStack) tags.add(powerLabel(effect.gainPowerPerStack.power));
     }
     if (effect.type === "applyPower") {
       if (effect.target === "self" && effect.power === "bleed" && effect.amount > 0) tags.add("过载");
-      tags.add(POWER_LABELS[effect.power]);
+      tags.add(powerLabel(effect.power));
     }
     if (effect.type === "draw") tags.add("抽牌");
     if (effect.type === "gainEnergy") tags.add("能量");
@@ -3621,7 +3645,7 @@ function cardMechanicTags(card: CardInstance): string[] {
     if (effect.type === "exhaustCards") {
       tags.add("净化");
       if (effect.gainEnergyPerCard) tags.add("能量");
-      if (effect.gainPowerPerCard) tags.add(POWER_LABELS[effect.gainPowerPerCard.power]);
+      if (effect.gainPowerPerCard) tags.add(powerLabel(effect.gainPowerPerCard.power));
     }
   }
 
@@ -3643,21 +3667,21 @@ function potionMechanicTags(potion: PotionInstance): string[] {
     }
     if (effect.type === "gainPowerPerPower") {
       tags.add("共振");
-      tags.add(POWER_LABELS[effect.sourcePower]);
-      tags.add(POWER_LABELS[effect.gainedPower]);
+      tags.add(powerLabel(effect.sourcePower));
+      tags.add(powerLabel(effect.gainedPower));
     }
     if (effect.type === "gainPowerPerCardPlayed") {
       tags.add("连锁");
-      tags.add(POWER_LABELS[effect.power]);
+      tags.add(powerLabel(effect.power));
     }
     if (effect.type === "cleansePower") {
       tags.add("散热");
       tags.add("净化");
-      tags.add(POWER_LABELS[effect.power]);
-      if (effect.gainPowerPerStack) tags.add(POWER_LABELS[effect.gainPowerPerStack.power]);
+      tags.add(powerLabel(effect.power));
+      if (effect.gainPowerPerStack) tags.add(powerLabel(effect.gainPowerPerStack.power));
     }
-    if (effect.type === "applyPower") tags.add(POWER_LABELS[effect.power]);
-    if (effect.type === "amplifyPower") tags.add(`${POWER_LABELS[effect.power]}催化`);
+    if (effect.type === "applyPower") tags.add(powerLabel(effect.power));
+    if (effect.type === "amplifyPower") tags.add(`${powerLabel(effect.power)}催化`);
     if (effect.type === "draw") tags.add("抽牌");
     if (effect.type === "gainEnergy") tags.add("能量");
     if (effect.type === "heal") tags.add("回复");
@@ -3666,14 +3690,14 @@ function potionMechanicTags(potion: PotionInstance): string[] {
     if (effect.type === "exhaustCards") {
       tags.add("净化");
       if (effect.gainEnergyPerCard) tags.add("能量");
-      if (effect.gainPowerPerCard) tags.add(POWER_LABELS[effect.gainPowerPerCard.power]);
+      if (effect.gainPowerPerCard) tags.add(powerLabel(effect.gainPowerPerCard.power));
     }
   }
   return [...tags].slice(0, 4);
 }
 
 function boonMechanicTags(boonId: BoonId): string[] {
-  const boon = BOONS[boonId];
+  const boon = boonInfo(boonId);
   return boon ? BOON_MECHANIC_TAGS[boonId] ?? [BOON_RARITY_LABELS[boon.rarity]] : ["失效"];
 }
 
@@ -3771,7 +3795,7 @@ function RewardScreen({
           <div className="boon-choice-row">
             {boonOffers.map((offer, index) => {
               const owned = run.player.boons.includes(offer.boonId);
-              const boon = BOONS[offer.boonId];
+              const boon = boonInfo(offer.boonId);
               const tags = boon ? boonMechanicTags(offer.boonId).slice(0, 3) : [];
               return (
                 <button className="boon-card" type="button" key={offer.boonId} disabled={owned} onClick={() => onPickBoon(index)}>
@@ -3933,7 +3957,7 @@ function ShopScreen({
         <div className="shop-side">
           <PanelTitle icon={<Award size={17} />} title="遗物" />
           {shop.relics.map((offer, index) => {
-            const relic = RELICS[offer.relicId];
+            const relic = relicInfo(offer.relicId);
             return (
               <button
                 key={offer.relicId}
@@ -3951,7 +3975,7 @@ function ShopScreen({
           })}
           <PanelTitle icon={<Sparkles size={17} />} title="常驻提升" />
           {(shop.boons ?? []).map((offer, index) => {
-            const boon = BOONS[offer.boonId];
+            const boon = boonInfo(offer.boonId);
             const tags = boon ? boonMechanicTags(offer.boonId).slice(0, 3) : [];
             return (
               <button
@@ -4221,7 +4245,7 @@ function CardView({
     >
       <div className="game-card__top">
         <span className="game-card__cost">{level.cost}</span>
-        <strong>{def.name}{card.upgraded ? "+" : ""}</strong>
+        <strong>{cardName(def.id)}{card.upgraded ? "+" : ""}</strong>
       </div>
       {disabledReason && <span className="game-card__penalty">{disabledReason}</span>}
       <div className="game-card__art">
@@ -4234,7 +4258,7 @@ function CardView({
         <span className="game-card__type">{CARD_TYPE_LABELS[def.type]}</span>
         <span className={`game-card__target game-card__target--${level.target}`}>{targetLabel}</span>
       </div>
-      <p>{level.text}</p>
+      <p>{cardText(def.id, card.upgraded)}</p>
       <CardMechanicDetail details={details} />
       {tags.length > 0 && (
         <div className="game-card__tags">
@@ -4321,7 +4345,7 @@ function cardLivePreviewLine(run: RunState, card: CardInstance): string | undefi
     if (!preview) {
       return undefined;
     }
-    return previewLine(`${enemy.name}`, preview);
+    return previewLine(`${enemyName(enemy.defId)}`, preview);
   }
 
   if (level.target === "allEnemies") {
@@ -4350,7 +4374,7 @@ function cardLivePreviewLine(run: RunState, card: CardInstance): string | undefi
   ].filter(Boolean);
   const selfPowers = Object.entries(summary.selfPowers).filter(([, value]) => (value ?? 0) > 0) as [PowerKey, number][];
   for (const [power, value] of selfPowers.slice(0, 2)) {
-    parts.push(`${POWER_LABELS[power]} +${value}`);
+    parts.push(`${powerLabel(power)} +${value}`);
   }
   return parts.length > 0 ? `当前预估：${parts.join(" / ")}` : undefined;
 }
@@ -4364,7 +4388,7 @@ function previewLine(label: string, preview: TargetPreview): string | undefined 
     preview.lethal ? "击破" : "",
   ].filter(Boolean);
   for (const [power, value] of powerEntries.slice(0, 2)) {
-    parts.push(`${POWER_LABELS[power]} +${value}`);
+    parts.push(`${powerLabel(power)} +${value}`);
   }
   return parts.length > 0 ? `${label}预估：${parts.join(" / ")}` : undefined;
 }
@@ -4405,13 +4429,13 @@ function cardEffectDetail(effect: CardEffect, card: CardInstance, run?: RunState
     const available = powers[effect.power] ?? 0;
     const stacks = Math.max(effect.minimum ?? 0, available);
     const target = effect.powerTarget === "self" ? "自身" : "目标";
-    return `${POWER_LABELS[effect.power]}爆发：${target}${POWER_LABELS[effect.power]} ${available}${effect.minimum ? `，最低 ${effect.minimum}` : ""} -> ${stacks * effect.amount} 伤害${effect.consume ? "，结算后消耗" : ""}`;
+    return `${powerLabel(effect.power)}爆发：${target}${powerLabel(effect.power)} ${available}${effect.minimum ? `，最低 ${effect.minimum}` : ""} -> ${stacks * effect.amount} 伤害${effect.consume ? "，结算后消耗" : ""}`;
   }
   if (effect.type === "spendPowerDamage") {
     const available = playerPowers[effect.power] ?? 0;
     const spent = Math.min(available, effect.consume ?? available);
     const stacks = Math.max(effect.minimum ?? 0, spent);
-    return `消耗爆发：消耗 ${POWER_LABELS[effect.power]} ${spent}${effect.minimum ? `，最低 ${effect.minimum}` : ""} -> ${stacks * effect.amount} 伤害`;
+    return `消耗爆发：消耗 ${powerLabel(effect.power)} ${spent}${effect.minimum ? `，最低 ${effect.minimum}` : ""} -> ${stacks * effect.amount} 伤害`;
   }
   if (effect.type === "block") {
     const block = combat ? estimateBlock(playerPowers, effect.amount) : effect.amount;
@@ -4423,7 +4447,7 @@ function cardEffectDetail(effect: CardEffect, card: CardInstance, run?: RunState
     const stacks = Math.max(effect.minimum ?? 0, spent);
     const rawBlock = effect.amount * stacks;
     const block = combat ? estimateBlock(playerPowers, rawBlock) : rawBlock;
-    return `${POWER_LABELS[effect.power]}格挡：可用 ${available}，消耗 ${spent} -> 格挡 ${block}`;
+    return `${powerLabel(effect.power)}格挡：可用 ${available}，消耗 ${spent} -> 格挡 ${block}`;
   }
   if (effect.type === "blockPerExhaustedCard") {
     const stacks = combat ? Math.max(effect.minimum ?? 0, Math.min(combat.exhaustPile.length, effect.cap ?? combat.exhaustPile.length)) : (effect.minimum ?? 0);
@@ -4432,31 +4456,31 @@ function cardEffectDetail(effect: CardEffect, card: CardInstance, run?: RunState
   if (effect.type === "gainPowerPerPower") {
     const available = playerPowers[effect.sourcePower] ?? 0;
     const stacks = Math.max(effect.minimum ?? 0, Math.min(available, effect.cap ?? available));
-    return `共振：${POWER_LABELS[effect.sourcePower]} ${available} -> ${POWER_LABELS[effect.gainedPower]} +${stacks * effect.amount}`;
+    return `共振：${powerLabel(effect.sourcePower)} ${available} -> ${powerLabel(effect.gainedPower)} +${stacks * effect.amount}`;
   }
   if (effect.type === "gainPowerPerCardPlayed") {
     const played = combat ? combat.cardsPlayedThisTurn + 1 : 1;
     const stacks = Math.max(effect.minimum ?? 0, Math.min(played, effect.cap ?? played));
-    return `连锁：本回合第 ${played} 张 -> ${POWER_LABELS[effect.power]} +${stacks * effect.amount}`;
+    return `连锁：本回合第 ${played} 张 -> ${powerLabel(effect.power)} +${stacks * effect.amount}`;
   }
   if (effect.type === "cleansePower") {
     const available = playerPowers[effect.power] ?? 0;
     const removed = Math.min(available, effect.amount);
-    return `散热：移除 ${POWER_LABELS[effect.power]} ${removed}/${effect.amount}${effect.gainEnergyPerStack ? `，每层能量 +${effect.gainEnergyPerStack}` : ""}`;
+    return `散热：移除 ${powerLabel(effect.power)} ${removed}/${effect.amount}${effect.gainEnergyPerStack ? `，每层能量 +${effect.gainEnergyPerStack}` : ""}`;
   }
   if (effect.type === "applyPower") {
-    return `施加：${effectTargetLabel(effect.target)} ${POWER_LABELS[effect.power]} ${effect.amount > 0 ? "+" : ""}${effect.amount}`;
+    return `施加：${effectTargetLabel(effect.target)} ${powerLabel(effect.power)} ${effect.amount > 0 ? "+" : ""}${effect.amount}`;
   }
   if (effect.type === "amplifyPower") {
     const current = effect.target === "self" ? (playerPowers[effect.power] ?? 0) : (targetPowers[effect.power] ?? 0);
     const gained = estimateAmplifiedPower(current, effect.multiplier, effect.minimum);
-    return `催化：${effectTargetLabel(effect.target)} ${POWER_LABELS[effect.power]} x${effect.multiplier}，当前约 +${gained}`;
+    return `催化：${effectTargetLabel(effect.target)} ${powerLabel(effect.power)} x${effect.multiplier}，当前约 +${gained}`;
   }
   if (effect.type === "draw") return `抽牌：抽 ${effect.amount} 张`;
   if (effect.type === "gainEnergy") return `能量：获得 ${effect.amount}`;
   if (effect.type === "heal") return `回复：恢复 ${effect.amount} 生命`;
   if (effect.type === "cleanseDebuffs") return "净化：移除自身负面状态";
-  if (effect.type === "createCard") return `生成：${CARDS[effect.cardId]?.name ?? effect.cardId} -> ${destinationLabel(effect.destination)}`;
+  if (effect.type === "createCard") return `生成：${cardName(effect.cardId)} -> ${destinationLabel(effect.destination)}`;
   if (effect.type === "returnFromDiscard") return `回收：从弃牌堆取回 ${effect.amount} 张${effect.cardType ? CARD_TYPE_LABELS[effect.cardType] : ""}牌`;
   if (effect.type === "exhaustCards") {
     const count = combat ? estimateExhaustCount(combat, effect) : effect.amount;
@@ -4590,7 +4614,7 @@ function ResourceOverview({
         </div>
         <div className="resource-mini-list">
           {visibleBoons.map((boonId) => {
-            const boon = BOONS[boonId];
+            const boon = boonInfo(boonId);
             return (
               <span className="resource-mini-item" key={boonId} title={boon?.text ?? "这项常驻提升来自旧数据。"}>
                 <strong>{boon?.name ?? "失效常驻"}</strong>
@@ -5117,7 +5141,7 @@ function RelicList({ relicIds }: { relicIds: string[] }) {
   return (
     <div className="relic-list">
       {relicIds.map((relicId) => {
-        const relic = RELICS[relicId];
+        const relic = relicInfo(relicId);
         return (
           <div className="relic-row" key={relicId} title={relic?.text ?? "这件遗物来自旧数据。"}>
             <Award size={16} />
@@ -5137,7 +5161,7 @@ function BoonList({ boonIds }: { boonIds: BoonId[] }) {
     <div className="boon-list">
       {boonIds.length === 0 && <div className="boon-empty">暂无常驻提升</div>}
       {boonIds.map((boonId) => {
-        const boon = BOONS[boonId];
+        const boon = boonInfo(boonId);
         const tags = boonMechanicTags(boonId).slice(0, 3);
         return (
           <div className="boon-row" key={boonId} title={boon?.text ?? "这项常驻提升来自旧数据。"}>
@@ -5182,6 +5206,7 @@ function CombatInventoryBar({
   selectedPotionUid?: string;
   onPotionClick: (potion: PotionInstance) => void;
 }) {
+  const { t } = useI18n();
   const relics = run.player.relics;
   const potions = run.player.potions;
   const slots = run.player.potionSlots;
@@ -5195,7 +5220,7 @@ function CombatInventoryBar({
         <div className="combat-inventory__items">
           {relics.length === 0 && <span className="combat-inventory__empty">无</span>}
           {relics.map((relicId) => {
-            const relic = RELICS[relicId];
+            const relic = relicInfo(relicId);
             return (
               <Tooltip
                 key={relicId}
@@ -5278,11 +5303,11 @@ function IntentBadge({ run, enemy }: { run: RunState; enemy: EnemyState }) {
       lines.push(`为自己获得 ${effect.amount} 点格挡`);
     } else if (effect.type === "applyPower") {
       const who = effect.target === "self" ? "自身" : "你";
-      lines.push(`给${who}施加 ${effect.amount} 层${POWER_LABELS[effect.power]}`);
+      lines.push(`给${who}施加 ${effect.amount} 层${powerLabel(effect.power)}`);
     } else if (effect.type === "summon") {
       lines.push(`召唤 ${ENEMIES[effect.enemyId]?.name ?? "敌人"}`);
     } else if (effect.type === "createCard") {
-      lines.push(`往你牌堆塞入「${CARDS[effect.cardId]?.name ?? "状态牌"}」`);
+      lines.push(`往你牌堆塞入「${cardName(effect.cardId)}」`);
     }
   }
 
@@ -5291,7 +5316,7 @@ function IntentBadge({ run, enemy }: { run: RunState; enemy: EnemyState }) {
       placement="bottom"
       content={
         <TipCard
-          title={`${move.name}（${primary.label}）`}
+          title={`${moveName(enemy.defId, move.id)}（${primary.label}）`}
           tone={primary.kind === "attack" || primary.kind === "debuff" ? "debuff" : primary.kind === "block" || primary.kind === "buff" ? "buff" : "engine"}
           body={lines.join("；")}
           footer="敌方下回合行动"
@@ -5316,13 +5341,13 @@ function intentSummary(move: EnemyMove): string {
         return `格挡 ${effect.amount}`;
       }
       if (effect.type === "applyPower") {
-        return `${POWER_LABELS[effect.power]} ${effect.amount}`;
+        return `${powerLabel(effect.power)} ${effect.amount}`;
       }
       if (effect.type === "summon") {
         return `召唤 ${ENEMIES[effect.enemyId]?.name ?? "敌人"}`;
       }
       if (effect.type === "createCard") {
-        return `加入 ${CARDS[effect.cardId]?.name ?? "状态牌"}`;
+        return `加入 ${cardName(effect.cardId)}`;
       }
       return "特殊行动";
     })
@@ -5450,6 +5475,7 @@ function PotionBelt({
   selectedPotionUid?: string;
   onPotionClick: (potion: PotionInstance) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="potion-belt">
       {Array.from({ length: slots }).map((_, index) => {
@@ -5480,7 +5506,7 @@ function PotionBelt({
         return (
           <Tooltip
             key={potion.uid}
-            content={<TipCard title={def.name} tone="engine" body={def.text} footer="药水" />}
+            content={<TipCard title={potionInfo(potion.potionId).name} tone="engine" body={potionInfo(potion.potionId).text} footer={t("ui.label.potion")} />}
           >
             <button
               className={`potion-slot ${selectedPotionUid === potion.uid ? "is-selected" : ""}`}

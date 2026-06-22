@@ -2,6 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./styles.css";
+import { LangProvider } from "./i18n";
+import "./i18n/registry";
 
 document.documentElement.style.setProperty(
   "--rift-bg-url",
@@ -10,6 +12,8 @@ document.documentElement.style.setProperty(
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <LangProvider>
+      <App />
+    </LangProvider>
   </React.StrictMode>,
 );

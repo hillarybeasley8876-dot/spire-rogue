@@ -8825,6 +8825,24 @@ body {
   text-shadow: 0 0 14px rgba(240, 190, 85, 0.35);
 }
 
+/* 语言切换按钮 */
+.topbar__controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.lang-toggle {
+  min-width: 46px;
+  justify-content: center;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  border-color: var(--teal-strong) !important;
+  color: var(--teal-strong);
+}
+.lang-toggle:hover {
+  box-shadow: 0 0 14px rgba(91, 210, 191, 0.4) !important;
+}
+
 /* 顶栏数值改成游戏徽章（金属底座+发光） */
 .stat-pill {
   border: 1px solid var(--gold-line);
