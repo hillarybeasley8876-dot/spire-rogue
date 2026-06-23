@@ -33,29 +33,36 @@
 
 /* ============================================================
  * 2. 标题大字"裂隙尖塔 / Rift Spire" 加金色流光扫过
+ *    技术：用伪元素叠加 shimmer，不动文字颜色
  * ========================================================== */
-@keyframes title-name-shimmer {
-  0% {
-    background-position: -180% 50%;
-  }
-  100% {
-    background-position: 280% 50%;
-  }
+@keyframes title-name-shimmer-overlay {
+  0% { transform: translateX(-120%); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateX(120%); opacity: 0; }
 }
 
 .title-screen__name {
-  background-image: linear-gradient(
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.title-screen__name::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
     100deg,
-    rgba(255, 220, 130, 0.0) 30%,
-    rgba(255, 245, 200, 0.65) 45%,
-    rgba(255, 220, 130, 0.0) 60%
+    transparent 35%,
+    rgba(255, 245, 200, 0.32) 50%,
+    transparent 65%
   );
-  background-size: 180% 100%;
-  background-repeat: no-repeat;
-  background-position: -180% 50%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: title-name-shimmer 5800ms ease-in-out infinite;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 1;
+  transform: translateX(-120%);
+  animation: title-name-shimmer-overlay 5800ms ease-in-out infinite;
   animation-delay: 1800ms;
 }
 
