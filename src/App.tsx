@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { cloneElement, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useI18n, currentLang } from "./i18n";
 import {
@@ -963,30 +963,57 @@ function HudQuickbar({ run }: { run: RunState }) {
     <div className="hud-quickbar" aria-label={tr("本局资源")}>
       <span className="hud-quickbar__item hud-quickbar__item--hp">
         <HeartPulse size={14} />
-        <b>
-          {run.player.hp}/{run.player.maxHp}
-        </b>
+        <PopValue value={`${run.player.hp}/${run.player.maxHp}`} watch={run.player.hp}>
+          <b>
+            {run.player.hp}/{run.player.maxHp}
+          </b>
+        </PopValue>
         <small>{tr("生命")}</small>
       </span>
       <span className="hud-quickbar__item hud-quickbar__item--gold">
         <Coins size={14} />
-        <b>{run.player.gold}</b>
+        <PopValue value={run.player.gold} watch={run.player.gold}>
+          <b>{run.player.gold}</b>
+        </PopValue>
         <small>{tr("金币")}</small>
       </span>
       <span className="hud-quickbar__item hud-quickbar__item--deck">
         <Layers size={14} />
-        <b>{run.player.deck.length}</b>
+        <PopValue value={run.player.deck.length} watch={run.player.deck.length}>
+          <b>{run.player.deck.length}</b>
+        </PopValue>
         <small>{tr("牌组")}</small>
       </span>
       <span className="hud-quickbar__item hud-quickbar__item--potion">
         <FlaskConical size={14} />
-        <b>
-          {run.player.potions.length}/{run.player.potionSlots}
-        </b>
+        <PopValue value={run.player.potions.length} watch={run.player.potions.length}>
+          <b>
+            {run.player.potions.length}/{run.player.potionSlots}
+          </b>
+        </PopValue>
         <small>{tr("药水")}</small>
       </span>
     </div>
   );
+}
+
+// PopValue: 当 watch 值变化时，给子元素临时加 .value-pop 类触发动画。
+function PopValue({ value, watch, children }: { value: unknown; watch: number | string; children: import("react").ReactElement }) {
+  const [popping, setPopping] = useState(false);
+  const prev = useRef(watch);
+  useEffect(() => {
+    if (prev.current !== watch) {
+      prev.current = watch;
+      setPopping(true);
+      const t = window.setTimeout(() => setPopping(false), 380);
+      return () => window.clearTimeout(t);
+    }
+  }, [watch]);
+  const cls = (children.props as { className?: string }).className;
+  return cloneElement(children, {
+    className: `${cls ?? ""} ${popping ? "value-pop" : ""}`.trim(),
+    key: `${value}-${popping ? "p" : "n"}`,
+  } as Record<string, unknown>);
 }
 
 function RunPhaseStatus({ run }: { run: RunState }) {
@@ -1930,6 +1957,7 @@ function CombatScreen({
   });
   const [playerFx, setPlayerFx] = useState<CombatFloat>();
   const [actionFlash, setActionFlash] = useState<CombatActionFlash>();
+  const [isImpact, setIsImpact] = useState(false);
 
   useEffect(() => {
     const previous = playerVitalsRef.current;
@@ -2000,15 +2028,20 @@ function CombatScreen({
     }
 
     setActionFlash(nextFlash);
+    setIsImpact(true);
     const timer = window.setTimeout(() => {
       setActionFlash((current) => (current?.id === nextFlash?.id ? undefined : current));
     }, 840);
-    return () => window.clearTimeout(timer);
+    const impactTimer = window.setTimeout(() => setIsImpact(false), 260);
+    return () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(impactTimer);
+    };
   }, [combat.cardsPlayedThisTurn, combat.log, combat.turn]);
   const playerFxClass = playerFx ? `has-combat-fx is-${combatFloatClass(playerFx.kind)}` : "";
 
   return (
-    <section className="combat-shell">
+    <section className={`combat-shell${isImpact ? " is-impact" : ""}`}>
       <div className="combat-stage combat-main">
         <div className="combat-setpiece" aria-hidden="true">
           <span className="combat-setpiece__moon" />

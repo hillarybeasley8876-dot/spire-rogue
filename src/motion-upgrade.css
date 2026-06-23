@@ -1,0 +1,482 @@
+/* ===================================================================
+ * motion-upgrade.css — 2026-06-23
+ * 在不破坏现有视觉布局的前提下，集中升级"丝滑感"：
+ *   - 首屏 boot 入场（防白屏 pop）
+ *   - phase / stage 转场更明显（180ms → 360ms，加 scale + translateY）
+ *   - 卡牌打出反馈强化（出手位移 + scale + glow）
+ *   - 手牌入场错峰
+ *   - 节点脉冲 / 路径流光节奏更稳定
+ *   - 按钮悬停 / 难度卡 hover 弹性
+ *   - 数值变化（HP / 能量 / 格挡）的弹性 pop
+ *   - 浮字 + ko 反馈更醒目
+ * 所有规则都用 :not(.reduce-motion *) 包裹，便于一键回退。
+ * =================================================================== */
+
+/* ============================================================
+ * 0. 首屏 boot 入场：防止白屏直接 pop
+ * ========================================================== */
+@keyframes boot-fade-in {
+  from {
+    opacity: 0;
+    filter: blur(8px) saturate(0.6);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0) saturate(1);
+  }
+}
+
+#root {
+  animation: boot-fade-in 520ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* 全局图片 / 背景的额外 fade-in，hero 大图加载完不再"砰"地出现 */
+.title-screen,
+.combat-setpiece {
+  animation: boot-fade-in 680ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* ============================================================
+ * 1. 强化 stage 转场（覆盖原 180ms）
+ *    title → map → combat 之间的过渡现在有 360ms 的位移 + scale
+ * ========================================================== */
+@keyframes stage-enter-strong {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+    filter: blur(4px);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.game-stage > section,
+main.screen > section {
+  animation: stage-enter-strong 360ms cubic-bezier(0.22, 0.61, 0.36, 1) both !important;
+}
+
+/* 整个 .game-shell 在 phase 变化时也淡入一次 */
+.game-shell {
+  animation: stage-enter-strong 420ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* 标题页本身 (.title-screen) 给一个独立 hero 入场 */
+@keyframes title-hero-in {
+  0% {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+    filter: blur(6px);
+  }
+  55% {
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.title-screen__hero {
+  animation: title-hero-in 720ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: 120ms;
+}
+
+@keyframes title-cards-cascade {
+  0% {
+    opacity: 0;
+    transform: translateY(26px) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.title-screen__difficulty .diff-card {
+  animation: title-cards-cascade 480ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.title-screen__difficulty .diff-card:nth-child(1) { animation-delay: 380ms; }
+.title-screen__difficulty .diff-card:nth-child(2) { animation-delay: 460ms; }
+.title-screen__difficulty .diff-card:nth-child(3) { animation-delay: 540ms; }
+.title-screen__difficulty .diff-card:nth-child(4) { animation-delay: 620ms; }
+
+.title-screen__actions {
+  animation: title-cards-cascade 520ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: 760ms;
+}
+
+/* ============================================================
+ * 2. 难度卡 hover 弹性 + 选中 pulse
+ * ========================================================== */
+.diff-card {
+  transition:
+    transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 260ms ease,
+    border-color 220ms ease,
+    background 260ms ease !important;
+  will-change: transform;
+}
+
+.diff-card:hover:not(.is-selected) {
+  transform: translateY(-6px) scale(1.025);
+  box-shadow:
+    0 18px 38px -16px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(217, 178, 116, 0.42),
+    0 0 24px -8px rgba(217, 178, 116, 0.36);
+}
+
+.diff-card.is-selected {
+  transform: translateY(-3px);
+}
+
+@keyframes diff-card-selected-glow {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(91, 213, 169, 0.42), 0 0 26px -8px rgba(91, 213, 169, 0.42); }
+  50% { box-shadow: 0 0 0 1px rgba(91, 213, 169, 0.62), 0 0 38px -6px rgba(91, 213, 169, 0.6); }
+}
+
+.diff-card.is-selected {
+  animation: diff-card-selected-glow 2400ms ease-in-out infinite;
+}
+
+/* ============================================================
+ * 3. 主行动按钮（开始 / 结束回合）：呼吸 + 悬停弹性
+ * ========================================================== */
+.title-start-button,
+.combat-end-turn,
+button.end-turn,
+button[class*="endTurn"] {
+  transition:
+    transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 240ms ease,
+    background 240ms ease,
+    filter 240ms ease !important;
+}
+
+.title-start-button:hover,
+.combat-end-turn:hover {
+  transform: translateY(-3px) scale(1.035);
+  filter: brightness(1.08) saturate(1.05);
+  box-shadow:
+    0 16px 36px -14px rgba(0, 0, 0, 0.55),
+    0 0 24px -6px rgba(231, 191, 110, 0.5);
+}
+
+.title-start-button:active,
+.combat-end-turn:active {
+  transform: translateY(0) scale(0.985);
+  transition-duration: 90ms;
+}
+
+@keyframes start-button-breath {
+  0%, 100% { box-shadow: 0 12px 30px -14px rgba(231, 191, 110, 0.55), 0 0 18px -6px rgba(231, 191, 110, 0.35); }
+  50% { box-shadow: 0 12px 30px -14px rgba(231, 191, 110, 0.7), 0 0 32px -4px rgba(231, 191, 110, 0.5); }
+}
+
+.title-start-button {
+  animation: start-button-breath 3200ms ease-in-out infinite;
+  animation-delay: 1100ms;
+}
+
+/* ============================================================
+ * 4. 卡牌交互升级（hover / 选中 / 出手）
+ * ========================================================== */
+
+.game-card,
+.hand-card,
+button[class*="game-card"] {
+  transition:
+    transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 220ms ease,
+    filter 200ms ease,
+    background 220ms ease !important;
+  will-change: transform;
+}
+
+.game-card:hover,
+.hand-card:hover,
+button[class*="game-card"]:hover {
+  transform: translateY(-14px) scale(1.06);
+  z-index: 30;
+  filter: brightness(1.06) saturate(1.05);
+}
+
+.game-card.is-selected,
+button[class*="game-card"].is-selected {
+  transform: translateY(-22px) scale(1.08);
+  z-index: 35;
+}
+
+/* 卡牌"打出离手"动画（玩家牌将被消耗时的 fly-out） */
+@keyframes card-fly-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-90px) scale(1.12);
+    filter: brightness(1.15) saturate(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-180px) scale(0.6) rotate(-3deg);
+    filter: brightness(1.3);
+  }
+}
+
+.game-card.is-fly-out,
+button[class*="game-card"].is-fly-out {
+  animation: card-fly-out 340ms cubic-bezier(0.45, 0.04, 0.6, 1) both;
+  pointer-events: none;
+}
+
+/* 手牌进场错峰（覆盖原 hand-card-enter，加 stagger 节奏） */
+@keyframes hand-card-cascade {
+  0% {
+    opacity: 0;
+    transform: translateY(48px) scale(0.86) rotate(-1.5deg);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.02) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+.player-hand .game-card,
+.player-hand .hand-card,
+[class*="hand"] [class*="game-card"] {
+  animation: hand-card-cascade 380ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.player-hand > *:nth-child(1) { animation-delay: 0ms; }
+.player-hand > *:nth-child(2) { animation-delay: 50ms; }
+.player-hand > *:nth-child(3) { animation-delay: 100ms; }
+.player-hand > *:nth-child(4) { animation-delay: 150ms; }
+.player-hand > *:nth-child(5) { animation-delay: 200ms; }
+.player-hand > *:nth-child(6) { animation-delay: 250ms; }
+.player-hand > *:nth-child(7) { animation-delay: 300ms; }
+.player-hand > *:nth-child(8) { animation-delay: 350ms; }
+.player-hand > *:nth-child(9) { animation-delay: 400ms; }
+.player-hand > *:nth-child(10) { animation-delay: 450ms; }
+
+/* ============================================================
+ * 5. 数值变化的弹性 pop（HP / 能量 / 格挡）
+ * ========================================================== */
+@keyframes value-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.28); filter: brightness(1.25); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.value-pop {
+  animation: value-pop 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  display: inline-block;
+}
+
+/* 自动触发：把这些常见容器在变化时加 class 由 JS 处理；
+   但作为兜底，给 hud bar 加一个被动 pulse-on-change */
+.hud-vitals strong,
+.hud-energy strong,
+.hud-quickbar__value {
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ============================================================
+ * 6. 节点 / 路径流光节奏微调（更稳定的脉冲）
+ * ========================================================== */
+
+@keyframes map-node-available-pulse {
+  0%, 100% {
+    outline-color: rgba(91, 213, 169, 0.0);
+    filter: drop-shadow(0 0 0 rgba(91, 213, 169, 0));
+  }
+  50% {
+    outline-color: rgba(91, 213, 169, 0.55);
+    filter: drop-shadow(0 0 14px rgba(91, 213, 169, 0.55));
+  }
+}
+
+.map-node.is-available {
+  outline: 2px solid transparent;
+  outline-offset: 3px;
+  animation: map-node-available-pulse 2200ms ease-in-out infinite;
+}
+
+.map-node {
+  transition:
+    transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 200ms ease,
+    box-shadow 220ms ease !important;
+  will-change: transform;
+}
+
+.map-node.is-available:hover {
+  transform: scale(1.18);
+  filter: brightness(1.15) saturate(1.1);
+  z-index: 5;
+}
+
+/* 已完成节点：轻微变灰，避免和可用节点混淆 */
+.map-node.is-completed:not(.is-available) {
+  filter: grayscale(0.6) brightness(0.85);
+  transition: filter 320ms ease !important;
+}
+
+/* 当前节点：金色高光 */
+.map-node.is-current {
+  filter: drop-shadow(0 0 12px rgba(231, 191, 110, 0.7));
+}
+
+@keyframes map-current-pulse {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(231, 191, 110, 0.5)); }
+  50% { filter: drop-shadow(0 0 18px rgba(231, 191, 110, 0.9)); }
+}
+
+.map-node.is-current {
+  animation: map-current-pulse 1800ms ease-in-out infinite;
+}
+
+/* ============================================================
+ * 7. 战斗：屏幕反馈强化
+ *    打牌时画面"震一下"；KO 时全屏闪
+ * ========================================================== */
+@keyframes screen-impact-shake {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-3px, 1px); }
+  40% { transform: translate(3px, -1px); }
+  60% { transform: translate(-2px, 2px); }
+  80% { transform: translate(2px, -1px); }
+  100% { transform: translate(0, 0); }
+}
+
+.combat-shell.is-impact,
+.game-stage.is-impact {
+  animation: screen-impact-shake 240ms ease-out;
+}
+
+@keyframes screen-flash {
+  0% { background: rgba(0, 0, 0, 0); }
+  20% { background: rgba(255, 220, 160, 0.18); }
+  100% { background: rgba(0, 0, 0, 0); }
+}
+
+.combat-shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: transparent;
+  z-index: 50;
+}
+
+.combat-shell.is-impact::after {
+  animation: screen-flash 240ms ease-out;
+}
+
+/* ============================================================
+ * 8. 浮字 (combat-float) 增强可读性
+ * ========================================================== */
+.combat-float {
+  font-weight: 800;
+  text-shadow:
+    0 0 8px rgba(0, 0, 0, 0.75),
+    0 2px 4px rgba(0, 0, 0, 0.6),
+    0 0 16px currentColor;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+  z-index: 60;
+}
+
+.combat-float--damage {
+  font-size: 28px;
+  color: #ff7a6c;
+}
+
+.combat-float--heal {
+  font-size: 26px;
+  color: #6fe1a7;
+}
+
+.combat-float--ko {
+  font-size: 34px;
+  color: #ffd05b;
+  letter-spacing: 2px;
+}
+
+.combat-float--block-gain {
+  font-size: 22px;
+  color: #7ecaff;
+}
+
+.combat-float--block-loss {
+  font-size: 22px;
+  color: #ffb060;
+}
+
+@keyframes combat-float-rise-strong {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.7);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(-12px) scale(1.18);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-46px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-70px) scale(0.9);
+  }
+}
+
+.combat-float {
+  animation: combat-float-rise-strong 920ms cubic-bezier(0.16, 0.88, 0.26, 1) both !important;
+}
+
+/* ============================================================
+ * 9. 顶栏 / Drawer 数值悬停反馈
+ * ========================================================== */
+.hud-quickbar__item,
+.hud-pill,
+.combat-pill {
+  transition:
+    transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.hud-quickbar__item:hover,
+.hud-pill:hover,
+.combat-pill:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+}
+
+/* ============================================================
+ * 10. 通用：reduce-motion 兼容
+ * ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+}

@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./styles.css";
+import "./motion-upgrade.css";
 import { LangProvider } from "./i18n";
 import "./i18n/registry";
 
