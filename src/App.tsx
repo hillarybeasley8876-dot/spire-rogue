@@ -27,6 +27,7 @@ import {
   powerToneLabel,
   mechTag,
   tr,
+  bi,
 } from "./i18n/labels";
 import {
   Award,
@@ -857,7 +858,7 @@ function RunSidebar({
     {
       key: "map",
       label: tr("路线"),
-      detail: langCode === "en" ? `Act ${actNum} · Floor ${floorNum}` : `第 ${actNum} 幕 · 层 ${floorNum}`,
+      detail: bi(`第 ${actNum} 幕 · 层 ${floorNum}`, `Act ${actNum} · Floor ${floorNum}`),
     },
     { key: "combat", label: tr("战斗"), detail: run.combat?.encounterName ?? tr("下一场遭遇") },
     { key: "reward", label: tr("战利品"), detail: run.reward?.title ?? tr("战斗后结算") },
@@ -865,12 +866,12 @@ function RunSidebar({
     {
       key: "shop",
       label: tr("商店"),
-      detail: langCode === "en" ? `${run.player.gold} Gold` : `${run.player.gold} 金币`,
+      detail: bi(`${run.player.gold} 金币`, `${run.player.gold} Gold`),
     },
     { key: "event", label: tr("事件"), detail: run.event?.title ?? tr("特殊交换") },
   ] as const;
   const activePhase = run.phase === "victory" || run.phase === "defeat" ? "map" : run.phase;
-  const inventoryMeta = `${run.player.relics.length} 遗物 · ${run.player.boons.length} 常驻`;
+  const inventoryMeta = bi(`${run.player.relics.length} 遗物 · ${run.player.boons.length} 常驻`, `${run.player.relics.length} relics · ${run.player.boons.length} boons`);
   const foldResetKey = `${run.phase}-${run.act ?? 1}`;
   const flowDefaultOpen = run.phase === "map" || run.phase === "reward" || run.phase === "victory" || run.phase === "defeat";
   const resourceDefaultOpen = run.phase !== "combat";
@@ -883,7 +884,7 @@ function RunSidebar({
       <FoldSection
         title={tr("流程")}
         icon={<MapIcon size={16} />}
-        meta={currentLang === "en" ? `Act ${run.act ?? 1} · Floor ${Math.max(1, run.floor + 1)}` : `第 ${run.act ?? 1} 幕 · ${Math.max(1, run.floor + 1)} 层`}
+        meta={bi(`第 ${run.act ?? 1} 幕 · ${Math.max(1, run.floor + 1)} 层`, `Act ${run.act ?? 1} · Floor ${Math.max(1, run.floor + 1)}`)}
         defaultOpen={flowDefaultOpen}
         resetKey={foldResetKey}
         className="fold-section--route"
@@ -907,7 +908,7 @@ function RunSidebar({
       <FoldSection
         title={tr("卡牌 / 药水 / 倾向")}
         icon={<Layers size={16} />}
-        meta={`${run.player.deck.length} 牌 · ${run.player.potions.length}/${run.player.potionSlots} 瓶`}
+        meta={bi(`${run.player.deck.length} 牌 · ${run.player.potions.length}/${run.player.potionSlots} 瓶`, `${run.player.deck.length} cards · ${run.player.potions.length}/${run.player.potionSlots} potions`)}
         defaultOpen={resourceDefaultOpen}
         resetKey={foldResetKey}
         className="fold-section--resources"
@@ -1031,12 +1032,12 @@ function RunPhaseStatus({ run }: { run: RunState }) {
   const phaseCopy = {
     map: {
       title: tr("选择路线"),
-      detail: `可前往 ${getAvailableNodeIds(run).length} 个节点`,
+      detail: bi(`可前往 ${getAvailableNodeIds(run).length} 个节点`, `${getAvailableNodeIds(run).length} nodes available`),
       icon: <MapIcon size={16} />,
     },
     combat: {
       title: tr("处理回合"),
-      detail: run.combat ? (currentLang === "en" ? `${tr(run.combat.encounterName)} · Turn ${run.combat.turn}` : `${run.combat.encounterName} · 第 ${run.combat.turn} 回合`) : tr("遭遇准备中"),
+      detail: run.combat ? bi(`${run.combat.encounterName} · 第 ${run.combat.turn} 回合`, `${tr(run.combat.encounterName)} · Turn ${run.combat.turn}`) : tr("遭遇准备中"),
       icon: <Sword size={16} />,
     },
     reward: {
@@ -1051,7 +1052,7 @@ function RunPhaseStatus({ run }: { run: RunState }) {
     },
     shop: {
       title: tr("商店采购"),
-      detail: `${run.player.gold} 金币可用`,
+      detail: bi(`${run.player.gold} 金币可用`, `${run.player.gold} gold ready`),
       icon: <ShoppingBag size={16} />,
     },
     event: {
@@ -1115,7 +1116,7 @@ function RunResourceDock({
         <div className="resource-dock__metrics">
           <span>{tr("均费")} {summary.avgCost}</span>
           <span>{tr("升级")} {summary.upgraded}</span>
-          <span className={summary.typeCounts.Status > 0 ? "is-warning" : ""}>状态 {summary.typeCounts.Status}</span>
+          <span className={summary.typeCounts.Status > 0 ? "is-warning" : ""}>{tr("状态")} {summary.typeCounts.Status}</span>
         </div>
         <div className="resource-dock__tags">
           {summary.topTags.slice(0, 4).map(({ tag, count }) => (
@@ -1123,7 +1124,7 @@ function RunResourceDock({
               {tr(tag)} <b>{count}</b>
             </span>
           ))}
-          {summary.topTags.length === 0 && <span>基础牌组</span>}
+          {summary.topTags.length === 0 && <span>{tr("基础牌组")}</span>}
         </div>
       </section>
 
@@ -1218,7 +1219,7 @@ function RunInventoryTray({ run }: { run: RunState }) {
             );
           })}
           {hiddenRelics > 0 && <span className="inventory-chip inventory-chip--more">+{hiddenRelics}</span>}
-          {relics.length === 0 && <span className="inventory-chip inventory-chip--empty">暂无遗物</span>}
+          {relics.length === 0 && <span className="inventory-chip inventory-chip--empty">{tr("暂无遗物")}</span>}
         </div>
       </div>
       <div>
@@ -1292,7 +1293,7 @@ function InventoryInspector({ selection }: { selection?: InventorySelection }) {
       <div className="inventory-inspector__head">
         <Sparkles size={15} />
         <strong>{boon?.name ?? tr("失效常驻")}</strong>
-        <small>{boon ? boonRarityLabel(boon.rarity) : tr("失效")} · 常驻</small>
+          <small>{boon ? boonRarityLabel(boon.rarity) : tr("失效")} · {tr("常驻")}</small>
       </div>
       <p>{boon?.text ?? tr("旧数据已失效。")}</p>
       <div className="inventory-inspector__tags">
@@ -1392,7 +1393,7 @@ function TitleScreen({
                   <Skull size={13} /> {formatPercent(option.enemyDamageMultiplier)}
                 </span>
               </div>
-              {selected && <span className="diff-card__selected-mark">{lang === "en" ? "▶ Selected" : "▶ 已选择"}</span>}
+              {selected && <span className="diff-card__selected-mark">{bi("▶ 已选择", "▶ Selected")}</span>}
             </button>
           );
         })}
@@ -1401,7 +1402,7 @@ function TitleScreen({
       <div className="title-screen__actions">
         <button className="title-start-button" type="button" onClick={onStart}>
           <ChevronRight size={22} />
-          <span>{lang === "en" ? `Begin ${startedDiff.name} run` : `开始${startedDiff.name}征途`}</span>
+          <span>{bi(`开始${startedDiff.name}征途`, `Begin ${startedDiff.name} run`)}</span>
         </button>
         {savedRun && (
           <button className="title-continue-button" type="button" onClick={onContinue}>
@@ -1418,7 +1419,7 @@ function TitleScreen({
 function DifficultyBrief({ difficulty }: { difficulty: DifficultyKey }) {
   const option = DIFFICULTIES[difficulty];
   const stats = [
-    { label: tr("起始生命"), value: `${option.startingHp}`, note: `金币 ${option.startingGold}` },
+    { label: tr("起始生命"), value: `${option.startingHp}`, note: bi(`金币 ${option.startingGold}`, `Gold ${option.startingGold}`) },
     { label: tr("敌人生命"), value: formatPercent(option.enemyHpMultiplier), note: tr("战斗长度") },
     { label: tr("敌人伤害"), value: formatPercent(option.enemyDamageMultiplier), note: tr("入伤压力") },
     { label: tr("敌人格挡"), value: formatPercent(option.enemyBlockMultiplier), note: tr("破防压力") },
@@ -1430,7 +1431,7 @@ function DifficultyBrief({ difficulty }: { difficulty: DifficultyKey }) {
   return (
     <div className="difficulty-brief" aria-live="polite">
       <div className="difficulty-brief__head">
-        <span>当前难度</span>
+        <span>{bi("当前难度", "Current Difficulty")}</span>
         <strong>{option.name}</strong>
         <small>{option.text}</small>
       </div>
@@ -1444,12 +1445,12 @@ function DifficultyBrief({ difficulty }: { difficulty: DifficultyKey }) {
         ))}
       </div>
       <div className="difficulty-brief__flow" aria-label={tr("核心流程")}>
-        <span>路线节点</span>
-        <span>遭遇战</span>
-        <span>奖励/事件</span>
-        <span>继续爬塔</span>
+        <span>{bi("路线节点", "Map Nodes")}</span>
+        <span>{bi("遭遇战", "Encounters")}</span>
+        <span>{bi("奖励/事件", "Reward / Event")}</span>
+        <span>{bi("继续爬塔", "Climb On")}</span>
       </div>
-      <p>生命、伤害、格挡、金币和商店都会被难度倍率缩放；高难度会更快惩罚路线贪心和防线缺口。</p>
+      <p>{bi("生命、伤害、格挡、金币和商店都会被难度倍率缩放;高难度会更快惩罚路线贪心和防线缺口。", "HP, damage, block, gold and shop prices all scale with difficulty. Higher tiers punish greedy routes and weak defenses faster.")}</p>
     </div>
   );
 }
@@ -1480,7 +1481,7 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
       <div className="map-panel map-panel--game">
         <div className="map-hud">
           <div className="map-hud__title">
-            <h2>{currentLang === "en" ? `Act ${run.act ?? 1}` : `第 ${run.act ?? 1} 幕`}</h2>
+            <h2>{bi(`第 ${run.act ?? 1} 幕`, `Act ${run.act ?? 1}`)}</h2>
             <span>{actPressureText(run)}</span>
           </div>
           <div className="map-hud__legend">
@@ -1508,10 +1509,12 @@ function MapScreen({ run, onEnter }: { run: RunState; onEnter: (nodeId: string) 
           <div className="boss-warning boss-warning--game">
             <Skull size={19} />
             <div>
-              <strong>{currentLang === "en" ? `Act ${run.act ?? 1} boss fight is open` : `第 ${run.act ?? 1} 幕最终战已开启`}</strong>
+              <strong>{bi(`第 ${run.act ?? 1} 幕最终战已开启`, `Act ${run.act ?? 1} boss fight is open`)}</strong>
               <span>
-                生命 {run.player.hp}/{run.player.maxHp} · 药水 {run.player.potions.length}/{run.player.potionSlots} ·
-                牌组 {run.player.deck.length} 张
+                {bi(
+                  `生命 ${run.player.hp}/${run.player.maxHp} · 药水 ${run.player.potions.length}/${run.player.potionSlots} · 牌组 ${run.player.deck.length} 张`,
+                  `HP ${run.player.hp}/${run.player.maxHp} · Potions ${run.player.potions.length}/${run.player.potionSlots} · Deck ${run.player.deck.length}`,
+                )}
               </span>
             </div>
           </div>
@@ -1599,7 +1602,7 @@ function MapReadPanel({
   const completedFloor = currentNode ? currentNode.floor + 1 : Math.max(0, nextFloor - 1);
   const progress = clampPercent(Math.round((Math.min(completedFloor, totalFloors) / totalFloors) * 100));
   const routeTypes = Array.from(new Set(availableNodes.map((node) => nodeLabel(node.type)))).join(" / ") || tr("暂无");
-  const currentLabel = currentNode ? `上一节点：第 ${completedFloor} 层 · ${nodeLabel(currentNode.type)}` : tr("入口起点");
+  const currentLabel = currentNode ? bi(`上一节点：第 ${completedFloor} 层 · ${nodeLabel(currentNode.type)}`, `Previous: Floor ${completedFloor} · ${nodeLabel(currentNode.type)}`) : tr("入口起点");
   const riskSignals = availableNodes
     .slice(0, 3)
     .map((node) => routeSignalLabel(node, run))
@@ -1609,22 +1612,22 @@ function MapReadPanel({
     <div className="map-read-panel" aria-label={tr("爬塔读法")}>
       <div className="map-read-panel__top">
         <div>
-          <span>当前位置</span>
+          <span>{bi("当前位置", "Current")}</span>
           <strong>
-            {currentLang === "en" ? `Act ${run.act ?? 1} · Choosing floor ${nextFloor}` : `第 ${run.act ?? 1} 幕 · 待选第 ${nextFloor} 层`}
+            {bi(`第 ${run.act ?? 1} 幕 · 待选第 ${nextFloor} 层`, `Act ${run.act ?? 1} · Choosing floor ${nextFloor}`)}
           </strong>
           <small>{currentLabel}</small>
         </div>
         <div>
-          <span>下一步</span>
-          <strong>{availableNodes.length} 条可走</strong>
+          <span>{bi("下一步", "Next")}</span>
+          <strong>{bi(`${availableNodes.length} 条可走`, `${availableNodes.length} choices`)}</strong>
           <small>{routeTypes}</small>
         </div>
         <div>
-          <span>进度</span>
+          <span>{bi("进度", "Progress")}</span>
           <strong>{progress}%</strong>
           <small>
-            已过 {completedFloor}/{totalFloors} 层
+            {bi(`已过 ${completedFloor}/${totalFloors} 层`, `Cleared ${completedFloor}/${totalFloors}`)}
           </small>
         </div>
       </div>
@@ -1633,16 +1636,16 @@ function MapReadPanel({
       </div>
       <div className="map-read-panel__rules">
         <span>
-          <b>亮节点</b>现在可进入
+          <b>{bi("亮节点", "Lit node")}</b>{bi("现在可进入", " — enter now")}
         </span>
         <span>
-          <b>亮折线</b>当前可走路线
+          <b>{bi("亮折线", "Bright path")}</b>{bi("当前可走路线", " — current options")}
         </span>
         <span>
-          <b>暗折线</b>后续分支预览
+          <b>{bi("暗折线", "Dim path")}</b>{bi("后续分支预览", " — branch preview")}
         </span>
         <span>
-          <b>风险</b>{riskSignals || tr("等待路线生成")}
+          <b>{bi("风险", "Risk")}</b>{riskSignals || tr("等待路线生成")}
         </span>
       </div>
     </div>
@@ -1808,10 +1811,13 @@ function routePreviewLabel(node: MapNode, nodeById: Map<string, MapNode>): strin
     },
     { fight: 0, elite: 0, rest: 0, shop: 0, event: 0, boss: 0 },
   );
-  return `后续：${(Object.keys(counts) as NodeType[])
+  return bi(`后续：${(Object.keys(counts) as NodeType[])
     .filter((type) => counts[type] > 0)
     .map((type) => `${nodeLabel(type)}${counts[type] > 1 ? `x${counts[type]}` : ""}`)
-    .join(" / ")}`;
+    .join(" / ")}`, `Next: ${(Object.keys(counts) as NodeType[])
+    .filter((type) => counts[type] > 0)
+    .map((type) => `${nodeLabel(type)}${counts[type] > 1 ? `x${counts[type]}` : ""}`)
+    .join(" / ")}`);
 }
 
 function mapEdgePath(node: MapNode, child: MapNode): string {
@@ -1826,18 +1832,18 @@ function mapEdgePath(node: MapNode, child: MapNode): string {
 function routeStructureLabel(node: MapNode): string {
   const routeKind = mapNodeRouteKind(node);
   if (routeKind === "crossroad") {
-    return `路线：${routeKindLabel(routeKind)}，进出都多`;
+    return bi(`路线：${routeKindLabel(routeKind)}，进出都多`, `Route: ${routeKindLabel(routeKind)} — high in/out`);
   }
   if (routeKind === "branch") {
-    return `路线：${routeKindLabel(routeKind)}，后续选择多`;
+    return bi(`路线：${routeKindLabel(routeKind)}，后续选择多`, `Route: ${routeKindLabel(routeKind)} — many forward choices`);
   }
   if (routeKind === "converge") {
-    return `路线：${routeKindLabel(routeKind)}，多线汇入`;
+    return bi(`路线：${routeKindLabel(routeKind)}，多线汇入`, `Route: ${routeKindLabel(routeKind)} — paths converge`);
   }
   if (routeKind === "choke") {
-    return `路线：${routeKindLabel(routeKind)}，容错较低`;
+    return bi(`路线：${routeKindLabel(routeKind)}，容错较低`, `Route: ${routeKindLabel(routeKind)} — low margin`);
   }
-  return `路线：${routeKindLabel(routeKind)}`;
+  return bi(`路线：${routeKindLabel(routeKind)}`, `Route: ${routeKindLabel(routeKind)}`);
 }
 
 function routeSignalLabel(node: MapNode, run: RunState): string {
@@ -1875,9 +1881,9 @@ function MapNodeButton({
   const routeKind = mapNodeRouteKind(node);
   const tip = (
     <TipCard
-      title={node.id === "boss" ? (currentLang === "en" ? `Act ${run.act ?? 1} · Boss` : `第 ${run.act ?? 1} 幕 · 首领`) : nodeLabel(node.type)}
-      body={`${nodeHint(node.type)}${node.id === "boss" ? "" : currentLang === "en" ? ` · Floor ${node.floor + 1}` : ` · 第 ${node.floor + 1} 层`}`}
-      footer={available ? (currentLang === "en" ? "▶ Go" : tr("▶ 可前往")) : `${zoneLabel(mapNodeZone(node))} · ${routeKindLabel(routeKind)}`}
+      title={node.id === "boss" ? bi(`第 ${run.act ?? 1} 幕 · 首领`, `Act ${run.act ?? 1} · Boss`) : nodeLabel(node.type)}
+      body={`${nodeHint(node.type)}${node.id === "boss" ? "" : bi(` · 第 ${node.floor + 1} 层`, ` · Floor ${node.floor + 1}`)}`}
+      footer={available ? bi("▶ 可前往", "▶ Go") : `${zoneLabel(mapNodeZone(node))} · ${routeKindLabel(routeKind)}`}
     />
   );
   return (
@@ -2106,7 +2112,7 @@ function CombatScreen({
         {(selectedNeedsTarget || selectedPotionNeedsTarget) && targetingName && (
           <div className="targeting-prompt">
             <Target size={15} />
-            <span>选择目标：{targetingName}</span>
+            <span>{bi(`选择目标：${targetingName}`, `Choose target: ${targetingName}`)}</span>
             <button type="button" onClick={onClearSelection}>
               <RotateCcw size={14} />
               <span>{t("ui.common.cancel")}</span>
@@ -2229,7 +2235,7 @@ function CombatScreen({
         <FoldSection
           title={tr("战斗指挥")}
           icon={<Layers size={16} />}
-          meta={currentLang === "en" ? `Turn ${combat.turn} · ${combat.enemies.filter((enemy) => enemy.hp > 0).length} enemies` : `第 ${combat.turn} 回合 · ${combat.enemies.filter((enemy) => enemy.hp > 0).length} 敌`}
+          meta={bi(`第 ${combat.turn} 回合 · ${combat.enemies.filter((enemy) => enemy.hp > 0).length} 敌`, `Turn ${combat.turn} · ${combat.enemies.filter((enemy) => enemy.hp > 0).length} enemies`)}
           defaultOpen
           resetKey={run.phase}
           className="fold-section--combat"
@@ -2240,7 +2246,7 @@ function CombatScreen({
         <FoldSection
           title={tr("行动日志")}
           icon={<Sparkles size={16} />}
-          meta={currentLang === "en" ? `${combat.log.length} entries` : `${combat.log.length} 条`}
+          meta={bi(`${combat.log.length} 条`, `${combat.log.length} entries`)}
           defaultOpen={false}
           resetKey={run.phase}
           className="fold-section--log"
@@ -2275,7 +2281,7 @@ function CombatReadout({ run }: { run: RunState }) {
       </div>
       <div className={blockGap > 0 ? "is-warning" : "is-good"}>
         <small>{tr("我方防线")}</small>
-        <strong>{blockGap > 0 ? (currentLang === "en" ? `Short ${blockGap}` : `缺 ${blockGap}`) : tr("已覆盖")}</strong>
+        <strong>{blockGap > 0 ? bi(`缺 ${blockGap}`, `Short ${blockGap}`) : tr("已覆盖")}</strong>
         <span>{tr("格挡")} {combat.playerBlock}</span>
       </div>
       <div>
@@ -2764,9 +2770,9 @@ function PileInsight({ combat }: { combat: NonNullable<RunState["combat"]> }) {
   return (
     <div className="pile-insight">
       <div className="pile-insight__counts">
-        <span>{currentLang === "en" ? "Draw" : tr("抽")} {combat.drawPile.length}</span>
-        <span>{currentLang === "en" ? "Disc" : "弃"} {combat.discardPile.length}</span>
-        <span>{currentLang === "en" ? "Exh" : "消"} {combat.exhaustPile.length}</span>
+        <span>{bi("抽", "Draw")} {combat.drawPile.length}</span>
+        <span>{bi("弃", "Disc")} {combat.discardPile.length}</span>
+        <span>{bi("消", "Exh")} {combat.exhaustPile.length}</span>
         <span className={recoverable > 0 ? "is-ready" : ""}>{tr("可回收")} {recoverable}</span>
         <span className={statusFuel > 0 ? "is-ready" : ""}>{tr("清创")} {statusFuel}</span>
       </div>
@@ -2826,12 +2832,12 @@ function TempoPanel({
       </div>
       <div className="tempo-cell">
         <Layers size={14} />
-        <span>上回合</span>
+        <span>{bi("上回合", "Last")}</span>
         <strong>{combat.cardsPlayedLastTurn}</strong>
       </div>
       <div className="tempo-cell">
         <Target size={14} />
-        <span>总攻</span>
+        <span>{bi("总攻", "Atk total")}</span>
         <strong>{combat.attackCount}</strong>
       </div>
       {hasPocketWatch && (
@@ -2973,11 +2979,17 @@ function MechanicAuditPanel({
   const rows = [
     {
       label: tr("攻击叠加"),
-      value: `基础 + 力量 ${combat.playerPowers.strength ?? 0} + 破绽 ${enemyTotals.mark ?? 0}，再算虚弱/易伤`,
+      value: bi(
+        `基础 + 力量 ${combat.playerPowers.strength ?? 0} + 破绽 ${enemyTotals.mark ?? 0}，再算虚弱/易伤`,
+        `Base + Str ${combat.playerPowers.strength ?? 0} + Mark ${enemyTotals.mark ?? 0}, then Weak/Vuln`,
+      ),
     },
     {
       label: tr("防守叠加"),
-      value: `基础 + 敏捷 ${combat.playerPowers.dexterity ?? 0}${(combat.playerPowers.frail ?? 0) > 0 ? "，脆弱 x0.75" : ""}，金属化 ${combat.playerPowers.platedArmor ?? 0} 回合初生效`,
+      value: bi(
+        `基础 + 敏捷 ${combat.playerPowers.dexterity ?? 0}${(combat.playerPowers.frail ?? 0) > 0 ? "，脆弱 x0.75" : ""}，金属化 ${combat.playerPowers.platedArmor ?? 0} 回合初生效`,
+        `Base + Dex ${combat.playerPowers.dexterity ?? 0}${(combat.playerPowers.frail ?? 0) > 0 ? ", Frail x0.75" : ""}, Plated ${combat.playerPowers.platedArmor ?? 0} on turn start`,
+      ),
     },
     {
       label: tr("触发顺序"),
@@ -2988,7 +3000,7 @@ function MechanicAuditPanel({
 
   return (
     <div className="mechanic-audit">
-      <strong>叠加验证</strong>
+      <strong>{bi("叠加验证", "Stacking Audit")}</strong>
       {rows.slice(0, 5).map((row) => (
         <span key={`${row.label}-${row.value}`}>
           <b>{row.label}</b>
@@ -3011,12 +3023,12 @@ function TargetPreview({ preview }: { preview: TargetPreview }) {
       )}
       {preview.blockLoss > 0 && (
         <span>
-          <Shield size={13} /> 破 {preview.blockLoss}
+          <Shield size={13} /> {bi("破", "Brk")} {preview.blockLoss}
         </span>
       )}
       {preview.sparkArc > 0 && (
         <span>
-          <Zap size={13} /> 弹 {preview.sparkArc}
+          <Zap size={13} /> {bi("弹", "Arc")} {preview.sparkArc}
         </span>
       )}
       {powerEntries.map(([power, value]) => (
@@ -3055,67 +3067,67 @@ function ActionSummaryView({ summary }: { summary: ActionSummary }) {
     <div className="action-summary">
       {summary.block > 0 && (
         <span>
-          <Shield size={13} /> 格挡 +{summary.block}
+          <Shield size={13} /> {bi("格挡", "Block")} +{summary.block}
         </span>
       )}
       {summary.energy > 0 && (
         <span>
-          <Zap size={13} /> 能量 +{summary.energy}
+          <Zap size={13} /> {bi("能量", "Energy")} +{summary.energy}
         </span>
       )}
       {summary.draw > 0 && (
         <span>
-          <BookOpen size={13} /> {currentLang === "en" ? "Draw" : tr("抽")} {summary.draw}
+          <BookOpen size={13} /> {bi("抽", "Draw")} {summary.draw}
         </span>
       )}
       {summary.heal > 0 && (
         <span>
-          <HeartPulse size={13} /> 回复 {summary.heal}
+          <HeartPulse size={13} /> {bi("回复", "Heal")} {summary.heal}
         </span>
       )}
       {selfPowers.map(([power, value]) => (
         <span key={`self-${power}`}>
-          <Sparkles size={13} /> 自身 {powerLabel(power)} +{value}
+          <Sparkles size={13} /> {bi("自身", "Self")} {powerLabel(power)} +{value}
         </span>
       ))}
       {targetPowers.map(([power, value]) => (
         <span key={`target-${power}`}>
-          <Target size={13} /> 目标 {powerLabel(power)} +{value}
+          <Target size={13} /> {bi("目标", "Target")} {powerLabel(power)} +{value}
         </span>
       ))}
       {summary.consumes.map((item, index) => (
         <span key={`consume-${item}-${index}`}>
-          <Flame size={13} /> 消耗 {item}
+          <Flame size={13} /> {bi("消耗", "Exh")} {item}
         </span>
       ))}
       {summary.amplifies.map((item, index) => (
         <span key={`amplify-${item}-${index}`}>
-          <Sparkles size={13} /> 催化 {item}
+          <Sparkles size={13} /> {bi("催化", "Amp")} {item}
         </span>
       ))}
       {summary.resonates.map((item, index) => (
         <span key={`resonate-${item}-${index}`}>
-          <Zap size={13} /> 共振 {item}
+          <Zap size={13} /> {bi("共振", "Res")} {item}
         </span>
       ))}
       {summary.chains.map((item, index) => (
         <span key={`chain-${item}-${index}`}>
-          <Zap size={13} /> 连锁 {item}
+          <Zap size={13} /> {bi("连锁", "Chain")} {item}
         </span>
       ))}
       {summary.creates.map((item, index) => (
         <span key={`create-${item}-${index}`}>
-          <Layers size={13} /> 生成 {item}
+          <Layers size={13} /> {bi("生成", "Make")} {item}
         </span>
       ))}
       {summary.recovers.map((item, index) => (
         <span key={`recover-${item}-${index}`}>
-          <RotateCcw size={13} /> 回收 {item}
+          <RotateCcw size={13} /> {bi("回收", "Recover")} {item}
         </span>
       ))}
       {summary.cleanses.map((item, index) => (
         <span key={`cleanse-${item}-${index}`}>
-          <Sparkles size={13} /> 净化 {item}
+          <Sparkles size={13} /> {bi("净化", "Cleanse")} {item}
         </span>
       ))}
     </div>
@@ -3314,7 +3326,7 @@ function summarizeCardAction(run: RunState, card: CardInstance): ActionSummary {
       if (gained > 0) {
         addSummaryPower(summary.selfPowers, effect.power, gained);
         playerPowers[effect.power] = (playerPowers[effect.power] ?? 0) + gained;
-        summary.chains.push(`${playedCards} 张 -> ${powerLabel(effect.power)} +${gained}`);
+        summary.chains.push(bi(`${playedCards} 张 -> ${powerLabel(effect.power)} +${gained}`, `${playedCards} cards -> ${powerLabel(effect.power)} +${gained}`));
       }
     }
     if (effect.type === "draw") {
@@ -3385,11 +3397,11 @@ function summarizeCardAction(run: RunState, card: CardInstance): ActionSummary {
       summary.creates.push(cardName(effect.cardId));
     }
     if (effect.type === "returnFromDiscard") {
-      summary.recovers.push(effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : effect.excludeStatus ? tr("非状态牌") : tr("弃牌"));
+      summary.recovers.push(effect.cardType ? bi(`${cardTypeLabel(effect.cardType)}牌`, `${cardTypeLabel(effect.cardType)} card`) : effect.excludeStatus ? tr("非状态牌") : tr("弃牌"));
     }
     if (effect.type === "exhaustCards") {
       const exhausted = estimateExhaustCount(combat, effect);
-      const label = effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : tr("手牌");
+      const label = effect.cardType ? bi(`${cardTypeLabel(effect.cardType)}牌`, `${cardTypeLabel(effect.cardType)} card`) : tr("手牌");
       summary.consumes.push(exhausted > 0 ? `${label} ${exhausted}` : label);
       if (exhausted > 0) {
         if (effect.gainBlockPerCard) {
@@ -3444,7 +3456,7 @@ function summarizePotionAction(run: RunState, potion: PotionInstance): ActionSum
       if (gained > 0) {
         addSummaryPower(summary.selfPowers, effect.power, gained);
         playerPowers[effect.power] = (playerPowers[effect.power] ?? 0) + gained;
-        summary.chains.push(`${playedCards} 张 -> ${powerLabel(effect.power)} +${gained}`);
+        summary.chains.push(bi(`${playedCards} 张 -> ${powerLabel(effect.power)} +${gained}`, `${playedCards} cards -> ${powerLabel(effect.power)} +${gained}`));
       }
     }
     if (effect.type === "draw") summary.draw += effect.amount;
@@ -3470,11 +3482,11 @@ function summarizePotionAction(run: RunState, potion: PotionInstance): ActionSum
       }
     }
     if (effect.type === "returnFromDiscard") {
-      summary.recovers.push(effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : effect.excludeStatus ? tr("非状态牌") : tr("弃牌"));
+      summary.recovers.push(effect.cardType ? bi(`${cardTypeLabel(effect.cardType)}牌`, `${cardTypeLabel(effect.cardType)} card`) : effect.excludeStatus ? tr("非状态牌") : tr("弃牌"));
     }
     if (effect.type === "exhaustCards") {
       const exhausted = combat ? estimateExhaustCount(combat, effect) : effect.amount;
-      const label = effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : tr("牌");
+      const label = effect.cardType ? bi(`${cardTypeLabel(effect.cardType)}牌`, `${cardTypeLabel(effect.cardType)} card`) : tr("牌");
       summary.consumes.push(exhausted > 0 ? `${label} ${exhausted}` : label);
       if (effect.gainBlockPerCard) {
         const rawBlock = effect.gainBlockPerCard * exhausted;
@@ -3547,7 +3559,7 @@ function estimateAmplifiedPower(current: number, multiplier: number, minimum = 0
 }
 
 function amplifySummaryLabel(power: PowerKey, multiplier: number, minimum = 0, target: string): string {
-  const minimumText = minimum > 0 ? `，至少 +${minimum}` : "";
+  const minimumText = minimum > 0 ? bi(`，至少 +${minimum}`, `, min +${minimum}`) : "";
   return `${target}${powerLabel(power)} x${multiplier}${minimumText}`;
 }
 
@@ -3689,11 +3701,11 @@ function cardMechanicTags(card: CardInstance): string[] {
     if (effect.type === "damage") tags.add(effect.target === "allEnemies" ? tr("群攻") : tr("伤害"));
     if (effect.type === "damageFromBlock") tags.add(tr("盾击"));
     if (effect.type === "damagePerAttackPlayed") tags.add(tr("连击伤害"));
-    if (effect.type === "damagePerPower") tags.add(`${powerLabel(effect.power)}爆发`);
-    if (effect.type === "spendPowerDamage") tags.add(`${powerLabel(effect.power)}爆发`);
-    if (effect.type === "amplifyPower") tags.add(`${powerLabel(effect.power)}催化`);
+    if (effect.type === "damagePerPower") tags.add(bi(`${powerLabel(effect.power)}爆发`, `${powerLabel(effect.power)} burst`));
+    if (effect.type === "spendPowerDamage") tags.add(bi(`${powerLabel(effect.power)}爆发`, `${powerLabel(effect.power)} burst`));
+    if (effect.type === "amplifyPower") tags.add(bi(`${powerLabel(effect.power)}催化`, `${powerLabel(effect.power)} amp`));
     if (effect.type === "block") tags.add(tr("格挡"));
-    if (effect.type === "blockPerPower") tags.add(`${powerLabel(effect.power)}格挡`);
+    if (effect.type === "blockPerPower") tags.add(bi(`${powerLabel(effect.power)}格挡`, `${powerLabel(effect.power)} block`));
     if (effect.type === "blockPerExhaustedCard") {
       tags.add(tr("格挡"));
       tags.add(tr("消耗堆"));
@@ -3762,7 +3774,7 @@ function potionMechanicTags(potion: PotionInstance): string[] {
       if (effect.gainPowerPerStack) tags.add(powerLabel(effect.gainPowerPerStack.power));
     }
     if (effect.type === "applyPower") tags.add(powerLabel(effect.power));
-    if (effect.type === "amplifyPower") tags.add(`${powerLabel(effect.power)}催化`);
+    if (effect.type === "amplifyPower") tags.add(bi(`${powerLabel(effect.power)}催化`, `${powerLabel(effect.power)} amp`));
     if (effect.type === "draw") tags.add(tr("抽牌"));
     if (effect.type === "gainEnergy") tags.add(tr("能量"));
     if (effect.type === "heal") tags.add(tr("回复"));
@@ -3815,7 +3827,7 @@ function RewardScreen({
       </div>
       <div className="reward-strip">
         <span>
-          <Coins size={16} /> +{reward.gold} 金币
+          <Coins size={16} /> +{reward.gold} {bi("金币", "Gold")}
         </span>
         {reward.relicId && (
           <span>
@@ -3843,7 +3855,7 @@ function RewardScreen({
               onClick={onRerollCards}
             >
               <RotateCcw size={16} />
-              <span>{reward.rerolled ? tr("已重掷") : `重掷卡牌 ${rerollPrice} 金币`}</span>
+              <span>{reward.rerolled ? tr("已重掷") : bi(`重掷卡牌 ${rerollPrice} 金币`, `Reroll ${rerollPrice} Gold`)}</span>
             </button>
           </div>
         </div>
@@ -3899,7 +3911,7 @@ function RewardScreen({
       )}
       <button className="secondary-button" type="button" onClick={onSkip}>
         <ChevronRight size={17} />
-        <span>{cardResolved ? (hasRemainingNonCardReward ? tr("跳过剩余奖励") : tr("继续路线")) : `跳过卡牌 +${skipGold} 金币`}</span>
+        <span>{cardResolved ? (hasRemainingNonCardReward ? tr("跳过剩余奖励") : tr("继续路线")) : bi(`跳过卡牌 +${skipGold} 金币`, `Skip card +${skipGold} Gold`)}</span>
       </button>
     </section>
   );
@@ -3929,23 +3941,23 @@ function RestScreen({
     <section className="rest-layout">
       <div className="choice-heading">
         <p>{tr("营火")}</p>
-        <h2>休息或锻造</h2>
+        <h2>{bi("休息或锻造", "Rest or Refine")}</h2>
       </div>
       <div className="rest-actions">
         <button className="rest-action" type="button" onClick={onHeal}>
           <HeartPulse size={22} />
           <strong>{isFullHealth ? tr("整备") : tr("休息")}</strong>
-          <span>{isFullHealth ? `生命已满，获得 ${restPrepGold} 金币` : `回复最多 ${healAmount} 点生命`}</span>
+          <span>{isFullHealth ? bi(`生命已满，获得 ${restPrepGold} 金币`, `HP full · gain ${restPrepGold} Gold`) : bi(`回复最多 ${healAmount} 点生命`, `Heal up to ${healAmount} HP`)}</span>
         </button>
         <button className="rest-action" type="button" disabled={!hasPotionSpace} onClick={onBrew}>
           <FlaskConical size={22} />
-          <strong>调配</strong>
-          <span>{hasPotionSpace ? `获得 1 瓶随机药水 ${run.player.potions.length}/${run.player.potionSlots}` : tr("药水槽已满")}</span>
+          <strong>{bi("调配", "Brew")}</strong>
+          <span>{hasPotionSpace ? bi(`获得 1 瓶随机药水 ${run.player.potions.length}/${run.player.potionSlots}`, `Gain 1 random potion ${run.player.potions.length}/${run.player.potionSlots}`) : tr("药水槽已满")}</span>
         </button>
         <button className="rest-action" type="button" disabled={statusCount === 0} onClick={onCleanseStatus}>
           <Sparkles size={22} />
-          <strong>清理</strong>
-          <span>{statusCount > 0 ? `移除 1 张随机状态牌 · 当前 ${statusCount}` : tr("没有状态牌")}</span>
+          <strong>{bi("清理", "Cleanse")}</strong>
+          <span>{statusCount > 0 ? bi(`移除 1 张随机状态牌 · 当前 ${statusCount}`, `Remove 1 status card · now ${statusCount}`) : tr("没有状态牌")}</span>
         </button>
       </div>
       <div className="upgrade-list">
@@ -3956,7 +3968,7 @@ function RestScreen({
               <span>{def.name}</span>
               <small>
                 <b>{getCardLevel(card).text}</b>
-                <em>升级后：{def.upgraded.text}</em>
+                <em>{bi(`升级后：${def.upgraded.text}`, `Upgrade → ${def.upgraded.text}`)}</em>
               </small>
               <ChevronRight size={16} />
             </button>
@@ -3991,12 +4003,12 @@ function ShopScreen({
   const shop = run.shop!;
   const validPrice = (price: unknown): price is number => typeof price === "number" && Number.isFinite(price) && price >= 0;
   const canAfford = (price: unknown) => validPrice(price) && run.player.gold >= price;
-  const priceText = (price: unknown) => (validPrice(price) ? `${price} 金币` : tr("价格异常"));
+  const priceText = (price: unknown) => (validPrice(price) ? bi(`${price} 金币`, `${price} Gold`) : tr("价格异常"));
   return (
     <section className="shop-layout">
       <div className="choice-heading">
         <p>{tr("商店")}</p>
-        <h2>把金币换成下一场战斗的答案</h2>
+        <h2>{bi("把金币换成下一场战斗的答案", "Spend gold for next battle's answer")}</h2>
       </div>
       <div className="shop-grid">
         <div>
@@ -4012,10 +4024,10 @@ function ShopScreen({
                       <div className="game-card__top">
                         <strong>{tr("失效卡牌")}</strong>
                       </div>
-                      <p>这张商店卡牌来自旧数据，已无法购买。</p>
+                      <p>{bi("这张商店卡牌来自旧数据，已无法购买。", "This shop card is from old data and can no longer be bought.")}</p>
                     </div>
                     <span className="price">
-                      <Coins size={14} /> 价格异常
+                      <Coins size={14} /> {tr("价格异常")}
                     </span>
                   </div>
                 );
@@ -4120,7 +4132,7 @@ function ShopScreen({
             onClick={onBuyHeal}
           >
             <HeartPulse size={18} />
-            <strong>治疗药剂</strong>
+            <strong>{bi("治疗药剂", "Healing Draught")}</strong>
             <span>{tr("回复 14 点生命。")}</span>
             <small>{shop.healSold ? tr("已售") : priceText(shop.healPrice)}</small>
           </button>
@@ -4150,7 +4162,7 @@ function ShopScreen({
             onClick={onRestock}
           >
             <RotateCcw size={17} />
-            <span>{shop.restocked ? tr("库存已刷新") : `刷新库存 ${priceText(shop.restockPrice)}`}</span>
+            <span>{shop.restocked ? tr("库存已刷新") : bi(`刷新库存 ${priceText(shop.restockPrice)}`, `Restock ${priceText(shop.restockPrice)}`)}</span>
           </button>
           <button
             className="primary-button primary-button--wide"
@@ -4158,7 +4170,7 @@ function ShopScreen({
             onClick={onLeave}
           >
             <ChevronRight size={17} />
-            <span>离开商店</span>
+            <span>{bi("离开商店", "Leave Shop")}</span>
           </button>
         </div>
       </div>
@@ -4260,23 +4272,23 @@ function EndScreen({
       <p>{result === "victory" ? tr("胜利") : tr("失败")}</p>
       <h2>{run.message}</h2>
       <div className="run-summary">
-        <StatPill icon={<MapIcon size={17} />} label={currentLang === "en" ? `Act ${run.act ?? 1}` : `幕 ${run.act ?? 1}`} tone="floor" />
-        <StatPill icon={<MapIcon size={17} />} label={currentLang === "en" ? `Nodes ${run.stats.nodesCleared}` : `节点 ${run.stats.nodesCleared}`} tone="floor" />
-        <StatPill icon={<Sword size={17} />} label={currentLang === "en" ? `Damage ${run.stats.damageDealt}` : `伤害 ${run.stats.damageDealt}`} tone="deck" />
-        <StatPill icon={<Coins size={17} />} label={currentLang === "en" ? `Gold ${run.stats.goldEarned}` : `金币 ${run.stats.goldEarned}`} tone="gold" />
-        <StatPill icon={<BookOpen size={17} />} label={currentLang === "en" ? `Plays ${run.stats.cardsPlayed}` : `出牌 ${run.stats.cardsPlayed}`} tone="hp" />
+        <StatPill icon={<MapIcon size={17} />} label={bi(`幕 ${run.act ?? 1}`, `Act ${run.act ?? 1}`)} tone="floor" />
+        <StatPill icon={<MapIcon size={17} />} label={bi(`节点 ${run.stats.nodesCleared}`, `Nodes ${run.stats.nodesCleared}`)} tone="floor" />
+        <StatPill icon={<Sword size={17} />} label={bi(`伤害 ${run.stats.damageDealt}`, `Damage ${run.stats.damageDealt}`)} tone="deck" />
+        <StatPill icon={<Coins size={17} />} label={bi(`金币 ${run.stats.goldEarned}`, `Gold ${run.stats.goldEarned}`)} tone="gold" />
+        <StatPill icon={<BookOpen size={17} />} label={bi(`出牌 ${run.stats.cardsPlayed}`, `Plays ${run.stats.cardsPlayed}`)} tone="hp" />
       </div>
       <div className="end-build">
         <BuildSummary deck={run.player.deck} compact />
         <div className="end-inventory">
-          <StatPill icon={<Award size={17} />} label={currentLang === "en" ? `Relics ${run.player.relics.length}` : `遗物 ${run.player.relics.length}`} tone="floor" />
-          <StatPill icon={<Sparkles size={17} />} label={currentLang === "en" ? `Boons ${run.player.boons.length}` : `常驻 ${run.player.boons.length}`} tone="deck" />
-          <StatPill icon={<FlaskConical size={17} />} label={currentLang === "en" ? `Potions ${run.player.potions.length}/${run.player.potionSlots}` : `药水 ${run.player.potions.length}/${run.player.potionSlots}`} tone="gold" />
+          <StatPill icon={<Award size={17} />} label={bi(`遗物 ${run.player.relics.length}`, `Relics ${run.player.relics.length}`)} tone="floor" />
+          <StatPill icon={<Sparkles size={17} />} label={bi(`常驻 ${run.player.boons.length}`, `Boons ${run.player.boons.length}`)} tone="deck" />
+          <StatPill icon={<FlaskConical size={17} />} label={bi(`药水 ${run.player.potions.length}/${run.player.potionSlots}`, `Potions ${run.player.potions.length}/${run.player.potionSlots}`)} tone="gold" />
         </div>
       </div>
       <button className="primary-button" type="button" onClick={onStart}>
         <RotateCcw size={17} />
-        <span>再来一局</span>
+        <span>{bi("再来一局", "Run Again")}</span>
       </button>
     </section>
   );
@@ -4311,7 +4323,7 @@ function CardView({
   const visualClass = cardVisualClass(def);
   const targetLabel = actionTargetLabel(level.target);
   const details = cardMechanicDetails(card, run);
-  const mechanicTitle = details.length > 0 ? `机制验证\n${details.join("\n")}` : level.text;
+  const mechanicTitle = details.length > 0 ? bi(`机制验证\n${details.join("\n")}`, `Mechanic Check\n${details.join("\n")}`) : level.text;
   return (
     <button
       className={`game-card game-card--${def.type.toLowerCase()} game-card--rarity-${def.rarity} ${visualClass} ${
@@ -4361,7 +4373,7 @@ function CardMechanicDetail({ details }: { details: string[] }) {
 
   return (
     <div className="game-card__detail" aria-hidden="true">
-      <strong>机制验证</strong>
+      <strong>{bi("机制验证", "Mechanic Check")}</strong>
       {details.slice(0, 5).map((detail) => (
         <span key={detail}>{detail}</span>
       ))}
@@ -4376,18 +4388,18 @@ function cardMechanicDetails(card: CardInstance, run?: RunState): string[] {
   const details: string[] = [];
 
   if (combat) {
-    details.push(`费用 ${level.cost} / 当前能量 ${combat.energy}`);
+    details.push(bi(`费用 ${level.cost} / 当前能量 ${combat.energy}`, `Cost ${level.cost} / Energy ${combat.energy}`));
   } else {
-    details.push(`费用 ${level.cost} · ${cardTypeLabel(def.type)}`);
+    details.push(bi(`费用 ${level.cost} · ${cardTypeLabel(def.type)}`, `Cost ${level.cost} · ${cardTypeLabel(def.type)}`));
   }
 
   if (def.type === "Attack") {
     const combo = (combat?.playerPowers.combo ?? 0) + 1;
-    details.push(`攻击牌先获得 1 连击；打出后连击约 ${combo}`);
+    details.push(bi(`攻击牌先获得 1 连击；打出后连击约 ${combo}`, `Attacks gain 1 Combo first; after play ≈ ${combo}`));
   }
   if (def.type === "Skill") {
     const charge = (combat?.playerPowers.charge ?? 0) + 1;
-    details.push(`技能牌先获得 1 蓄能；打出后蓄能约 ${charge}`);
+    details.push(bi(`技能牌先获得 1 蓄能；打出后蓄能约 ${charge}`, `Skills gain 1 Charge first; after play ≈ ${charge}`));
   }
   if (level.unplayable) {
     details.push(tr("状态牌不可主动打出，通常在回合结束或抽到时生效"));
@@ -4450,30 +4462,30 @@ function cardLivePreviewLine(run: RunState, card: CardInstance): string | undefi
 
   const summary = summarizeCardAction(run, card);
   const parts = [
-    summary.block > 0 ? `格挡 +${summary.block}` : "",
-    summary.draw > 0 ? `抽 ${summary.draw}` : "",
-    summary.energy > 0 ? `能量 +${summary.energy}` : "",
-    summary.heal > 0 ? `回复 ${summary.heal}` : "",
+    summary.block > 0 ? bi(`格挡 +${summary.block}`, `Block +${summary.block}`) : "",
+    summary.draw > 0 ? bi(`抽 ${summary.draw}`, `Draw ${summary.draw}`) : "",
+    summary.energy > 0 ? bi(`能量 +${summary.energy}`, `Energy +${summary.energy}`) : "",
+    summary.heal > 0 ? bi(`回复 ${summary.heal}`, `Heal ${summary.heal}`) : "",
   ].filter(Boolean);
   const selfPowers = Object.entries(summary.selfPowers).filter(([, value]) => (value ?? 0) > 0) as [PowerKey, number][];
   for (const [power, value] of selfPowers.slice(0, 2)) {
     parts.push(`${powerLabel(power)} +${value}`);
   }
-  return parts.length > 0 ? `当前预估：${parts.join(" / ")}` : undefined;
+  return parts.length > 0 ? bi(`当前预估：${parts.join(" / ")}`, `Now ≈ ${parts.join(" / ")}`) : undefined;
 }
 
 function previewLine(label: string, preview: TargetPreview): string | undefined {
   const powerEntries = Object.entries(preview.powerAdds).filter(([, value]) => (value ?? 0) > 0) as [PowerKey, number][];
   const parts = [
-    preview.damage > 0 ? `生命 -${preview.damage}` : "",
-    preview.blockLoss > 0 ? `破盾 ${preview.blockLoss}` : "",
-    preview.sparkArc > 0 ? `电弧 ${preview.sparkArc}` : "",
+    preview.damage > 0 ? bi(`生命 -${preview.damage}`, `HP -${preview.damage}`) : "",
+    preview.blockLoss > 0 ? bi(`破盾 ${preview.blockLoss}`, `Break ${preview.blockLoss}`) : "",
+    preview.sparkArc > 0 ? bi(`电弧 ${preview.sparkArc}`, `Arc ${preview.sparkArc}`) : "",
     preview.lethal ? tr("击破") : "",
   ].filter(Boolean);
   for (const [power, value] of powerEntries.slice(0, 2)) {
     parts.push(`${powerLabel(power)} +${value}`);
   }
-  return parts.length > 0 ? `${label}预估：${parts.join(" / ")}` : undefined;
+  return parts.length > 0 ? bi(`${label}预估：${parts.join(" / ")}`, `${label} ≈ ${parts.join(" / ")}`) : undefined;
 }
 
 function mergePowerAdds(
@@ -4496,33 +4508,44 @@ function cardEffectDetail(effect: CardEffect, card: CardInstance, run?: RunState
 
   if (effect.type === "damage") {
     const hits = effect.hits && effect.hits > 1 ? ` x${effect.hits}` : "";
-    const strength = combat ? ` + 力量 ${playerPowers.strength ?? 0}` : tr(" + 力量");
-    return `伤害：基础 ${effect.amount}${hits}${strength}，破绽加伤后再吃易伤/虚弱`;
+    const strength = combat ? bi(` + 力量 ${playerPowers.strength ?? 0}`, ` + Str ${playerPowers.strength ?? 0}`) : tr(" + 力量");
+    return bi(`伤害：基础 ${effect.amount}${hits}${strength}，破绽加伤后再吃易伤/虚弱`, `Damage: base ${effect.amount}${hits}${strength}, after Mark then Vuln/Weak`);
   }
   if (effect.type === "damageFromBlock") {
     const current = combat ? Math.floor(combat.playerBlock * effect.multiplier) : undefined;
-    return current !== undefined ? `盾击：当前格挡 ${combat!.playerBlock} x${effect.multiplier} = ${current}` : `盾击：当前格挡 x${effect.multiplier}`;
+    return current !== undefined
+      ? bi(`盾击：当前格挡 ${combat!.playerBlock} x${effect.multiplier} = ${current}`, `Shield-strike: block ${combat!.playerBlock} x${effect.multiplier} = ${current}`)
+      : bi(`盾击：当前格挡 x${effect.multiplier}`, `Shield-strike: block x${effect.multiplier}`);
   }
   if (effect.type === "damagePerAttackPlayed") {
     const attacks = combat ? combat.attacksPlayedThisTurn + (def.type === "Attack" ? 1 : 0) : 1;
-    return `连击伤害：本回合攻击 ${attacks} x ${effect.amount} = ${attacks * effect.amount}`;
+    return bi(`连击伤害：本回合攻击 ${attacks} x ${effect.amount} = ${attacks * effect.amount}`, `Combo damage: ${attacks} attacks x ${effect.amount} = ${attacks * effect.amount}`);
   }
   if (effect.type === "damagePerPower") {
     const powers = effect.powerTarget === "self" ? playerPowers : targetPowers;
     const available = powers[effect.power] ?? 0;
     const stacks = Math.max(effect.minimum ?? 0, available);
     const target = effect.powerTarget === "self" ? tr("自身") : tr("目标");
-    return `${powerLabel(effect.power)}爆发：${target}${powerLabel(effect.power)} ${available}${effect.minimum ? `，最低 ${effect.minimum}` : ""} -> ${stacks * effect.amount} 伤害${effect.consume ? "，结算后消耗" : ""}`;
+    return bi(
+      `${powerLabel(effect.power)}爆发：${target}${powerLabel(effect.power)} ${available}${effect.minimum ? `，最低 ${effect.minimum}` : ""} -> ${stacks * effect.amount} 伤害${effect.consume ? "，结算后消耗" : ""}`,
+      `${powerLabel(effect.power)} burst: ${target} ${powerLabel(effect.power)} ${available}${effect.minimum ? `, min ${effect.minimum}` : ""} -> ${stacks * effect.amount} dmg${effect.consume ? ", consume on resolve" : ""}`,
+    );
   }
   if (effect.type === "spendPowerDamage") {
     const available = playerPowers[effect.power] ?? 0;
     const spent = Math.min(available, effect.consume ?? available);
     const stacks = Math.max(effect.minimum ?? 0, spent);
-    return `消耗爆发：消耗 ${powerLabel(effect.power)} ${spent}${effect.minimum ? `，最低 ${effect.minimum}` : ""} -> ${stacks * effect.amount} 伤害`;
+    return bi(
+      `消耗爆发：消耗 ${powerLabel(effect.power)} ${spent}${effect.minimum ? `，最低 ${effect.minimum}` : ""} -> ${stacks * effect.amount} 伤害`,
+      `Spend burst: consume ${powerLabel(effect.power)} ${spent}${effect.minimum ? `, min ${effect.minimum}` : ""} -> ${stacks * effect.amount} dmg`,
+    );
   }
   if (effect.type === "block") {
     const block = combat ? estimateBlock(playerPowers, effect.amount) : effect.amount;
-    return `格挡：基础 ${effect.amount}${combat ? ` + 敏捷 ${playerPowers.dexterity ?? 0}` : " + 敏捷"}${(playerPowers.frail ?? 0) > 0 ? "，脆弱 x0.75" : ""} = ${block}`;
+    return bi(
+      `格挡：基础 ${effect.amount}${combat ? ` + 敏捷 ${playerPowers.dexterity ?? 0}` : " + 敏捷"}${(playerPowers.frail ?? 0) > 0 ? "，脆弱 x0.75" : ""} = ${block}`,
+      `Block: base ${effect.amount}${combat ? ` + Dex ${playerPowers.dexterity ?? 0}` : " + Dex"}${(playerPowers.frail ?? 0) > 0 ? ", Frail x0.75" : ""} = ${block}`,
+    );
   }
   if (effect.type === "blockPerPower") {
     const available = playerPowers[effect.power] ?? 0;
@@ -4530,44 +4553,65 @@ function cardEffectDetail(effect: CardEffect, card: CardInstance, run?: RunState
     const stacks = Math.max(effect.minimum ?? 0, spent);
     const rawBlock = effect.amount * stacks;
     const block = combat ? estimateBlock(playerPowers, rawBlock) : rawBlock;
-    return `${powerLabel(effect.power)}格挡：可用 ${available}，消耗 ${spent} -> 格挡 ${block}`;
+    return bi(
+      `${powerLabel(effect.power)}格挡：可用 ${available}，消耗 ${spent} -> 格挡 ${block}`,
+      `${powerLabel(effect.power)} block: have ${available}, spend ${spent} -> block ${block}`,
+    );
   }
   if (effect.type === "blockPerExhaustedCard") {
     const stacks = combat ? Math.max(effect.minimum ?? 0, Math.min(combat.exhaustPile.length, effect.cap ?? combat.exhaustPile.length)) : (effect.minimum ?? 0);
-    return `消耗堆格挡：消耗堆 ${combat?.exhaustPile.length ?? 0} 张，计 ${stacks} 层`;
+    return bi(
+      `消耗堆格挡：消耗堆 ${combat?.exhaustPile.length ?? 0} 张，计 ${stacks} 层`,
+      `Exhaust-pile block: pile ${combat?.exhaustPile.length ?? 0}, counted ${stacks}`,
+    );
   }
   if (effect.type === "gainPowerPerPower") {
     const available = playerPowers[effect.sourcePower] ?? 0;
     const stacks = Math.max(effect.minimum ?? 0, Math.min(available, effect.cap ?? available));
-    return `共振：${powerLabel(effect.sourcePower)} ${available} -> ${powerLabel(effect.gainedPower)} +${stacks * effect.amount}`;
+    return bi(
+      `共振：${powerLabel(effect.sourcePower)} ${available} -> ${powerLabel(effect.gainedPower)} +${stacks * effect.amount}`,
+      `Resonate: ${powerLabel(effect.sourcePower)} ${available} -> ${powerLabel(effect.gainedPower)} +${stacks * effect.amount}`,
+    );
   }
   if (effect.type === "gainPowerPerCardPlayed") {
     const played = combat ? combat.cardsPlayedThisTurn + 1 : 1;
     const stacks = Math.max(effect.minimum ?? 0, Math.min(played, effect.cap ?? played));
-    return `连锁：本回合第 ${played} 张 -> ${powerLabel(effect.power)} +${stacks * effect.amount}`;
+    return bi(
+      `连锁：本回合第 ${played} 张 -> ${powerLabel(effect.power)} +${stacks * effect.amount}`,
+      `Chain: card #${played} this turn -> ${powerLabel(effect.power)} +${stacks * effect.amount}`,
+    );
   }
   if (effect.type === "cleansePower") {
     const available = playerPowers[effect.power] ?? 0;
     const removed = Math.min(available, effect.amount);
-    return `散热：移除 ${powerLabel(effect.power)} ${removed}/${effect.amount}${effect.gainEnergyPerStack ? `，每层能量 +${effect.gainEnergyPerStack}` : ""}`;
+    return bi(
+      `散热：移除 ${powerLabel(effect.power)} ${removed}/${effect.amount}${effect.gainEnergyPerStack ? `，每层能量 +${effect.gainEnergyPerStack}` : ""}`,
+      `Vent: remove ${powerLabel(effect.power)} ${removed}/${effect.amount}${effect.gainEnergyPerStack ? `, +${effect.gainEnergyPerStack} Energy each` : ""}`,
+    );
   }
   if (effect.type === "applyPower") {
-    return `施加：${effectTargetLabel(effect.target)} ${powerLabel(effect.power)} ${effect.amount > 0 ? "+" : ""}${effect.amount}`;
+    return bi(
+      `施加：${effectTargetLabel(effect.target)} ${powerLabel(effect.power)} ${effect.amount > 0 ? "+" : ""}${effect.amount}`,
+      `Apply: ${effectTargetLabel(effect.target)} ${powerLabel(effect.power)} ${effect.amount > 0 ? "+" : ""}${effect.amount}`,
+    );
   }
   if (effect.type === "amplifyPower") {
     const current = effect.target === "self" ? (playerPowers[effect.power] ?? 0) : (targetPowers[effect.power] ?? 0);
     const gained = estimateAmplifiedPower(current, effect.multiplier, effect.minimum);
-    return `催化：${effectTargetLabel(effect.target)} ${powerLabel(effect.power)} x${effect.multiplier}，当前约 +${gained}`;
+    return bi(
+      `催化：${effectTargetLabel(effect.target)} ${powerLabel(effect.power)} x${effect.multiplier}，当前约 +${gained}`,
+      `Amplify: ${effectTargetLabel(effect.target)} ${powerLabel(effect.power)} x${effect.multiplier}, now ≈ +${gained}`,
+    );
   }
-  if (effect.type === "draw") return `抽牌：抽 ${effect.amount} 张`;
-  if (effect.type === "gainEnergy") return `能量：获得 ${effect.amount}`;
-  if (effect.type === "heal") return `回复：恢复 ${effect.amount} 生命`;
+  if (effect.type === "draw") return bi(`抽牌：抽 ${effect.amount} 张`, `Draw: ${effect.amount}`);
+  if (effect.type === "gainEnergy") return bi(`能量：获得 ${effect.amount}`, `Energy: +${effect.amount}`);
+  if (effect.type === "heal") return bi(`回复：恢复 ${effect.amount} 生命`, `Heal: +${effect.amount} HP`);
   if (effect.type === "cleanseDebuffs") return tr("净化：移除自身负面状态");
-  if (effect.type === "createCard") return `生成：${cardName(effect.cardId)} -> ${destinationLabel(effect.destination)}`;
-  if (effect.type === "returnFromDiscard") return `回收：从弃牌堆取回 ${effect.amount} 张${effect.cardType ? cardTypeLabel(effect.cardType) : ""}牌`;
+  if (effect.type === "createCard") return bi(`生成：${cardName(effect.cardId)} -> ${destinationLabel(effect.destination)}`, `Make: ${cardName(effect.cardId)} -> ${destinationLabel(effect.destination)}`);
+  if (effect.type === "returnFromDiscard") return bi(`回收：从弃牌堆取回 ${effect.amount} 张${effect.cardType ? cardTypeLabel(effect.cardType) : ""}牌`, `Recover: ${effect.amount} ${effect.cardType ? cardTypeLabel(effect.cardType) : ""}card${effect.amount > 1 ? "s" : ""} from discard`);
   if (effect.type === "exhaustCards") {
     const count = combat ? estimateExhaustCount(combat, effect) : effect.amount;
-    return `消耗：${exhaustZoneLabel(effect.zone)} ${count}/${effect.amount} 张${effect.gainEnergyPerCard ? "，按张给能量" : ""}`;
+    return bi(`消耗：${exhaustZoneLabel(effect.zone)} ${count}/${effect.amount} 张${effect.gainEnergyPerCard ? "，按张给能量" : ""}`, `Exhaust: ${exhaustZoneLabel(effect.zone)} ${count}/${effect.amount}${effect.gainEnergyPerCard ? ", Energy per card" : ""}`);
   }
   return undefined;
 }
@@ -4660,7 +4704,7 @@ function ResourceOverview({
         <div className="resource-panel__meta">
           <span>{tr("均费")} {summary.avgCost}</span>
           <span>{tr("升级")} {summary.upgraded}</span>
-          <span className={statusCount > 0 ? "is-warning" : ""}>状态 {statusCount}</span>
+          <span className={statusCount > 0 ? "is-warning" : ""}>{tr("状态")} {statusCount}</span>
         </div>
         <div className="resource-panel__tags">
           {summary.topTags.slice(0, 3).map(({ tag, count }) => (
@@ -4668,7 +4712,7 @@ function ResourceOverview({
               {tr(tag)} <b>{count}</b>
             </span>
           ))}
-          {summary.topTags.length === 0 && <span>基础牌组</span>}
+          {summary.topTags.length === 0 && <span>{tr("基础牌组")}</span>}
         </div>
       </section>
 
@@ -4705,7 +4749,7 @@ function ResourceOverview({
               </span>
             );
           })}
-          {hiddenBoonCount > 0 && <span className="resource-mini-item is-more">+{hiddenBoonCount} 个常驻</span>}
+          {hiddenBoonCount > 0 && <span className="resource-mini-item is-more">{bi(`+${hiddenBoonCount} 个常驻`, `+${hiddenBoonCount} boons`)}</span>}
           {visibleBoons.length === 0 && <span className="resource-mini-item is-empty">{tr("暂无常驻提升")}</span>}
         </div>
       </section>
@@ -4791,14 +4835,14 @@ function ResourcePotionSlot({
         type="button"
         disabled={!canUsePotion}
         onClick={() => onUsePotion?.(potion)}
-        aria-label={`${def.target === "enemy" ? "选择目标使用" : tr("使用")}${def.name}`}
+        aria-label={`${def.target === "enemy" ? bi("选择目标使用", "Choose target to use") : tr("使用")}${def.name}`}
       >
         <FlaskConical size={14} />
         <span>{def.name}</span>
         <small>{tags.length > 0 ? tags.join(" · ") : tr("药水")}</small>
       </button>
       {onDiscardPotion && (
-        <button className="resource-slot__trash" type="button" aria-label={`丢弃${def.name}`} onClick={() => onDiscardPotion(potion.uid)}>
+        <button className="resource-slot__trash" type="button" aria-label={bi(`丢弃${def.name}`, `Discard ${def.name}`)} onClick={() => onDiscardPotion(potion.uid)}>
           <Trash2 size={13} />
         </button>
       )}
@@ -4811,7 +4855,7 @@ function actPressureText(run: Pick<RunState, "act">): string {
   if (depth === 0) {
     return tr("敌方基础强度");
   }
-  return `敌方生命 +${depth * 18}% · 伤害 +${depth * 12}% · 格挡 +${depth * 10}%`;
+  return bi(`敌方生命 +${depth * 18}% · 伤害 +${depth * 12}% · 格挡 +${depth * 10}%`, `Enemy HP +${depth * 18}% · Damage +${depth * 12}% · Block +${depth * 10}%`);
 }
 
 function rewardGoldPreview(run: Pick<RunState, "act" | "difficulty">, value: number): number {
@@ -4831,7 +4875,7 @@ function BuildSummary({ deck, compact = false }: { deck: CardInstance[]; compact
     <div className={`build-summary ${compact ? "build-summary--compact" : ""}`}>
       <div className="build-summary__head">
         <PanelTitle icon={<BookOpen size={17} />} title={tr("构筑概览")} />
-        <span>{summary.total} 张</span>
+        <span>{bi(`${summary.total} 张`, `${summary.total} cards`)}</span>
       </div>
       <div className="build-summary__stats">
         <span>{tr("均费")} {summary.avgCost}</span>
@@ -4866,7 +4910,7 @@ function BuildSummary({ deck, compact = false }: { deck: CardInstance[]; compact
             </span>
           ))
         ) : (
-          <span>基础牌组</span>
+          <span>{tr("基础牌组")}</span>
         )}
       </div>
       <div className="build-hints">
@@ -4968,10 +5012,10 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
         (hasRelic("fracture_lens") ? 1 : 0) +
         potionTag(tr("力量")),
       detail: detail(
-        tag(tr("连击")) > 0 && `连击牌 ${tag(tr("连击"))}`,
-        tag(tr("连锁")) > 0 && `连锁 ${tag(tr("连锁"))}`,
-        tag(tr("破绽")) > 0 && `破绽 ${tag(tr("破绽"))}`,
-        tag(tr("破绽催化")) > 0 && `破绽催化 ${tag(tr("破绽催化"))}`,
+        tag(tr("连击")) > 0 && bi(`连击牌 ${tag(tr("连击"))}`, `Combo cards ${tag(tr("连击"))}`),
+        tag(tr("连锁")) > 0 && bi(`连锁 ${tag(tr("连锁"))}`, `Chain ${tag(tr("连锁"))}`),
+        tag(tr("破绽")) > 0 && bi(`破绽 ${tag(tr("破绽"))}`, `Mark ${tag(tr("破绽"))}`),
+        tag(tr("破绽催化")) > 0 && bi(`破绽催化 ${tag(tr("破绽催化"))}`, `Mark amp ${tag(tr("破绽催化"))}`),
         hasBoon("weakpoint_chart") && tr("破绽图谱"),
         hasRelic("fracture_lens") && tr("裂纹透镜"),
         hasBoon("combo_discipline") && tr("常驻连击"),
@@ -4979,7 +5023,7 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
         hasBoon("rhythm_meter") && tr("随身节拍器"),
         hasBoon("chain_manual") && tr("连锁手册"),
         hasBoon("banner_drill") && tr("战旗操典"),
-        potionTag(tr("力量")) > 0 && `力量药 ${potionTag(tr("力量"))}`,
+        potionTag(tr("力量")) > 0 && bi(`力量药 ${potionTag(tr("力量"))}`, `Strength potion ${potionTag(tr("力量"))}`),
       ),
     },
     {
@@ -5004,19 +5048,19 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
         potionTag(tr("蓄能")) +
         potionTag(tr("电弧")),
       detail: detail(
-        tag(tr("蓄能")) > 0 && `蓄能牌 ${tag(tr("蓄能"))}`,
-        tag(tr("连锁")) > 0 && `连锁 ${tag(tr("连锁"))}`,
-        tag(tr("过载")) > 0 && `过载 ${tag(tr("过载"))}`,
-        tag(tr("散热")) > 0 && `散热 ${tag(tr("散热"))}`,
-        tag(tr("电弧")) > 0 && `电弧 ${tag(tr("电弧"))}`,
-        tag(tr("电弧催化")) > 0 && `电弧催化 ${tag(tr("电弧催化"))}`,
+        tag(tr("蓄能")) > 0 && bi(`蓄能牌 ${tag(tr("蓄能"))}`, `Charge cards ${tag(tr("蓄能"))}`),
+        tag(tr("连锁")) > 0 && bi(`连锁 ${tag(tr("连锁"))}`, `Chain ${tag(tr("连锁"))}`),
+        tag(tr("过载")) > 0 && bi(`过载 ${tag(tr("过载"))}`, `Overload ${tag(tr("过载"))}`),
+        tag(tr("散热")) > 0 && bi(`散热 ${tag(tr("散热"))}`, `Vent ${tag(tr("散热"))}`),
+        tag(tr("电弧")) > 0 && bi(`电弧 ${tag(tr("电弧"))}`, `Arc ${tag(tr("电弧"))}`),
+        tag(tr("电弧催化")) > 0 && bi(`电弧催化 ${tag(tr("电弧催化"))}`, `Arc amp ${tag(tr("电弧催化"))}`),
         hasBoon("spark_conduit") && tr("电弧常驻"),
         hasBoon("coil_training") && tr("线圈训练"),
         hasBoon("rhythm_meter") && tr("随身节拍器"),
         hasBoon("chain_manual") && tr("连锁手册"),
         hasBoon("heat_regulator") && tr("热控铭文"),
         hasRelic("storm_needle") && tr("风暴针"),
-        potionTag(tr("蓄能")) > 0 && `蓄能药 ${potionTag(tr("蓄能"))}`,
+        potionTag(tr("蓄能")) > 0 && bi(`蓄能药 ${potionTag(tr("蓄能"))}`, `Charge potion ${potionTag(tr("蓄能"))}`),
       ),
     },
     {
@@ -5035,12 +5079,12 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
         potionTag(tr("中毒催化")) +
         potionTag(tr("流血催化")),
       detail: detail(
-        tag(tr("中毒")) > 0 && `中毒 ${tag(tr("中毒"))}`,
-        tag(tr("流血")) > 0 && `流血 ${tag(tr("流血"))}`,
-        (tag(tr("中毒催化")) + tag(tr("流血催化")) > 0) && `催化 ${tag(tr("中毒催化")) + tag(tr("流血催化"))}`,
+        tag(tr("中毒")) > 0 && bi(`中毒 ${tag(tr("中毒"))}`, `Poison ${tag(tr("中毒"))}`),
+        tag(tr("流血")) > 0 && bi(`流血 ${tag(tr("流血"))}`, `Bleed ${tag(tr("流血"))}`),
+        (tag(tr("中毒催化")) + tag(tr("流血催化")) > 0) && bi(`催化 ${tag(tr("中毒催化")) + tag(tr("流血催化"))}`, `Amp ${tag(tr("中毒催化")) + tag(tr("流血催化"))}`),
         hasBoon("catalyst_training") && tr("催化训练"),
         hasBoon("venom_prep") && tr("毒性预备"),
-        potionTag(tr("中毒")) > 0 && `毒药 ${potionTag(tr("中毒"))}`,
+        potionTag(tr("中毒")) > 0 && bi(`毒药 ${potionTag(tr("中毒"))}`, `Venom potion ${potionTag(tr("中毒"))}`),
       ),
     },
     {
@@ -5066,17 +5110,17 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
         potionTag(tr("金属化")) * 2 +
         potionTag(tr("尖刺")) * 2,
       detail: detail(
-        tag(tr("格挡")) > 0 && `格挡牌 ${tag(tr("格挡"))}`,
-        tag(tr("金属化")) > 0 && `金属化 ${tag(tr("金属化"))}`,
-        tag(tr("尖刺")) > 0 && `尖刺 ${tag(tr("尖刺"))}`,
-        tag(tr("盾击")) > 0 && `盾击 ${tag(tr("盾击"))}`,
-        tag(tr("消耗堆")) > 0 && `消耗堆 ${tag(tr("消耗堆"))}`,
-        tag(tr("散热")) > 0 && `散热 ${tag(tr("散热"))}`,
+        tag(tr("格挡")) > 0 && bi(`格挡牌 ${tag(tr("格挡"))}`, `Block cards ${tag(tr("格挡"))}`),
+        tag(tr("金属化")) > 0 && bi(`金属化 ${tag(tr("金属化"))}`, `Plated ${tag(tr("金属化"))}`),
+        tag(tr("尖刺")) > 0 && bi(`尖刺 ${tag(tr("尖刺"))}`, `Thorns ${tag(tr("尖刺"))}`),
+        tag(tr("盾击")) > 0 && bi(`盾击 ${tag(tr("盾击"))}`, `Shield-strike ${tag(tr("盾击"))}`),
+        tag(tr("消耗堆")) > 0 && bi(`消耗堆 ${tag(tr("消耗堆"))}`, `Exhaust pile ${tag(tr("消耗堆"))}`),
+        tag(tr("散热")) > 0 && bi(`散热 ${tag(tr("散热"))}`, `Vent ${tag(tr("散热"))}`),
         hasBoon("tempered_shell") && tr("淬火外壳"),
         hasBoon("ash_ledger") && tr("余烬账本"),
         hasBoon("heat_regulator") && tr("热控铭文"),
-        potionTag(tr("金属化")) > 0 && `甲片药 ${potionTag(tr("金属化"))}`,
-        potionTag(tr("格挡")) > 0 && `格挡药 ${potionTag(tr("格挡"))}`,
+        potionTag(tr("金属化")) > 0 && bi(`甲片药 ${potionTag(tr("金属化"))}`, `Plated potion ${potionTag(tr("金属化"))}`),
+        potionTag(tr("格挡")) > 0 && bi(`格挡药 ${potionTag(tr("格挡"))}`, `Block potion ${potionTag(tr("格挡"))}`),
       ),
     },
     {
@@ -5105,11 +5149,11 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
         potionTag(tr("能量")) +
         potionTag(tr("回收")) * 2,
       detail: detail(
-        tag(tr("抽牌")) > 0 && `抽牌 ${tag(tr("抽牌"))}`,
-        tag(tr("能量")) > 0 && `能量 ${tag(tr("能量"))}`,
-        tag(tr("回收")) > 0 && `回收 ${tag(tr("回收"))}`,
-        tag(tr("连锁")) > 0 && `连锁 ${tag(tr("连锁"))}`,
-        tag(tr("过载")) > 0 && `过载 ${tag(tr("过载"))}`,
+        tag(tr("抽牌")) > 0 && bi(`抽牌 ${tag(tr("抽牌"))}`, `Draw ${tag(tr("抽牌"))}`),
+        tag(tr("能量")) > 0 && bi(`能量 ${tag(tr("能量"))}`, `Energy ${tag(tr("能量"))}`),
+        tag(tr("回收")) > 0 && bi(`回收 ${tag(tr("回收"))}`, `Recover ${tag(tr("回收"))}`),
+        tag(tr("连锁")) > 0 && bi(`连锁 ${tag(tr("连锁"))}`, `Chain ${tag(tr("连锁"))}`),
+        tag(tr("过载")) > 0 && bi(`过载 ${tag(tr("过载"))}`, `Overload ${tag(tr("过载"))}`),
         hasBoon("scavenger_kit") && tr("开局回收"),
         hasBoon("field_protocol") && tr("战地协议"),
         hasBoon("triage_doctrine") && tr("战伤教范"),
@@ -5137,13 +5181,13 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
         (hasBoon("heat_regulator") ? 2 : 0) +
         potionTag(tr("净化")),
       detail: detail(
-        tag(tr("净化")) > 0 && `净化 ${tag(tr("净化"))}`,
-        tag(tr("消耗堆")) > 0 && `消耗堆 ${tag(tr("消耗堆"))}`,
-        tag(tr("散热")) > 0 && `散热 ${tag(tr("散热"))}`,
-        summary.typeCounts.Status > 0 && `状态 ${summary.typeCounts.Status}`,
+        tag(tr("净化")) > 0 && bi(`净化 ${tag(tr("净化"))}`, `Cleanse ${tag(tr("净化"))}`),
+        tag(tr("消耗堆")) > 0 && bi(`消耗堆 ${tag(tr("消耗堆"))}`, `Exhaust pile ${tag(tr("消耗堆"))}`),
+        tag(tr("散热")) > 0 && bi(`散热 ${tag(tr("散热"))}`, `Vent ${tag(tr("散热"))}`),
+        summary.typeCounts.Status > 0 && bi(`状态 ${summary.typeCounts.Status}`, `Status ${summary.typeCounts.Status}`),
         hasBoon("triage_doctrine") && tr("战伤教范"),
         hasBoon("heat_regulator") && tr("热控铭文"),
-        potionTag(tr("净化")) > 0 && `净化药 ${potionTag(tr("净化"))}`,
+        potionTag(tr("净化")) > 0 && bi(`净化药 ${potionTag(tr("净化"))}`, `Cleanse potion ${potionTag(tr("净化"))}`),
       ),
     },
   ];
@@ -5302,7 +5346,7 @@ function CombatInventoryBar({
           <Award size={13} /> {tr("遗物")}
         </span>
         <div className="combat-inventory__items">
-          {relics.length === 0 && <span className="combat-inventory__empty">无</span>}
+          {relics.length === 0 && <span className="combat-inventory__empty">{bi("无", "—")}</span>}
           {relics.map((relicId) => {
             const relic = relicInfo(relicId);
             return (
@@ -5382,16 +5426,18 @@ function IntentBadge({ run, enemy }: { run: RunState; enemy: EnemyState }) {
   for (const effect of move.effects) {
     if (effect.type === "damage") {
       const h = effect.hits ?? 1;
-      lines.push(h > 1 ? `造成 ${dmg.perHit} 点伤害，共 ${h} 次（合计 ${dmg.total}）` : `造成 ${dmg.total} 点伤害`);
+      lines.push(h > 1
+        ? bi(`造成 ${dmg.perHit} 点伤害，共 ${h} 次（合计 ${dmg.total}）`, `Deal ${dmg.perHit} dmg × ${h} (total ${dmg.total})`)
+        : bi(`造成 ${dmg.total} 点伤害`, `Deal ${dmg.total} damage`));
     } else if (effect.type === "block") {
-      lines.push(`为自己获得 ${effect.amount} 点格挡`);
+      lines.push(bi(`为自己获得 ${effect.amount} 点格挡`, `Gain ${effect.amount} block`));
     } else if (effect.type === "applyPower") {
       const who = effect.target === "self" ? tr("自身") : tr("你");
-      lines.push(`给${who}施加 ${effect.amount} 层${powerLabel(effect.power)}`);
+      lines.push(bi(`给${who}施加 ${effect.amount} 层${powerLabel(effect.power)}`, `Apply ${effect.amount} ${powerLabel(effect.power)} to ${who}`));
     } else if (effect.type === "summon") {
-      lines.push(`召唤 ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`);
+      lines.push(bi(`召唤 ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`, `Summon ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`));
     } else if (effect.type === "createCard") {
-      lines.push(`往你牌堆塞入「${cardName(effect.cardId)}」`);
+      lines.push(bi(`往你牌堆塞入「${cardName(effect.cardId)}」`, `Shuffle "${cardName(effect.cardId)}" into your deck`));
     }
   }
 
@@ -5400,9 +5446,9 @@ function IntentBadge({ run, enemy }: { run: RunState; enemy: EnemyState }) {
       placement="bottom"
       content={
         <TipCard
-          title={`${moveName(enemy.defId, move.id)}（${primary.label}）`}
+          title={bi(`${moveName(enemy.defId, move.id)}（${primary.label}）`, `${moveName(enemy.defId, move.id)} (${primary.label})`)}
           tone={primary.kind === "attack" || primary.kind === "debuff" ? "debuff" : primary.kind === "block" || primary.kind === "buff" ? "buff" : "engine"}
-          body={lines.join("；")}
+          body={lines.join(bi("；", "; "))}
           footer={tr("敌方下回合行动")}
         />
       }
@@ -5432,7 +5478,7 @@ function intentSummary(move: EnemyMove): string {
         return `${en ? "Summon" : tr("召唤")} ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`;
       }
       if (effect.type === "createCard") {
-        return `${en ? "Add" : "加入"} ${cardName(effect.cardId)}`;
+        return `${en ? "Add" : tr("加入")} ${cardName(effect.cardId)}`;
       }
       return tr("特殊行动");
     })
@@ -5536,8 +5582,8 @@ function combatFloatLabel(fx: CombatFloat): string {
   if (fx.kind === "ko") return tr("击破");
   if (fx.kind === "damage") return `-${fx.value}`;
   if (fx.kind === "heal") return `+${fx.value}`;
-  if (fx.kind === "blockGain") return `护盾 +${fx.value}`;
-  return `护盾 -${fx.value}`;
+  if (fx.kind === "blockGain") return bi(`护盾 +${fx.value}`, `Shield +${fx.value}`);
+  return bi(`护盾 -${fx.value}`, `Shield -${fx.value}`);
 }
 
 function PileCount({ label, value }: { label: string; value: number }) {
@@ -5619,7 +5665,7 @@ function PotionInventory({
 }) {
   return (
     <div className="potion-inventory">
-      <PanelTitle icon={<FlaskConical size={17} />} title={currentLang === "en" ? `Potions ${potions.length}/${slots}` : `药水槽 ${potions.length}/${slots}`} />
+      <PanelTitle icon={<FlaskConical size={17} />} title={bi(`药水槽 ${potions.length}/${slots}`, `Potions ${potions.length}/${slots}`)} />
       <div className="potion-inventory__grid">
         {Array.from({ length: slots }).map((_, index) => {
           const potion = potions[index];
@@ -5639,7 +5685,7 @@ function PotionInventory({
                 <FlaskConical size={15} />
                 <div>
                   <strong>{tr("失效药水")}</strong>
-                  <span>来自旧数据，已无法使用。</span>
+                  <span>{bi("来自旧数据，已无法使用。", "From old data; no longer usable.")}</span>
                 </div>
                 <button type="button" title={tr("丢弃药水")} onClick={() => onDiscard(potion.uid)}>
                   <Trash2 size={14} />
