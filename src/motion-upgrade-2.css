@@ -1,0 +1,273 @@
+/* ===================================================================
+ * motion-upgrade-2.css — 2026-06-23 第二波
+ *   - 战斗场景灰尘 / 余烬粒子（CSS-only，零额外资源）
+ *   - HUD 顶栏金属反光
+ *   - 标题 hero 周围"光晕呼吸"
+ *   - 卡牌 fly-out 反向轨迹微调
+ *   - 节点路径流光
+ * =================================================================== */
+
+/* ============================================================
+ * 1. 标题 hero crest 周围光晕呼吸
+ * ========================================================== */
+@keyframes title-crest-aura {
+  0%, 100% {
+    filter:
+      drop-shadow(0 0 18px rgba(231, 191, 110, 0.35))
+      drop-shadow(0 0 36px rgba(231, 191, 110, 0.2));
+    transform: scale(1);
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 28px rgba(231, 191, 110, 0.55))
+      drop-shadow(0 0 60px rgba(231, 191, 110, 0.32));
+    transform: scale(1.04);
+  }
+}
+
+.title-screen__crest {
+  animation: title-crest-aura 3600ms ease-in-out infinite;
+  animation-delay: 1000ms;
+  will-change: transform;
+}
+
+/* ============================================================
+ * 2. 标题大字"裂隙尖塔 / Rift Spire" 加金色流光扫过
+ * ========================================================== */
+@keyframes title-name-shimmer {
+  0% {
+    background-position: -180% 50%;
+  }
+  100% {
+    background-position: 280% 50%;
+  }
+}
+
+.title-screen__name {
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 220, 130, 0.0) 30%,
+    rgba(255, 245, 200, 0.65) 45%,
+    rgba(255, 220, 130, 0.0) 60%
+  );
+  background-size: 180% 100%;
+  background-repeat: no-repeat;
+  background-position: -180% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: title-name-shimmer 5800ms ease-in-out infinite;
+  animation-delay: 1800ms;
+}
+
+/* ============================================================
+ * 3. 战斗场景灰尘 / 余烬粒子（CSS-only）
+ *    给 combat-setpiece 加 ::before 模拟漂浮的余烬光点
+ * ========================================================== */
+@keyframes ember-drift-1 {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.6; }
+  50%  { transform: translate(40px, -80px) scale(1.3); opacity: 0.95; }
+  100% { transform: translate(80px, -160px) scale(0.7); opacity: 0; }
+}
+
+@keyframes ember-drift-2 {
+  0%   { transform: translate(0, 0) scale(0.8); opacity: 0.45; }
+  50%  { transform: translate(-30px, -90px) scale(1.1); opacity: 0.85; }
+  100% { transform: translate(-60px, -180px) scale(0.55); opacity: 0; }
+}
+
+.combat-setpiece {
+  position: relative;
+}
+
+.combat-setpiece::before,
+.combat-setpiece::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(2px 2px at 18% 78%, rgba(255, 200, 130, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 42% 88%, rgba(255, 180, 110, 0.5), transparent),
+    radial-gradient(2px 2px at 68% 82%, rgba(255, 200, 130, 0.65), transparent),
+    radial-gradient(1.5px 1.5px at 84% 90%, rgba(255, 220, 160, 0.45), transparent);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  z-index: 2;
+}
+
+.combat-setpiece::before {
+  animation: ember-drift-1 6800ms ease-in-out infinite;
+}
+
+.combat-setpiece::after {
+  background-image:
+    radial-gradient(2.5px 2.5px at 30% 76%, rgba(180, 220, 255, 0.55), transparent),
+    radial-gradient(1.5px 1.5px at 56% 84%, rgba(160, 200, 240, 0.4), transparent),
+    radial-gradient(2px 2px at 78% 78%, rgba(200, 235, 255, 0.5), transparent);
+  animation: ember-drift-2 7600ms ease-in-out infinite;
+  animation-delay: -2400ms;
+}
+
+/* ============================================================
+ * 4. 顶栏 HUD 金属反光（单次）
+ * ========================================================== */
+@keyframes hud-metallic-sweep {
+  0% { background-position: -120% 50%; opacity: 0; }
+  20% { opacity: 1; }
+  100% { background-position: 220% 50%; opacity: 0; }
+}
+
+.app__hud,
+header.app-header {
+  position: relative;
+  overflow: hidden;
+}
+
+.app__hud::before,
+header.app-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 245, 200, 0.08) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: hud-metallic-sweep 8200ms ease-in-out infinite;
+  animation-delay: 2200ms;
+  z-index: 2;
+}
+
+/* ============================================================
+ * 5. 地图节点路径 + 区域行边缘流光
+ * ========================================================== */
+@keyframes map-path-flow {
+  0% { stroke-dashoffset: 0; opacity: 0.6; }
+  50% { opacity: 0.95; }
+  100% { stroke-dashoffset: -24; opacity: 0.6; }
+}
+
+.map-canvas svg line,
+.map-canvas svg path,
+.map-canvas line[stroke-dasharray],
+.map-canvas path[stroke-dasharray] {
+  animation: map-path-flow 3000ms linear infinite;
+}
+
+/* ============================================================
+ * 6. 难度卡 hover 时露出金边
+ * ========================================================== */
+.diff-card {
+  position: relative;
+  overflow: visible;
+}
+
+.diff-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 220, 130, 0) 0%,
+    rgba(255, 220, 130, 0) 35%,
+    rgba(255, 220, 130, 0.18) 50%,
+    rgba(255, 220, 130, 0) 65%,
+    rgba(255, 220, 130, 0) 100%
+  );
+  background-size: 240% 240%;
+  background-position: 100% 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms ease, background-position 700ms ease;
+}
+
+.diff-card:hover::after {
+  opacity: 1;
+  background-position: 0% 0%;
+}
+
+/* ============================================================
+ * 7. 结束回合按钮：能量满 / 等待状态的呼吸
+ * ========================================================== */
+@keyframes end-turn-ready-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(91, 213, 169, 0.45),
+      0 8px 24px -10px rgba(91, 213, 169, 0.35),
+      0 0 0 0 rgba(91, 213, 169, 0);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(91, 213, 169, 0.7),
+      0 8px 28px -8px rgba(91, 213, 169, 0.55),
+      0 0 0 10px rgba(91, 213, 169, 0);
+  }
+}
+
+.combat-end-turn,
+button[class*="endTurn"] {
+  animation: end-turn-ready-glow 2600ms ease-in-out infinite;
+}
+
+/* ============================================================
+ * 8. 卡牌选中状态：发光呼吸
+ * ========================================================== */
+@keyframes card-selected-aura {
+  0%, 100% {
+    filter:
+      drop-shadow(0 0 18px rgba(91, 213, 169, 0.45))
+      drop-shadow(0 8px 28px rgba(0, 0, 0, 0.6));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 28px rgba(91, 213, 169, 0.7))
+      drop-shadow(0 8px 28px rgba(0, 0, 0, 0.6));
+  }
+}
+
+.game-card.is-selected,
+button[class*="game-card"].is-selected {
+  animation: card-selected-aura 1600ms ease-in-out infinite;
+}
+
+/* ============================================================
+ * 9. 敌人 idle 微浮动（让画面不死板）
+ *    只在战斗中给敌人单位加，不破坏静态布局
+ * ========================================================== */
+@keyframes enemy-idle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.combat-stage .pixel-canvas,
+.enemy-card .pixel-canvas,
+[class*="enemy"] [class*="pixel"] img,
+[class*="enemy"] canvas {
+  animation: enemy-idle-float 3200ms ease-in-out infinite;
+}
+
+/* ============================================================
+ * 10. 战斗进入时的"幕布拉开" feel
+ * ========================================================== */
+@keyframes combat-curtain-open {
+  0% {
+    clip-path: inset(0 50% 0 50%);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+.combat-shell .combat-setpiece {
+  animation: combat-curtain-open 720ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}

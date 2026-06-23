@@ -565,6 +565,7 @@ function App() {
   const [selectedCardUid, setSelectedCardUid] = useState<string>();
   const [inspectedCardUid, setInspectedCardUid] = useState<string>();
   const [selectedPotionUid, setSelectedPotionUid] = useState<string>();
+  const [flyingCardUid, setFlyingCardUid] = useState<string>();
 
   useEffect(() => {
     setSelectedCardUid(undefined);
@@ -626,7 +627,7 @@ function App() {
     if (cardNeedsTarget(card)) {
       const living = run.combat.enemies.filter((enemy) => enemy.hp > 0);
       if (living.length === 1) {
-        setRun((current) => playCard(current, card.uid, living[0].uid));
+        flyOutAndPlay(card.uid, living[0].uid);
         setSelectedCardUid(undefined);
         setInspectedCardUid(undefined);
         setSelectedPotionUid(undefined);
@@ -638,10 +639,19 @@ function App() {
       return;
     }
 
-    setRun((current) => playCard(current, card.uid));
+    flyOutAndPlay(card.uid);
     setSelectedCardUid(undefined);
     setInspectedCardUid(undefined);
     setSelectedPotionUid(undefined);
+  }
+
+  // 给出手卡片加 fly-out 动效，约 320ms 后真正打出（让 CSS 跑完 340ms 动画）
+  function flyOutAndPlay(cardUid: string, targetEnemyUid?: string) {
+    setFlyingCardUid(cardUid);
+    window.setTimeout(() => {
+      setRun((current) => playCard(current, cardUid, targetEnemyUid));
+      setFlyingCardUid(undefined);
+    }, 320);
   }
 
   function handlePotionClick(potion: PotionInstance) {
@@ -694,7 +704,7 @@ function App() {
     if (!selectedCardForTarget || !cardNeedsTarget(selectedCardForTarget) || enemy.hp <= 0) {
       return;
     }
-    setRun((current) => playCard(current, selectedCardForTarget.uid, enemy.uid));
+    flyOutAndPlay(selectedCardForTarget.uid, enemy.uid);
     setSelectedCardUid(undefined);
     setInspectedCardUid(undefined);
     setSelectedPotionUid(undefined);
@@ -773,6 +783,7 @@ function App() {
                   inspectedCardUid={inspectedCardUid}
                   selectedPotion={selectedPotion}
                   selectedPotionUid={selectedPotionUid}
+                  flyingCardUid={flyingCardUid}
                   onCardClick={handleCardClick}
                   onCardInspect={(card) => setInspectedCardUid(card.uid)}
                   onCardInspectEnd={(card) => setInspectedCardUid((current) => (current === card.uid ? undefined : current))}
@@ -1896,6 +1907,7 @@ function CombatScreen({
   inspectedCardUid,
   selectedPotion,
   selectedPotionUid,
+  flyingCardUid,
   onCardClick,
   onCardInspect,
   onCardInspectEnd,
@@ -1912,6 +1924,7 @@ function CombatScreen({
   inspectedCardUid?: string;
   selectedPotion?: PotionInstance;
   selectedPotionUid?: string;
+  flyingCardUid?: string;
   onCardClick: (card: CardInstance) => void;
   onCardInspect: (card: CardInstance) => void;
   onCardInspectEnd: (card: CardInstance) => void;
@@ -2167,7 +2180,7 @@ function CombatScreen({
       </div>
 
       <div className="hand-dock">
-        <div className="hand-row">
+        <div className="hand-row player-hand">
           {combat.hand.map((card) => (
             <CardView
               key={card.uid}
@@ -2177,6 +2190,7 @@ function CombatScreen({
               disabledReason={cardPlayPenalty(run, card)}
               selected={selectedCardUid === card.uid}
               inspected={inspectedCardUid === card.uid}
+              flying={flyingCardUid === card.uid}
               onInspectStart={() => onCardInspect(card)}
               onInspectEnd={() => onCardInspectEnd(card)}
               onClick={() => onCardClick(card)}
@@ -4275,6 +4289,7 @@ function CardView({
   disabledReason,
   selected,
   inspected,
+  flying,
   onInspectStart,
   onInspectEnd,
   onClick,
@@ -4285,6 +4300,7 @@ function CardView({
   disabledReason?: string;
   selected?: boolean;
   inspected?: boolean;
+  flying?: boolean;
   onInspectStart?: () => void;
   onInspectEnd?: () => void;
   onClick?: () => void;
@@ -4300,7 +4316,7 @@ function CardView({
     <button
       className={`game-card game-card--${def.type.toLowerCase()} game-card--rarity-${def.rarity} ${visualClass} ${
         selected ? "is-selected" : ""
-      } ${inspected ? "is-inspected" : ""} ${disabledReason ? "is-penalty" : ""}`}
+      } ${inspected ? "is-inspected" : ""} ${disabledReason ? "is-penalty" : ""} ${flying ? "is-fly-out" : ""}`}
       type="button"
       disabled={disabled}
       title={mechanicTitle}
