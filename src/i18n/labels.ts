@@ -5,6 +5,10 @@ import { UI_STRINGS } from "./locales/ui-strings";
 type Pair = { zh: string; en: string };
 const pick = (p: Pair) => (currentLang === "en" ? p.en : p.zh);
 
+// 行内双语助手：用于带 ${} 插值、无法走 UI_STRINGS 直查表的模板字符串。
+// 两侧都先求值，再按当前语言选一侧。
+export const bi = (zh: string, en: string): string => (currentLang === "en" ? en : zh);
+
 // 通用 UI 文案直查：英文模式查 UI_STRINGS，缺则回落原中文。
 // 用于把 JSX 里硬编码的中文界面文案运行时切成英文。
 export function tr(zh: string): string {

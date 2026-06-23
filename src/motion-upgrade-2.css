@@ -32,38 +32,76 @@
 }
 
 /* ============================================================
- * 2. 标题大字"裂隙尖塔 / Rift Spire" 加金色流光扫过
- *    技术：用伪元素叠加 shimmer，不动文字颜色
+ * 2. 标题大字 shimmer —— 已禁用
+ *    曾经尝试用 ::after + overflow:hidden 做 shimmer，
+ *    但 overflow:hidden 在大字号中文上会把字形外缘裁掉（裂隙尖塔的"裂/塔"等）。
+ *    回归无装饰，让字体本身的金色渐变发挥。
  * ========================================================== */
-@keyframes title-name-shimmer-overlay {
-  0% { transform: translateX(-120%); opacity: 0; }
-  15% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { transform: translateX(120%); opacity: 0; }
+/* .title-screen__name — intentionally no shimmer overlay. */
+
+/* ============================================================
+ * 2b. 全局 focus-ring 适配
+ *    浏览器默认的青色 outline 在 .lang-toggle / 顶栏按钮上会溢出
+ *    顶栏边缘（用户多次报告 EN 按钮的青蓝色 outline 出血到顶栏外）。
+ *    彻底干掉所有可能的浏览器默认描边：outline 0 + -webkit-tap-highlight 0
+ *    + box-shadow none on :focus，自己用 inset shadow 当键盘 focus ring。
+ * ========================================================== */
+
+/* 全局：彻底关闭浏览器默认 outline（包括 :focus, :focus-visible, :active, :hover, :target） */
+*:focus,
+*:focus-visible,
+*:focus-within,
+*:active {
+  outline: 0 !important;
+  outline-offset: 0 !important;
 }
 
-.title-screen__name {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
+/* iOS Safari 点击高亮也关掉 */
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
-.title-screen__name::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    100deg,
-    transparent 35%,
-    rgba(255, 245, 200, 0.32) 50%,
-    transparent 65%
-  );
-  mix-blend-mode: overlay;
-  pointer-events: none;
-  z-index: 1;
-  transform: translateX(-120%);
-  animation: title-name-shimmer-overlay 5800ms ease-in-out infinite;
-  animation-delay: 1800ms;
+/* 重置所有 button 的默认 user-agent border (Firefox 会给 button 一个 dotted inner border) */
+button::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+/* 键盘用户的可见 focus：用 inset 金色，永不溢出按钮 box */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+.lang-toggle:focus-visible,
+.icon-button:focus-visible,
+.title-start-button:focus-visible,
+.combat-end-turn:focus-visible,
+.diff-card:focus-visible,
+.map-node:focus-visible,
+.game-card:focus-visible {
+  box-shadow:
+    inset 0 0 0 2px rgba(231, 191, 110, 0.95),
+    inset 0 0 0 4px rgba(231, 191, 110, 0.3),
+    0 0 0 1px rgba(231, 191, 110, 0.5) !important;
+}
+
+/* 鼠标点击后立刻移除焦点高亮（鼠标用户不需要键盘 ring） */
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+.lang-toggle:focus:not(:focus-visible),
+.icon-button:focus:not(:focus-visible),
+.title-start-button:focus:not(:focus-visible),
+.combat-end-turn:focus:not(:focus-visible),
+.diff-card:focus:not(:focus-visible),
+.map-node:focus:not(:focus-visible),
+.game-card:focus:not(:focus-visible) {
+  box-shadow: none !important;
+}
+
+/* 兜底：浏览器不支持 :focus-visible 时，至少别画蓝色 ring */
+@supports not selector(:focus-visible) {
+  *:focus {
+    box-shadow: none !important;
+  }
 }
 
 /* ============================================================

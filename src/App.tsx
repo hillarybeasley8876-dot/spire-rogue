@@ -124,38 +124,38 @@ const CARD_TYPE_LABELS = {
 };
 
 const ACTION_TARGET_LABELS = {
-  enemy: "目标：敌人",
-  allEnemies: "目标：全体",
-  self: "目标：自身",
-  none: "目标：无",
+  enemy: tr("目标：敌人"),
+  allEnemies: tr("目标：全体"),
+  self: tr("目标：自身"),
+  none: tr("目标：无"),
 };
 
 const BUILD_TAG_PRIORITY = [
-  "连击",
-  "蓄能",
-  "共振",
-  "连锁",
-  "过载",
-  "散热",
-  "电弧",
-  "电弧催化",
-  "流血",
-  "流血催化",
-  "破绽",
-  "破绽催化",
-  "金属化",
-  "尖刺",
-  "格挡",
-  "抽牌",
-  "能量",
-  "回收",
-  "消耗堆",
-  "保留",
-  "消耗",
-  "净化",
-  "群攻",
-  "中毒",
-  "中毒催化",
+  tr("连击"),
+  tr("蓄能"),
+  tr("共振"),
+  tr("连锁"),
+  tr("过载"),
+  tr("散热"),
+  tr("电弧"),
+  tr("电弧催化"),
+  tr("流血"),
+  tr("流血催化"),
+  tr("破绽"),
+  tr("破绽催化"),
+  tr("金属化"),
+  tr("尖刺"),
+  tr("格挡"),
+  tr("抽牌"),
+  tr("能量"),
+  tr("回收"),
+  tr("消耗堆"),
+  tr("保留"),
+  tr("消耗"),
+  tr("净化"),
+  tr("群攻"),
+  tr("中毒"),
+  tr("中毒催化"),
 ];
 
 const MECHANIC_HINT_PRIORITY: PowerKey[] = [
@@ -466,34 +466,34 @@ const RARITY_LABELS = {
 };
 
 const BOON_MECHANIC_TAGS: Record<BoonId, string[]> = {
-  vitality: ["生命", "回复"],
-  bottle_rack: ["药水槽", "资源"],
-  opening_guard: ["开局", "格挡"],
-  combo_discipline: ["开局", "连击"],
-  static_attunement: ["开局", "蓄能"],
-  plate_training: ["开局", "金属化"],
-  armory_drill: ["升级", "牌组"],
-  battle_focus: ["开局", "抽牌"],
-  spark_conduit: ["开局", "电弧"],
-  bleed_edge: ["开局", "流血"],
-  field_alchemy: ["药水", "资源"],
-  blade_oil: ["开局", "力量"],
-  venom_prep: ["开局", "中毒"],
-  reserve_battery: ["开局", "能量"],
-  recovery_mantra: ["开局", "回复"],
-  scavenger_kit: ["开局", "回收"],
-  weakpoint_chart: ["开局", "破绽"],
-  catalyst_training: ["开局", "催化"],
-  potion_catalyst: ["药水", "蓄能"],
-  tempered_shell: ["开局", "金属化"],
-  coil_training: ["开局", "蓄能"],
-  rhythm_meter: ["开局", "连击", "蓄能"],
-  chain_manual: ["连锁", "能量", "连击"],
-  heat_regulator: ["开局", "散热", "蓄能"],
-  field_protocol: ["开局", "回收"],
-  banner_drill: ["开局", "破绽"],
-  triage_doctrine: ["开局", "净化"],
-  ash_ledger: ["开局", "消耗堆"],
+  vitality: [tr("生命"), tr("回复")],
+  bottle_rack: [tr("药水槽"), tr("资源")],
+  opening_guard: [tr("开局"), tr("格挡")],
+  combo_discipline: [tr("开局"), tr("连击")],
+  static_attunement: [tr("开局"), tr("蓄能")],
+  plate_training: [tr("开局"), tr("金属化")],
+  armory_drill: [tr("升级"), tr("牌组")],
+  battle_focus: [tr("开局"), tr("抽牌")],
+  spark_conduit: [tr("开局"), tr("电弧")],
+  bleed_edge: [tr("开局"), tr("流血")],
+  field_alchemy: [tr("药水"), tr("资源")],
+  blade_oil: [tr("开局"), tr("力量")],
+  venom_prep: [tr("开局"), tr("中毒")],
+  reserve_battery: [tr("开局"), tr("能量")],
+  recovery_mantra: [tr("开局"), tr("回复")],
+  scavenger_kit: [tr("开局"), tr("回收")],
+  weakpoint_chart: [tr("开局"), tr("破绽")],
+  catalyst_training: [tr("开局"), tr("催化")],
+  potion_catalyst: [tr("药水"), tr("蓄能")],
+  tempered_shell: [tr("开局"), tr("金属化")],
+  coil_training: [tr("开局"), tr("蓄能")],
+  rhythm_meter: [tr("开局"), tr("连击"), tr("蓄能")],
+  chain_manual: [tr("连锁"), tr("能量"), tr("连击")],
+  heat_regulator: [tr("开局"), tr("散热"), tr("蓄能")],
+  field_protocol: [tr("开局"), tr("回收")],
+  banner_drill: [tr("开局"), tr("破绽")],
+  triage_doctrine: [tr("开局"), tr("净化")],
+  ash_ledger: [tr("开局"), tr("消耗堆")],
 };
 
 interface TargetPreview {
@@ -1234,7 +1234,7 @@ function RunInventoryTray({ run }: { run: RunState }) {
                     title={boon?.name ?? tr("失效常驻")}
                     tone="buff"
                     body={boon?.text ?? tr("这项常驻提升来自旧数据。")}
-                    footer="常驻提升"
+                    footer={tr("常驻提升")}
                   />
                 }
               >
@@ -1273,7 +1273,7 @@ function InventoryInspector({ selection }: { selection?: InventorySelection }) {
         <div className="inventory-inspector__head">
           <Award size={15} />
           <strong>{relic?.name ?? tr("失效遗物")}</strong>
-          <small>{relic ? rarityLabel(relic.rarity) : "失效"} · {tr("被动")}</small>
+          <small>{relic ? rarityLabel(relic.rarity) : tr("失效")} · {tr("被动")}</small>
         </div>
         <p>{relic?.text ?? tr("旧数据已失效。")}</p>
         <div className="inventory-inspector__tags">
@@ -1292,7 +1292,7 @@ function InventoryInspector({ selection }: { selection?: InventorySelection }) {
       <div className="inventory-inspector__head">
         <Sparkles size={15} />
         <strong>{boon?.name ?? tr("失效常驻")}</strong>
-        <small>{boon ? boonRarityLabel(boon.rarity) : "失效"} · 常驻</small>
+        <small>{boon ? boonRarityLabel(boon.rarity) : tr("失效")} · 常驻</small>
       </div>
       <p>{boon?.text ?? tr("旧数据已失效。")}</p>
       <div className="inventory-inspector__tags">
@@ -1307,27 +1307,27 @@ function InventoryInspector({ selection }: { selection?: InventorySelection }) {
 function relicMechanicTags(relicId: string): string[] {
   const relic = relicInfo(relicId);
   if (!relic) {
-    return ["失效"];
+    return [tr("失效")];
   }
 
   const tags = new Set<string>();
   const text = relic.text;
-  if (text.includes("战斗开始") || text.includes("第一回合")) tags.add("开局");
-  if (text.includes("能量")) tags.add("能量");
-  if (text.includes("格挡")) tags.add("格挡");
-  if (text.includes("尖刺")) tags.add("尖刺");
-  if (text.includes("回复") || text.includes("生命")) tags.add("回复");
-  if (text.includes("力量")) tags.add("力量");
-  if (text.includes("敏捷")) tags.add("敏捷");
-  if (text.includes("抽")) tags.add("抽牌");
-  if (text.includes("药水")) tags.add("药水");
-  if (text.includes("流血")) tags.add("流血");
-  if (text.includes("中毒")) tags.add("中毒");
-  if (text.includes("破绽")) tags.add("破绽");
-  if (text.includes("连击")) tags.add("连击");
-  if (text.includes("蓄能")) tags.add("蓄能");
-  if (text.includes("金属化")) tags.add("金属化");
-  if (text.includes("电弧")) tags.add("电弧");
+  if (text.includes(tr("战斗开始")) || text.includes(tr("第一回合"))) tags.add(tr("开局"));
+  if (text.includes(tr("能量"))) tags.add(tr("能量"));
+  if (text.includes(tr("格挡"))) tags.add(tr("格挡"));
+  if (text.includes(tr("尖刺"))) tags.add(tr("尖刺"));
+  if (text.includes(tr("回复")) || text.includes(tr("生命"))) tags.add(tr("回复"));
+  if (text.includes(tr("力量"))) tags.add(tr("力量"));
+  if (text.includes(tr("敏捷"))) tags.add(tr("敏捷"));
+  if (text.includes(tr("抽"))) tags.add(tr("抽牌"));
+  if (text.includes(tr("药水"))) tags.add(tr("药水"));
+  if (text.includes(tr("流血"))) tags.add(tr("流血"));
+  if (text.includes(tr("中毒"))) tags.add(tr("中毒"));
+  if (text.includes(tr("破绽"))) tags.add(tr("破绽"));
+  if (text.includes(tr("连击"))) tags.add(tr("连击"));
+  if (text.includes(tr("蓄能"))) tags.add(tr("蓄能"));
+  if (text.includes(tr("金属化"))) tags.add(tr("金属化"));
+  if (text.includes(tr("电弧"))) tags.add(tr("电弧"));
   tags.add(rarityLabel(relic.rarity));
   return [...tags];
 }
@@ -1598,8 +1598,8 @@ function MapReadPanel({
   const totalFloors = Math.max(1, mapIntel.maxFloor + 1);
   const completedFloor = currentNode ? currentNode.floor + 1 : Math.max(0, nextFloor - 1);
   const progress = clampPercent(Math.round((Math.min(completedFloor, totalFloors) / totalFloors) * 100));
-  const routeTypes = Array.from(new Set(availableNodes.map((node) => nodeLabel(node.type)))).join(" / ") || "暂无";
-  const currentLabel = currentNode ? `上一节点：第 ${completedFloor} 层 · ${nodeLabel(currentNode.type)}` : "入口起点";
+  const routeTypes = Array.from(new Set(availableNodes.map((node) => nodeLabel(node.type)))).join(" / ") || tr("暂无");
+  const currentLabel = currentNode ? `上一节点：第 ${completedFloor} 层 · ${nodeLabel(currentNode.type)}` : tr("入口起点");
   const riskSignals = availableNodes
     .slice(0, 3)
     .map((node) => routeSignalLabel(node, run))
@@ -1642,7 +1642,7 @@ function MapReadPanel({
           <b>暗折线</b>后续分支预览
         </span>
         <span>
-          <b>风险</b>{riskSignals || "等待路线生成"}
+          <b>风险</b>{riskSignals || tr("等待路线生成")}
         </span>
       </div>
     </div>
@@ -1844,21 +1844,21 @@ function routeSignalLabel(node: MapNode, run: RunState): string {
   const hpRatio = run.player.hp / run.player.maxHp;
   const act = run.act ?? 1;
   if (node.type === "boss") {
-    return hpRatio < 0.55 ? "警告：生命偏低" : "终局：检查药水与爆发";
+    return hpRatio < 0.55 ? tr("警告：生命偏低") : tr("终局：检查药水与爆发");
   }
   if (node.type === "elite") {
-    return hpRatio > 0.7 ? "收益：遗物与高额奖励" : "高危：建议先补给";
+    return hpRatio > 0.7 ? tr("收益：遗物与高额奖励") : tr("高危：建议先补给");
   }
   if (node.type === "fight") {
-    return act >= 2 && node.floor >= 5 ? "压力：二幕后段组合敌" : "稳定：积累奖励";
+    return act >= 2 && node.floor >= 5 ? tr("压力：二幕后段组合敌") : tr("稳定：积累奖励");
   }
   if (node.type === "rest") {
-    return hpRatio < 0.65 ? "修整：优先回血" : "修整：适合升级/调配";
+    return hpRatio < 0.65 ? tr("修整：优先回血") : tr("修整：适合升级/调配");
   }
   if (node.type === "shop") {
-    return run.player.gold >= 90 ? "采购：可买核心组件" : "采购：偏向移除/治疗";
+    return run.player.gold >= 90 ? tr("采购：可买核心组件") : tr("采购：偏向移除/治疗");
   }
-  return run.player.deck.length >= 16 ? "事件：可寻找压缩" : "事件：资源交换";
+  return run.player.deck.length >= 16 ? tr("事件：可寻找压缩") : tr("事件：资源交换");
 }
 
 function MapNodeButton({
@@ -1877,7 +1877,7 @@ function MapNodeButton({
     <TipCard
       title={node.id === "boss" ? (currentLang === "en" ? `Act ${run.act ?? 1} · Boss` : `第 ${run.act ?? 1} 幕 · 首领`) : nodeLabel(node.type)}
       body={`${nodeHint(node.type)}${node.id === "boss" ? "" : currentLang === "en" ? ` · Floor ${node.floor + 1}` : ` · 第 ${node.floor + 1} 层`}`}
-      footer={available ? (currentLang === "en" ? "▶ Go" : "▶ 可前往") : `${zoneLabel(mapNodeZone(node))} · ${routeKindLabel(routeKind)}`}
+      footer={available ? (currentLang === "en" ? "▶ Go" : tr("▶ 可前往")) : `${zoneLabel(mapNodeZone(node))} · ${routeKindLabel(routeKind)}`}
     />
   );
   return (
@@ -2016,14 +2016,14 @@ function CombatScreen({
     let nextFlash: CombatActionFlash | undefined;
 
     if (combat.cardsPlayedThisTurn > previous.cardsPlayed) {
-      const cardLog = [...candidateLogs].reverse().find((line) => line.startsWith("打出"));
+      const cardLog = [...candidateLogs].reverse().find((line) => line.startsWith(tr("打出")));
       nextFlash = {
         id: nextCombatFxId(),
         tone: "card",
-        label: cardLog ? cardLog.replace(/^打出\s*/, "打出：") : "打出卡牌",
+        label: cardLog ? cardLog.replace(/^打出\s*/, tr("打出：")) : tr("打出卡牌"),
       };
     } else if (combat.log.length !== previous.logLength || latestLog !== previous.lastLog) {
-      const potionLog = [...candidateLogs].reverse().find((line) => line.startsWith("使用"));
+      const potionLog = [...candidateLogs].reverse().find((line) => line.startsWith(tr("使用")));
       if (!potionLog) {
         actionTraceRef.current = nextTrace;
         return;
@@ -2031,7 +2031,7 @@ function CombatScreen({
       nextFlash = {
         id: nextCombatFxId(),
         tone: "potion",
-        label: potionLog.replace(/^使用\s*/, "使用："),
+        label: potionLog.replace(/^使用\s*/, tr("使用：")),
       };
     }
 
@@ -2724,7 +2724,7 @@ function cardTargetRuleLine(card: CardInstance, run: RunState): string {
     return tr("状态牌不可主动打出，只按自身规则触发。");
   }
   if (level.target === "enemy") {
-    return livingEnemies === 1 ? "敌方目标：只命中敌人；单敌时自动锁定。" : "敌方目标：只命中选中的敌人，不会作用自身。";
+    return livingEnemies === 1 ? tr("敌方目标：只命中敌人；单敌时自动锁定。") : tr("敌方目标：只命中选中的敌人，不会作用自身。");
   }
   if (level.target === "allEnemies") {
     return tr("全体目标：结算到所有存活敌人，不会作用自身。");
@@ -2764,7 +2764,7 @@ function PileInsight({ combat }: { combat: NonNullable<RunState["combat"]> }) {
   return (
     <div className="pile-insight">
       <div className="pile-insight__counts">
-        <span>{currentLang === "en" ? "Draw" : "抽"} {combat.drawPile.length}</span>
+        <span>{currentLang === "en" ? "Draw" : tr("抽")} {combat.drawPile.length}</span>
         <span>{currentLang === "en" ? "Disc" : "弃"} {combat.discardPile.length}</span>
         <span>{currentLang === "en" ? "Exh" : "消"} {combat.exhaustPile.length}</span>
         <span className={recoverable > 0 ? "is-ready" : ""}>{tr("可回收")} {recoverable}</span>
@@ -2873,45 +2873,45 @@ function MechanicChainPanel({
       label: tr("爆发链"),
       value: (playerPowers.combo ?? 0) * 2 + (playerPowers.strength ?? 0) * 3 + (enemyTotals.mark ?? 0) * 2,
       parts: [
-        ["连击", playerPowers.combo ?? 0],
-        ["力量", playerPowers.strength ?? 0],
-        ["破绽", enemyTotals.mark ?? 0],
+        [tr("连击"), playerPowers.combo ?? 0],
+        [tr("力量"), playerPowers.strength ?? 0],
+        [tr("破绽"), enemyTotals.mark ?? 0],
       ] as [string, number][],
     },
     {
       label: tr("防守链"),
       value: (playerPowers.charge ?? 0) * 2 + (playerPowers.platedArmor ?? 0) * 4 + (playerPowers.regen ?? 0) * 3,
       parts: [
-        ["蓄能", playerPowers.charge ?? 0],
-        ["金属化", playerPowers.platedArmor ?? 0],
-        ["再生", playerPowers.regen ?? 0],
+        [tr("蓄能"), playerPowers.charge ?? 0],
+        [tr("金属化"), playerPowers.platedArmor ?? 0],
+        [tr("再生"), playerPowers.regen ?? 0],
       ] as [string, number][],
     },
     {
       label: tr("节拍链"),
       value: (playerPowers.combo ?? 0) * 3 + (playerPowers.charge ?? 0) * 2,
       parts: [
-        ["连击", playerPowers.combo ?? 0],
-        ["蓄能", playerPowers.charge ?? 0],
-        ["可共振", Math.min(5, playerPowers.combo ?? 0)],
+        [tr("连击"), playerPowers.combo ?? 0],
+        [tr("蓄能"), playerPowers.charge ?? 0],
+        [tr("可共振"), Math.min(5, playerPowers.combo ?? 0)],
       ] as [string, number][],
     },
     {
       label: tr("连锁链"),
       value: cardsPlayed * 4 + (playerPowers.combo ?? 0) * 2 + (playerPowers.charge ?? 0),
       parts: [
-        ["本回合", cardsPlayed],
-        ["连击", playerPowers.combo ?? 0],
-        ["蓄能", playerPowers.charge ?? 0],
+        [tr("本回合"), cardsPlayed],
+        [tr("连击"), playerPowers.combo ?? 0],
+        [tr("蓄能"), playerPowers.charge ?? 0],
       ] as [string, number][],
     },
     {
       label: tr("热控链"),
       value: (playerPowers.bleed ?? 0) * 4 + (playerPowers.charge ?? 0) * 2 + (playerPowers.platedArmor ?? 0) * 3,
       parts: [
-        ["流血", playerPowers.bleed ?? 0],
-        ["蓄能", playerPowers.charge ?? 0],
-        ["金属化", playerPowers.platedArmor ?? 0],
+        [tr("流血"), playerPowers.bleed ?? 0],
+        [tr("蓄能"), playerPowers.charge ?? 0],
+        [tr("金属化"), playerPowers.platedArmor ?? 0],
       ] as [string, number][],
     },
     {
@@ -2922,19 +2922,19 @@ function MechanicChainPanel({
         (enemyTotals.spark ?? 0) * 2 +
         (playerPowers.thorns ?? 0) * 2,
       parts: [
-        ["蓄能", playerPowers.charge ?? 0],
-        ["金属化", playerPowers.platedArmor ?? 0],
-        ["电弧", enemyTotals.spark ?? 0],
-        ["尖刺", playerPowers.thorns ?? 0],
+        [tr("蓄能"), playerPowers.charge ?? 0],
+        [tr("金属化"), playerPowers.platedArmor ?? 0],
+        [tr("电弧"), enemyTotals.spark ?? 0],
+        [tr("尖刺"), playerPowers.thorns ?? 0],
       ] as [string, number][],
     },
     {
       label: tr("持续链"),
       value: (enemyTotals.poison ?? 0) * 2 + (enemyTotals.bleed ?? 0) * 2 + (enemyTotals.spark ?? 0) * 2,
       parts: [
-        ["中毒", enemyTotals.poison ?? 0],
-        ["流血", enemyTotals.bleed ?? 0],
-        ["电弧", enemyTotals.spark ?? 0],
+        [tr("中毒"), enemyTotals.poison ?? 0],
+        [tr("流血"), enemyTotals.bleed ?? 0],
+        [tr("电弧"), enemyTotals.spark ?? 0],
       ] as [string, number][],
     },
   ];
@@ -2981,9 +2981,9 @@ function MechanicAuditPanel({
     },
     {
       label: tr("触发顺序"),
-      value: "出牌计数 -> 连击/蓄能 -> 卡牌效果 -> 生命伤害触发流血/电弧/金属化",
+      value: tr("出牌计数 -> 连击/蓄能 -> 卡牌效果 -> 生命伤害触发流血/电弧/金属化"),
     },
-    ...detailLines.map((line, index) => ({ label: index === 0 ? "当前牌" : "校验", value: line })),
+    ...detailLines.map((line, index) => ({ label: index === 0 ? tr("当前牌") : tr("校验"), value: line })),
   ];
 
   return (
@@ -3065,7 +3065,7 @@ function ActionSummaryView({ summary }: { summary: ActionSummary }) {
       )}
       {summary.draw > 0 && (
         <span>
-          <BookOpen size={13} /> {currentLang === "en" ? "Draw" : "抽"} {summary.draw}
+          <BookOpen size={13} /> {currentLang === "en" ? "Draw" : tr("抽")} {summary.draw}
         </span>
       )}
       {summary.heal > 0 && (
@@ -3327,7 +3327,7 @@ function summarizeCardAction(run: RunState, card: CardInstance): ActionSummary {
       summary.heal += effect.amount;
     }
     if (effect.type === "cleanseDebuffs") {
-      summary.cleanses.push("负面状态");
+      summary.cleanses.push(tr("负面状态"));
     }
     if (effect.type === "cleansePower") {
       const available = playerPowers[effect.power] ?? 0;
@@ -3357,7 +3357,7 @@ function summarizeCardAction(run: RunState, card: CardInstance): ActionSummary {
       }
     }
     if (effect.type === "amplifyPower") {
-      summary.amplifies.push(amplifySummaryLabel(effect.power, effect.multiplier, effect.minimum, effect.target === "self" ? "自身" : "目标"));
+      summary.amplifies.push(amplifySummaryLabel(effect.power, effect.multiplier, effect.minimum, effect.target === "self" ? tr("自身") : tr("目标")));
       if (effect.target === "self") {
         const gained = estimateAmplifiedPower(playerPowers[effect.power] ?? 0, effect.multiplier, effect.minimum);
         if (gained > 0) {
@@ -3385,11 +3385,11 @@ function summarizeCardAction(run: RunState, card: CardInstance): ActionSummary {
       summary.creates.push(cardName(effect.cardId));
     }
     if (effect.type === "returnFromDiscard") {
-      summary.recovers.push(effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : effect.excludeStatus ? "非状态牌" : "弃牌");
+      summary.recovers.push(effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : effect.excludeStatus ? tr("非状态牌") : tr("弃牌"));
     }
     if (effect.type === "exhaustCards") {
       const exhausted = estimateExhaustCount(combat, effect);
-      const label = effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : "手牌";
+      const label = effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : tr("手牌");
       summary.consumes.push(exhausted > 0 ? `${label} ${exhausted}` : label);
       if (exhausted > 0) {
         if (effect.gainBlockPerCard) {
@@ -3450,7 +3450,7 @@ function summarizePotionAction(run: RunState, potion: PotionInstance): ActionSum
     if (effect.type === "draw") summary.draw += effect.amount;
     if (effect.type === "gainEnergy") summary.energy += effect.amount;
     if (effect.type === "heal") summary.heal += effect.amount;
-    if (effect.type === "cleanseDebuffs") summary.cleanses.push("负面状态");
+    if (effect.type === "cleanseDebuffs") summary.cleanses.push(tr("负面状态"));
     if (effect.type === "cleansePower") {
       const available = playerPowers[effect.power] ?? 0;
       const removed = Math.min(available, effect.amount);
@@ -3470,11 +3470,11 @@ function summarizePotionAction(run: RunState, potion: PotionInstance): ActionSum
       }
     }
     if (effect.type === "returnFromDiscard") {
-      summary.recovers.push(effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : effect.excludeStatus ? "非状态牌" : "弃牌");
+      summary.recovers.push(effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : effect.excludeStatus ? tr("非状态牌") : tr("弃牌"));
     }
     if (effect.type === "exhaustCards") {
       const exhausted = combat ? estimateExhaustCount(combat, effect) : effect.amount;
-      const label = effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : "牌";
+      const label = effect.cardType ? `${cardTypeLabel(effect.cardType)}牌` : tr("牌");
       summary.consumes.push(exhausted > 0 ? `${label} ${exhausted}` : label);
       if (effect.gainBlockPerCard) {
         const rawBlock = effect.gainBlockPerCard * exhausted;
@@ -3495,7 +3495,7 @@ function summarizePotionAction(run: RunState, potion: PotionInstance): ActionSum
       }
     }
     if (effect.type === "amplifyPower") {
-      summary.amplifies.push(amplifySummaryLabel(effect.power, effect.multiplier, effect.minimum, effect.target === "self" ? "自身" : "目标"));
+      summary.amplifies.push(amplifySummaryLabel(effect.power, effect.multiplier, effect.minimum, effect.target === "self" ? tr("自身") : tr("目标")));
       if (effect.target !== "self" && (effect.minimum ?? 0) > 0) {
         addSummaryPower(summary.targetPowers, effect.power, effect.minimum ?? 0);
       }
@@ -3678,54 +3678,54 @@ function cardMechanicTags(card: CardInstance): string[] {
   const def = getCardDef(card.cardId);
   const level = getCardLevel(card);
   const tags = new Set<string>();
-  if (def.type === "Attack") tags.add("连击");
-  if (def.type === "Skill") tags.add("蓄能");
-  if (level.exhaust) tags.add("消耗");
-  if (level.retain) tags.add("保留");
-  if (level.ethereal) tags.add("虚无");
-  if (level.unplayable) tags.add("不可打出");
+  if (def.type === "Attack") tags.add(tr("连击"));
+  if (def.type === "Skill") tags.add(tr("蓄能"));
+  if (level.exhaust) tags.add(tr("消耗"));
+  if (level.retain) tags.add(tr("保留"));
+  if (level.ethereal) tags.add(tr("虚无"));
+  if (level.unplayable) tags.add(tr("不可打出"));
 
   for (const effect of level.effects) {
-    if (effect.type === "damage") tags.add(effect.target === "allEnemies" ? "群攻" : "伤害");
-    if (effect.type === "damageFromBlock") tags.add("盾击");
-    if (effect.type === "damagePerAttackPlayed") tags.add("连击伤害");
+    if (effect.type === "damage") tags.add(effect.target === "allEnemies" ? tr("群攻") : tr("伤害"));
+    if (effect.type === "damageFromBlock") tags.add(tr("盾击"));
+    if (effect.type === "damagePerAttackPlayed") tags.add(tr("连击伤害"));
     if (effect.type === "damagePerPower") tags.add(`${powerLabel(effect.power)}爆发`);
     if (effect.type === "spendPowerDamage") tags.add(`${powerLabel(effect.power)}爆发`);
     if (effect.type === "amplifyPower") tags.add(`${powerLabel(effect.power)}催化`);
-    if (effect.type === "block") tags.add("格挡");
+    if (effect.type === "block") tags.add(tr("格挡"));
     if (effect.type === "blockPerPower") tags.add(`${powerLabel(effect.power)}格挡`);
     if (effect.type === "blockPerExhaustedCard") {
-      tags.add("格挡");
-      tags.add("消耗堆");
+      tags.add(tr("格挡"));
+      tags.add(tr("消耗堆"));
     }
     if (effect.type === "gainPowerPerPower") {
-      tags.add("共振");
+      tags.add(tr("共振"));
       tags.add(powerLabel(effect.sourcePower));
       tags.add(powerLabel(effect.gainedPower));
     }
     if (effect.type === "gainPowerPerCardPlayed") {
-      tags.add("连锁");
+      tags.add(tr("连锁"));
       tags.add(powerLabel(effect.power));
     }
     if (effect.type === "cleansePower") {
-      tags.add("散热");
-      tags.add("净化");
+      tags.add(tr("散热"));
+      tags.add(tr("净化"));
       tags.add(powerLabel(effect.power));
       if (effect.gainPowerPerStack) tags.add(powerLabel(effect.gainPowerPerStack.power));
     }
     if (effect.type === "applyPower") {
-      if (effect.target === "self" && effect.power === "bleed" && effect.amount > 0) tags.add("过载");
+      if (effect.target === "self" && effect.power === "bleed" && effect.amount > 0) tags.add(tr("过载"));
       tags.add(powerLabel(effect.power));
     }
-    if (effect.type === "draw") tags.add("抽牌");
-    if (effect.type === "gainEnergy") tags.add("能量");
-    if (effect.type === "heal") tags.add("回复");
-    if (effect.type === "cleanseDebuffs") tags.add("净化");
-    if (effect.type === "createCard") tags.add("生成");
-    if (effect.type === "returnFromDiscard") tags.add("回收");
+    if (effect.type === "draw") tags.add(tr("抽牌"));
+    if (effect.type === "gainEnergy") tags.add(tr("能量"));
+    if (effect.type === "heal") tags.add(tr("回复"));
+    if (effect.type === "cleanseDebuffs") tags.add(tr("净化"));
+    if (effect.type === "createCard") tags.add(tr("生成"));
+    if (effect.type === "returnFromDiscard") tags.add(tr("回收"));
     if (effect.type === "exhaustCards") {
-      tags.add("净化");
-      if (effect.gainEnergyPerCard) tags.add("能量");
+      tags.add(tr("净化"));
+      if (effect.gainEnergyPerCard) tags.add(tr("能量"));
       if (effect.gainPowerPerCard) tags.add(powerLabel(effect.gainPowerPerCard.power));
     }
   }
@@ -3736,41 +3736,41 @@ function cardMechanicTags(card: CardInstance): string[] {
 function potionMechanicTags(potion: PotionInstance): string[] {
   const def = POTIONS[potion.potionId];
   if (!def) {
-    return ["失效"];
+    return [tr("失效")];
   }
   const tags = new Set<string>();
   for (const effect of def.effects) {
-    if (effect.type === "damage") tags.add(effect.target === "allEnemies" ? "群攻" : "伤害");
-    if (effect.type === "block") tags.add("格挡");
+    if (effect.type === "damage") tags.add(effect.target === "allEnemies" ? tr("群攻") : tr("伤害"));
+    if (effect.type === "block") tags.add(tr("格挡"));
     if (effect.type === "blockPerExhaustedCard") {
-      tags.add("格挡");
-      tags.add("消耗堆");
+      tags.add(tr("格挡"));
+      tags.add(tr("消耗堆"));
     }
     if (effect.type === "gainPowerPerPower") {
-      tags.add("共振");
+      tags.add(tr("共振"));
       tags.add(powerLabel(effect.sourcePower));
       tags.add(powerLabel(effect.gainedPower));
     }
     if (effect.type === "gainPowerPerCardPlayed") {
-      tags.add("连锁");
+      tags.add(tr("连锁"));
       tags.add(powerLabel(effect.power));
     }
     if (effect.type === "cleansePower") {
-      tags.add("散热");
-      tags.add("净化");
+      tags.add(tr("散热"));
+      tags.add(tr("净化"));
       tags.add(powerLabel(effect.power));
       if (effect.gainPowerPerStack) tags.add(powerLabel(effect.gainPowerPerStack.power));
     }
     if (effect.type === "applyPower") tags.add(powerLabel(effect.power));
     if (effect.type === "amplifyPower") tags.add(`${powerLabel(effect.power)}催化`);
-    if (effect.type === "draw") tags.add("抽牌");
-    if (effect.type === "gainEnergy") tags.add("能量");
-    if (effect.type === "heal") tags.add("回复");
-    if (effect.type === "cleanseDebuffs") tags.add("净化");
-    if (effect.type === "returnFromDiscard") tags.add("回收");
+    if (effect.type === "draw") tags.add(tr("抽牌"));
+    if (effect.type === "gainEnergy") tags.add(tr("能量"));
+    if (effect.type === "heal") tags.add(tr("回复"));
+    if (effect.type === "cleanseDebuffs") tags.add(tr("净化"));
+    if (effect.type === "returnFromDiscard") tags.add(tr("回收"));
     if (effect.type === "exhaustCards") {
-      tags.add("净化");
-      if (effect.gainEnergyPerCard) tags.add("能量");
+      tags.add(tr("净化"));
+      if (effect.gainEnergyPerCard) tags.add(tr("能量"));
       if (effect.gainPowerPerCard) tags.add(powerLabel(effect.gainPowerPerCard.power));
     }
   }
@@ -3779,7 +3779,7 @@ function potionMechanicTags(potion: PotionInstance): string[] {
 
 function boonMechanicTags(boonId: BoonId): string[] {
   const boon = boonInfo(boonId);
-  return boon ? BOON_MECHANIC_TAGS[boonId] ?? [boonRarityLabel(boon.rarity)] : ["失效"];
+  return boon ? BOON_MECHANIC_TAGS[boonId] ?? [boonRarityLabel(boon.rarity)] : [tr("失效")];
 }
 
 function RewardScreen({
@@ -3811,7 +3811,7 @@ function RewardScreen({
     <section className="choice-layout">
       <div className="choice-heading">
         <p>{reward.title}</p>
-        <h2>{cardResolved ? "领取剩余奖励" : "选择战斗奖励"}</h2>
+        <h2>{cardResolved ? tr("领取剩余奖励") : tr("选择战斗奖励")}</h2>
       </div>
       <div className="reward-strip">
         <span>
@@ -3843,7 +3843,7 @@ function RewardScreen({
               onClick={onRerollCards}
             >
               <RotateCcw size={16} />
-              <span>{reward.rerolled ? "已重掷" : `重掷卡牌 ${rerollPrice} 金币`}</span>
+              <span>{reward.rerolled ? tr("已重掷") : `重掷卡牌 ${rerollPrice} 金币`}</span>
             </button>
           </div>
         </div>
@@ -3890,7 +3890,7 @@ function RewardScreen({
                       ))}
                     </div>
                   )}
-                  <small>{owned ? "已拥有" : boon ? boonRarityLabel(boon.rarity) : "失效"}</small>
+                  <small>{owned ? tr("已拥有") : boon ? boonRarityLabel(boon.rarity) : tr("失效")}</small>
                 </button>
               );
             })}
@@ -3899,7 +3899,7 @@ function RewardScreen({
       )}
       <button className="secondary-button" type="button" onClick={onSkip}>
         <ChevronRight size={17} />
-        <span>{cardResolved ? (hasRemainingNonCardReward ? "跳过剩余奖励" : "继续路线") : `跳过卡牌 +${skipGold} 金币`}</span>
+        <span>{cardResolved ? (hasRemainingNonCardReward ? tr("跳过剩余奖励") : tr("继续路线")) : `跳过卡牌 +${skipGold} 金币`}</span>
       </button>
     </section>
   );
@@ -3934,18 +3934,18 @@ function RestScreen({
       <div className="rest-actions">
         <button className="rest-action" type="button" onClick={onHeal}>
           <HeartPulse size={22} />
-          <strong>{isFullHealth ? "整备" : "休息"}</strong>
+          <strong>{isFullHealth ? tr("整备") : tr("休息")}</strong>
           <span>{isFullHealth ? `生命已满，获得 ${restPrepGold} 金币` : `回复最多 ${healAmount} 点生命`}</span>
         </button>
         <button className="rest-action" type="button" disabled={!hasPotionSpace} onClick={onBrew}>
           <FlaskConical size={22} />
           <strong>调配</strong>
-          <span>{hasPotionSpace ? `获得 1 瓶随机药水 ${run.player.potions.length}/${run.player.potionSlots}` : "药水槽已满"}</span>
+          <span>{hasPotionSpace ? `获得 1 瓶随机药水 ${run.player.potions.length}/${run.player.potionSlots}` : tr("药水槽已满")}</span>
         </button>
         <button className="rest-action" type="button" disabled={statusCount === 0} onClick={onCleanseStatus}>
           <Sparkles size={22} />
           <strong>清理</strong>
-          <span>{statusCount > 0 ? `移除 1 张随机状态牌 · 当前 ${statusCount}` : "没有状态牌"}</span>
+          <span>{statusCount > 0 ? `移除 1 张随机状态牌 · 当前 ${statusCount}` : tr("没有状态牌")}</span>
         </button>
       </div>
       <div className="upgrade-list">
@@ -3991,7 +3991,7 @@ function ShopScreen({
   const shop = run.shop!;
   const validPrice = (price: unknown): price is number => typeof price === "number" && Number.isFinite(price) && price >= 0;
   const canAfford = (price: unknown) => validPrice(price) && run.player.gold >= price;
-  const priceText = (price: unknown) => (validPrice(price) ? `${price} 金币` : "价格异常");
+  const priceText = (price: unknown) => (validPrice(price) ? `${price} 金币` : tr("价格异常"));
   return (
     <section className="shop-layout">
       <div className="choice-heading">
@@ -4028,7 +4028,7 @@ function ShopScreen({
                     onClick={() => onBuyCard(index)}
                   />
                   <span className="price">
-                    <Coins size={14} /> {offer.sold ? "已售" : priceText(offer.price)}
+                    <Coins size={14} /> {offer.sold ? tr("已售") : priceText(offer.price)}
                   </span>
                 </div>
               );
@@ -4050,7 +4050,7 @@ function ShopScreen({
                 <Award size={18} />
                 <strong>{relic?.name ?? tr("失效遗物")}</strong>
                 <span>{relic?.text ?? tr("这个遗物来自旧数据，已无法购买。")}</span>
-                <small>{offer.sold ? "已售" : relic ? priceText(offer.price) : "失效"}</small>
+                <small>{offer.sold ? tr("已售") : relic ? priceText(offer.price) : tr("失效")}</small>
               </button>
             );
           })}
@@ -4076,7 +4076,7 @@ function ShopScreen({
                     ))}
                   </div>
                 )}
-                <small>{offer.sold ? "已售" : boon ? priceText(offer.price) : "失效"}</small>
+                <small>{offer.sold ? tr("已售") : boon ? priceText(offer.price) : tr("失效")}</small>
               </button>
             );
           })}
@@ -4108,7 +4108,7 @@ function ShopScreen({
                       ))}
                     </div>
                   )}
-                  <small>{offer.sold ? "已售" : potion ? priceText(offer.price) : "失效"}</small>
+                  <small>{offer.sold ? tr("已售") : potion ? priceText(offer.price) : tr("失效")}</small>
                 </button>
               );
             })}
@@ -4122,7 +4122,7 @@ function ShopScreen({
             <HeartPulse size={18} />
             <strong>治疗药剂</strong>
             <span>{tr("回复 14 点生命。")}</span>
-            <small>{shop.healSold ? "已售" : priceText(shop.healPrice)}</small>
+            <small>{shop.healSold ? tr("已售") : priceText(shop.healPrice)}</small>
           </button>
           <PanelTitle icon={<BookOpen size={17} />} title={tr("牌组服务")} />
           <div className="shop-remove-list">
@@ -4139,7 +4139,7 @@ function ShopScreen({
                 onClick={() => onRemoveCard(card.uid)}
               >
                 <span>{cardDisplayName(card)}</span>
-                <small>{shop.removeSold ? "已用" : priceText(shop.removePrice)}</small>
+                <small>{shop.removeSold ? tr("已用") : priceText(shop.removePrice)}</small>
               </button>
             ))}
           </div>
@@ -4150,7 +4150,7 @@ function ShopScreen({
             onClick={onRestock}
           >
             <RotateCcw size={17} />
-            <span>{shop.restocked ? "库存已刷新" : `刷新库存 ${priceText(shop.restockPrice)}`}</span>
+            <span>{shop.restocked ? tr("库存已刷新") : `刷新库存 ${priceText(shop.restockPrice)}`}</span>
           </button>
           <button
             className="primary-button primary-button--wide"
@@ -4213,33 +4213,33 @@ function eventOptionTags(text: string): string[] {
     }
   };
 
-  add(/失去 \d+ 点生命/.test(text), "扣血");
-  add(/支付 \d+ 金币/.test(text), "花费");
-  add(/获得 \d+ 金币/.test(text), "金币");
-  add(text.includes("回复"), "回复");
-  add(text.includes("最大生命"), "生命上限");
-  add(text.includes("药水"), "药水");
-  add(text.includes("药水槽"), "瓶槽");
-  add(text.includes("常驻提升"), "常驻");
-  add(text.includes("节拍") || text.includes("连击") || text.includes("蓄能"), "共振");
-  add(text.includes("连锁") || text.includes("本回合") || text.includes("第 3 张牌"), "连锁");
-  add(text.includes("过载") || text.includes("自身流血"), "过载");
-  add(text.includes("散热") || text.includes("冷却") || text.includes("热控"), "散热");
-  add(text.includes("催化"), "催化");
-  add(text.includes("清创") || text.includes("净化"), "净化");
-  add(text.includes("消耗堆") || text.includes("余烬"), "消耗堆");
-  add(text.includes("遗物"), "遗物");
-  add(text.includes("升级"), "升级");
-  add(text.includes("移除"), "移除");
-  add(text.includes("路线") || text.includes("节点") || text.includes("精英"), "路线");
-  add(text.includes("伤口") || text.includes("灼烧") || text.includes("晕眩") || text.includes("黏液"), "状态");
-  add(text.includes("加入牌组"), "污染");
+  add(/失去 \d+ 点生命/.test(text), tr("扣血"));
+  add(/支付 \d+ 金币/.test(text), tr("花费"));
+  add(/获得 \d+ 金币/.test(text), tr("金币"));
+  add(text.includes(tr("回复")), tr("回复"));
+  add(text.includes(tr("最大生命")), tr("生命上限"));
+  add(text.includes(tr("药水")), tr("药水"));
+  add(text.includes(tr("药水槽")), tr("瓶槽"));
+  add(text.includes(tr("常驻提升")), tr("常驻"));
+  add(text.includes(tr("节拍")) || text.includes(tr("连击")) || text.includes(tr("蓄能")), tr("共振"));
+  add(text.includes(tr("连锁")) || text.includes(tr("本回合")) || text.includes(tr("第 3 张牌")), tr("连锁"));
+  add(text.includes(tr("过载")) || text.includes(tr("自身流血")), tr("过载"));
+  add(text.includes(tr("散热")) || text.includes(tr("冷却")) || text.includes(tr("热控")), tr("散热"));
+  add(text.includes(tr("催化")), tr("催化"));
+  add(text.includes(tr("清创")) || text.includes(tr("净化")), tr("净化"));
+  add(text.includes(tr("消耗堆")) || text.includes(tr("余烬")), tr("消耗堆"));
+  add(text.includes(tr("遗物")), tr("遗物"));
+  add(text.includes(tr("升级")), tr("升级"));
+  add(text.includes(tr("移除")), tr("移除"));
+  add(text.includes(tr("路线")) || text.includes(tr("节点")) || text.includes(tr("精英")), tr("路线"));
+  add(text.includes(tr("伤口")) || text.includes(tr("灼烧")) || text.includes(tr("晕眩")) || text.includes(tr("黏液")), tr("状态"));
+  add(text.includes(tr("加入牌组")), tr("污染"));
   add(
-    text.includes("获得") &&
-      (text.includes("牌") ||
+    text.includes(tr("获得")) &&
+      (text.includes(tr("牌")) ||
         /散热片|过载涌流|连锁护法|节拍电池|创伤回收|余烬护幕|战地预案|战斗节拍|合金壳|线圈鞭击|血毒催化|裂隙突刺|镀层防守|记忆钩索|战场回收|弧光刃|电容器|放电|毒刃架势/.test(text)) &&
-      !text.includes("状态牌"),
-    "卡牌",
+      !text.includes(tr("状态牌")),
+    tr("卡牌"),
   );
 
   return tags.slice(0, 5);
@@ -4257,7 +4257,7 @@ function EndScreen({
   return (
     <section className="end-layout">
       <div className={`end-badge end-badge--${result}`}>{result === "victory" ? <Flame size={52} /> : <Skull size={52} />}</div>
-      <p>{result === "victory" ? "胜利" : "失败"}</p>
+      <p>{result === "victory" ? tr("胜利") : tr("失败")}</p>
       <h2>{run.message}</h2>
       <div className="run-summary">
         <StatPill icon={<MapIcon size={17} />} label={currentLang === "en" ? `Act ${run.act ?? 1}` : `幕 ${run.act ?? 1}`} tone="floor" />
@@ -4390,7 +4390,7 @@ function cardMechanicDetails(card: CardInstance, run?: RunState): string[] {
     details.push(`技能牌先获得 1 蓄能；打出后蓄能约 ${charge}`);
   }
   if (level.unplayable) {
-    details.push("状态牌不可主动打出，通常在回合结束或抽到时生效");
+    details.push(tr("状态牌不可主动打出，通常在回合结束或抽到时生效"));
   }
 
   const livePreview = combat ? cardLivePreviewLine(run!, card) : undefined;
@@ -4445,7 +4445,7 @@ function cardLivePreviewLine(run: RunState, card: CardInstance): string | undefi
         }),
         { damage: 0, blockLoss: 0, powerAdds: {}, sparkArc: 0, lethal: false },
       );
-    return previewLine("全体", total);
+    return previewLine(tr("全体"), total);
   }
 
   const summary = summarizeCardAction(run, card);
@@ -4468,7 +4468,7 @@ function previewLine(label: string, preview: TargetPreview): string | undefined 
     preview.damage > 0 ? `生命 -${preview.damage}` : "",
     preview.blockLoss > 0 ? `破盾 ${preview.blockLoss}` : "",
     preview.sparkArc > 0 ? `电弧 ${preview.sparkArc}` : "",
-    preview.lethal ? "击破" : "",
+    preview.lethal ? tr("击破") : "",
   ].filter(Boolean);
   for (const [power, value] of powerEntries.slice(0, 2)) {
     parts.push(`${powerLabel(power)} +${value}`);
@@ -4496,7 +4496,7 @@ function cardEffectDetail(effect: CardEffect, card: CardInstance, run?: RunState
 
   if (effect.type === "damage") {
     const hits = effect.hits && effect.hits > 1 ? ` x${effect.hits}` : "";
-    const strength = combat ? ` + 力量 ${playerPowers.strength ?? 0}` : " + 力量";
+    const strength = combat ? ` + 力量 ${playerPowers.strength ?? 0}` : tr(" + 力量");
     return `伤害：基础 ${effect.amount}${hits}${strength}，破绽加伤后再吃易伤/虚弱`;
   }
   if (effect.type === "damageFromBlock") {
@@ -4511,7 +4511,7 @@ function cardEffectDetail(effect: CardEffect, card: CardInstance, run?: RunState
     const powers = effect.powerTarget === "self" ? playerPowers : targetPowers;
     const available = powers[effect.power] ?? 0;
     const stacks = Math.max(effect.minimum ?? 0, available);
-    const target = effect.powerTarget === "self" ? "自身" : "目标";
+    const target = effect.powerTarget === "self" ? tr("自身") : tr("目标");
     return `${powerLabel(effect.power)}爆发：${target}${powerLabel(effect.power)} ${available}${effect.minimum ? `，最低 ${effect.minimum}` : ""} -> ${stacks * effect.amount} 伤害${effect.consume ? "，结算后消耗" : ""}`;
   }
   if (effect.type === "spendPowerDamage") {
@@ -4608,12 +4608,12 @@ function cardPlayPenalty(run: RunState, card: CardInstance): string | undefined 
 function cardVisualClass(def: CardDef): string {
   const tags = def.tags ?? [];
   if (def.type === "Status") return "game-card--art-glitch";
-  if (tags.some((tag) => ["毒", "毒雾", "中毒"].includes(tag))) return "game-card--art-venom";
-  if (tags.some((tag) => ["流血", "自伤"].includes(tag))) return "game-card--art-blood";
-  if (tags.some((tag) => ["蓄能", "电弧", "过载", "散热"].includes(tag))) return "game-card--art-spark";
-  if (tags.some((tag) => ["连击", "节奏", "终结"].includes(tag))) return "game-card--art-rhythm";
-  if (tags.some((tag) => ["格挡", "金属化", "护甲"].includes(tag))) return "game-card--art-guard";
-  if (tags.some((tag) => ["破绽", "标记"].includes(tag))) return "game-card--art-mark";
+  if (tags.some((tag) => [tr("毒"), tr("毒雾"), tr("中毒")].includes(tag))) return "game-card--art-venom";
+  if (tags.some((tag) => [tr("流血"), tr("自伤")].includes(tag))) return "game-card--art-blood";
+  if (tags.some((tag) => [tr("蓄能"), tr("电弧"), tr("过载"), tr("散热")].includes(tag))) return "game-card--art-spark";
+  if (tags.some((tag) => [tr("连击"), tr("节奏"), tr("终结")].includes(tag))) return "game-card--art-rhythm";
+  if (tags.some((tag) => [tr("格挡"), tr("金属化"), tr("护甲")].includes(tag))) return "game-card--art-guard";
+  if (tags.some((tag) => [tr("破绽"), tr("标记")].includes(tag))) return "game-card--art-mark";
   if (def.type === "Power") return "game-card--art-sigil";
   return "game-card--art-edge";
 }
@@ -4791,11 +4791,11 @@ function ResourcePotionSlot({
         type="button"
         disabled={!canUsePotion}
         onClick={() => onUsePotion?.(potion)}
-        aria-label={`${def.target === "enemy" ? "选择目标使用" : "使用"}${def.name}`}
+        aria-label={`${def.target === "enemy" ? "选择目标使用" : tr("使用")}${def.name}`}
       >
         <FlaskConical size={14} />
         <span>{def.name}</span>
-        <small>{tags.length > 0 ? tags.join(" · ") : "药水"}</small>
+        <small>{tags.length > 0 ? tags.join(" · ") : tr("药水")}</small>
       </button>
       {onDiscardPotion && (
         <button className="resource-slot__trash" type="button" aria-label={`丢弃${def.name}`} onClick={() => onDiscardPotion(potion.uid)}>
@@ -4945,17 +4945,17 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
   const potionTag = (name: string) => potionTags[name] ?? 0;
   const hasBoon = (boonId: BoonId) => run.player.boons.includes(boonId);
   const hasRelic = (relicId: string) => run.player.relics.includes(relicId);
-  const detail = (...parts: Array<string | false | undefined>) => parts.filter(Boolean).slice(0, 3).join(" · ") || "等待核心组件";
+  const detail = (...parts: Array<string | false | undefined>) => parts.filter(Boolean).slice(0, 3).join(" · ") || tr("等待核心组件");
 
   const signals: ArchetypeSignal[] = [
     {
       label: tr("攻击节奏"),
       score:
-        tag("连击") +
-        tag("连击伤害") * 2 +
-        tag("连锁") +
-        tag("破绽") +
-        tag("破绽催化") * 2 +
+        tag(tr("连击")) +
+        tag(tr("连击伤害")) * 2 +
+        tag(tr("连锁")) +
+        tag(tr("破绽")) +
+        tag(tr("破绽催化")) * 2 +
         (hasBoon("combo_discipline") ? 2 : 0) +
         (hasBoon("battle_focus") ? 1 : 0) +
         (hasBoon("blade_oil") ? 1 : 0) +
@@ -4966,32 +4966,32 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
         (hasBoon("banner_drill") ? 2 : 0) +
         (hasRelic("whetstone") ? 1 : 0) +
         (hasRelic("fracture_lens") ? 1 : 0) +
-        potionTag("力量"),
+        potionTag(tr("力量")),
       detail: detail(
-        tag("连击") > 0 && `连击牌 ${tag("连击")}`,
-        tag("连锁") > 0 && `连锁 ${tag("连锁")}`,
-        tag("破绽") > 0 && `破绽 ${tag("破绽")}`,
-        tag("破绽催化") > 0 && `破绽催化 ${tag("破绽催化")}`,
-        hasBoon("weakpoint_chart") && "破绽图谱",
-        hasRelic("fracture_lens") && "裂纹透镜",
-        hasBoon("combo_discipline") && "常驻连击",
-        hasBoon("coil_training") && "线圈训练",
-        hasBoon("rhythm_meter") && "随身节拍器",
-        hasBoon("chain_manual") && "连锁手册",
-        hasBoon("banner_drill") && "战旗操典",
-        potionTag("力量") > 0 && `力量药 ${potionTag("力量")}`,
+        tag(tr("连击")) > 0 && `连击牌 ${tag(tr("连击"))}`,
+        tag(tr("连锁")) > 0 && `连锁 ${tag(tr("连锁"))}`,
+        tag(tr("破绽")) > 0 && `破绽 ${tag(tr("破绽"))}`,
+        tag(tr("破绽催化")) > 0 && `破绽催化 ${tag(tr("破绽催化"))}`,
+        hasBoon("weakpoint_chart") && tr("破绽图谱"),
+        hasRelic("fracture_lens") && tr("裂纹透镜"),
+        hasBoon("combo_discipline") && tr("常驻连击"),
+        hasBoon("coil_training") && tr("线圈训练"),
+        hasBoon("rhythm_meter") && tr("随身节拍器"),
+        hasBoon("chain_manual") && tr("连锁手册"),
+        hasBoon("banner_drill") && tr("战旗操典"),
+        potionTag(tr("力量")) > 0 && `力量药 ${potionTag(tr("力量"))}`,
       ),
     },
     {
       label: tr("蓄能电弧"),
       score:
-        tag("蓄能") +
-        tagStartsWith("蓄能") +
-        tag("连锁") +
-        tag("过载") * 2 +
-        tag("散热") +
-        tag("电弧") * 2 +
-        tag("电弧催化") * 2 +
+        tag(tr("蓄能")) +
+        tagStartsWith(tr("蓄能")) +
+        tag(tr("连锁")) +
+        tag(tr("过载")) * 2 +
+        tag(tr("散热")) +
+        tag(tr("电弧")) * 2 +
+        tag(tr("电弧催化")) * 2 +
         (hasBoon("static_attunement") ? 2 : 0) +
         (hasBoon("spark_conduit") ? 2 : 0) +
         (hasBoon("reserve_battery") ? 1 : 0) +
@@ -5001,57 +5001,57 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
         (hasBoon("heat_regulator") ? 2 : 0) +
         (hasRelic("charged_plate") ? 2 : 0) +
         (hasRelic("storm_needle") ? 2 : 0) +
-        potionTag("蓄能") +
-        potionTag("电弧"),
+        potionTag(tr("蓄能")) +
+        potionTag(tr("电弧")),
       detail: detail(
-        tag("蓄能") > 0 && `蓄能牌 ${tag("蓄能")}`,
-        tag("连锁") > 0 && `连锁 ${tag("连锁")}`,
-        tag("过载") > 0 && `过载 ${tag("过载")}`,
-        tag("散热") > 0 && `散热 ${tag("散热")}`,
-        tag("电弧") > 0 && `电弧 ${tag("电弧")}`,
-        tag("电弧催化") > 0 && `电弧催化 ${tag("电弧催化")}`,
-        hasBoon("spark_conduit") && "电弧常驻",
-        hasBoon("coil_training") && "线圈训练",
-        hasBoon("rhythm_meter") && "随身节拍器",
-        hasBoon("chain_manual") && "连锁手册",
-        hasBoon("heat_regulator") && "热控铭文",
-        hasRelic("storm_needle") && "风暴针",
-        potionTag("蓄能") > 0 && `蓄能药 ${potionTag("蓄能")}`,
+        tag(tr("蓄能")) > 0 && `蓄能牌 ${tag(tr("蓄能"))}`,
+        tag(tr("连锁")) > 0 && `连锁 ${tag(tr("连锁"))}`,
+        tag(tr("过载")) > 0 && `过载 ${tag(tr("过载"))}`,
+        tag(tr("散热")) > 0 && `散热 ${tag(tr("散热"))}`,
+        tag(tr("电弧")) > 0 && `电弧 ${tag(tr("电弧"))}`,
+        tag(tr("电弧催化")) > 0 && `电弧催化 ${tag(tr("电弧催化"))}`,
+        hasBoon("spark_conduit") && tr("电弧常驻"),
+        hasBoon("coil_training") && tr("线圈训练"),
+        hasBoon("rhythm_meter") && tr("随身节拍器"),
+        hasBoon("chain_manual") && tr("连锁手册"),
+        hasBoon("heat_regulator") && tr("热控铭文"),
+        hasRelic("storm_needle") && tr("风暴针"),
+        potionTag(tr("蓄能")) > 0 && `蓄能药 ${potionTag(tr("蓄能"))}`,
       ),
     },
     {
       label: tr("毒血持续"),
       score:
-        tag("中毒") * 2 +
-        tag("流血") * 2 +
-        tag("中毒催化") * 2 +
-        tag("流血催化") * 2 +
-        tag("破绽催化") +
+        tag(tr("中毒")) * 2 +
+        tag(tr("流血")) * 2 +
+        tag(tr("中毒催化")) * 2 +
+        tag(tr("流血催化")) * 2 +
+        tag(tr("破绽催化")) +
         (hasBoon("venom_prep") ? 2 : 0) +
         (hasBoon("bleed_edge") ? 2 : 0) +
         (hasBoon("catalyst_training") ? 3 : 0) +
         (hasRelic("toxic_vial") ? 1 : 0) +
-        potionTag("中毒") +
-        potionTag("中毒催化") +
-        potionTag("流血催化"),
+        potionTag(tr("中毒")) +
+        potionTag(tr("中毒催化")) +
+        potionTag(tr("流血催化")),
       detail: detail(
-        tag("中毒") > 0 && `中毒 ${tag("中毒")}`,
-        tag("流血") > 0 && `流血 ${tag("流血")}`,
-        (tag("中毒催化") + tag("流血催化") > 0) && `催化 ${tag("中毒催化") + tag("流血催化")}`,
-        hasBoon("catalyst_training") && "催化训练",
-        hasBoon("venom_prep") && "毒性预备",
-        potionTag("中毒") > 0 && `毒药 ${potionTag("中毒")}`,
+        tag(tr("中毒")) > 0 && `中毒 ${tag(tr("中毒"))}`,
+        tag(tr("流血")) > 0 && `流血 ${tag(tr("流血"))}`,
+        (tag(tr("中毒催化")) + tag(tr("流血催化")) > 0) && `催化 ${tag(tr("中毒催化")) + tag(tr("流血催化"))}`,
+        hasBoon("catalyst_training") && tr("催化训练"),
+        hasBoon("venom_prep") && tr("毒性预备"),
+        potionTag(tr("中毒")) > 0 && `毒药 ${potionTag(tr("中毒"))}`,
       ),
     },
     {
       label: tr("守备反击"),
       score:
-        tag("格挡") +
-        tag("金属化") * 2 +
-        tag("尖刺") * 2 +
-        tag("消耗堆") * 2 +
-        tag("散热") * 2 +
-        tag("盾击") * 2 +
+        tag(tr("格挡")) +
+        tag(tr("金属化")) * 2 +
+        tag(tr("尖刺")) * 2 +
+        tag(tr("消耗堆")) * 2 +
+        tag(tr("散热")) * 2 +
+        tag(tr("盾击")) * 2 +
         (hasBoon("opening_guard") ? 1 : 0) +
         (hasBoon("plate_training") ? 2 : 0) +
         (hasBoon("tempered_shell") ? 3 : 0) +
@@ -5062,31 +5062,31 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
         (hasRelic("bronze_scales") ? 1 : 0) +
         (hasRelic("charged_plate") ? 2 : 0) +
         (hasRelic("storm_needle") ? 1 : 0) +
-        potionTag("格挡") +
-        potionTag("金属化") * 2 +
-        potionTag("尖刺") * 2,
+        potionTag(tr("格挡")) +
+        potionTag(tr("金属化")) * 2 +
+        potionTag(tr("尖刺")) * 2,
       detail: detail(
-        tag("格挡") > 0 && `格挡牌 ${tag("格挡")}`,
-        tag("金属化") > 0 && `金属化 ${tag("金属化")}`,
-        tag("尖刺") > 0 && `尖刺 ${tag("尖刺")}`,
-        tag("盾击") > 0 && `盾击 ${tag("盾击")}`,
-        tag("消耗堆") > 0 && `消耗堆 ${tag("消耗堆")}`,
-        tag("散热") > 0 && `散热 ${tag("散热")}`,
-        hasBoon("tempered_shell") && "淬火外壳",
-        hasBoon("ash_ledger") && "余烬账本",
-        hasBoon("heat_regulator") && "热控铭文",
-        potionTag("金属化") > 0 && `甲片药 ${potionTag("金属化")}`,
-        potionTag("格挡") > 0 && `格挡药 ${potionTag("格挡")}`,
+        tag(tr("格挡")) > 0 && `格挡牌 ${tag(tr("格挡"))}`,
+        tag(tr("金属化")) > 0 && `金属化 ${tag(tr("金属化"))}`,
+        tag(tr("尖刺")) > 0 && `尖刺 ${tag(tr("尖刺"))}`,
+        tag(tr("盾击")) > 0 && `盾击 ${tag(tr("盾击"))}`,
+        tag(tr("消耗堆")) > 0 && `消耗堆 ${tag(tr("消耗堆"))}`,
+        tag(tr("散热")) > 0 && `散热 ${tag(tr("散热"))}`,
+        hasBoon("tempered_shell") && tr("淬火外壳"),
+        hasBoon("ash_ledger") && tr("余烬账本"),
+        hasBoon("heat_regulator") && tr("热控铭文"),
+        potionTag(tr("金属化")) > 0 && `甲片药 ${potionTag(tr("金属化"))}`,
+        potionTag(tr("格挡")) > 0 && `格挡药 ${potionTag(tr("格挡"))}`,
       ),
     },
     {
       label: tr("资源循环"),
       score:
-        tag("抽牌") * 2 +
-        tag("能量") * 2 +
-        tag("回收") * 2 +
-        tag("连锁") * 2 +
-        tag("过载") * 2 +
+        tag(tr("抽牌")) * 2 +
+        tag(tr("能量")) * 2 +
+        tag(tr("回收")) * 2 +
+        tag(tr("连锁")) * 2 +
+        tag(tr("过载")) * 2 +
         (hasBoon("reserve_battery") ? 2 : 0) +
         (hasBoon("recovery_mantra") ? 2 : 0) +
         (hasBoon("scavenger_kit") ? 2 : 0) +
@@ -5101,49 +5101,49 @@ function summarizeRunArchetypes(run: RunState, summary: DeckSummary): ArchetypeS
         (hasRelic("pocket_watch") ? 2 : 0) +
         (hasRelic("echo_bell") ? 2 : 0) +
         (hasRelic("alchemy_stone") ? 2 : 0) +
-        potionTag("抽牌") +
-        potionTag("能量") +
-        potionTag("回收") * 2,
+        potionTag(tr("抽牌")) +
+        potionTag(tr("能量")) +
+        potionTag(tr("回收")) * 2,
       detail: detail(
-        tag("抽牌") > 0 && `抽牌 ${tag("抽牌")}`,
-        tag("能量") > 0 && `能量 ${tag("能量")}`,
-        tag("回收") > 0 && `回收 ${tag("回收")}`,
-        tag("连锁") > 0 && `连锁 ${tag("连锁")}`,
-        tag("过载") > 0 && `过载 ${tag("过载")}`,
-        hasBoon("scavenger_kit") && "开局回收",
-        hasBoon("field_protocol") && "战地协议",
-        hasBoon("triage_doctrine") && "战伤教范",
-        hasBoon("ash_ledger") && "余烬账本",
-        hasBoon("rhythm_meter") && "随身节拍器",
-        hasBoon("chain_manual") && "连锁手册",
-        hasBoon("heat_regulator") && "热控铭文",
-        hasBoon("potion_catalyst") && "药水蓄能",
-        hasRelic("echo_bell") && "回声铃",
-        hasRelic("alchemy_stone") && "药水抽牌",
-        hasRelic("pocket_watch") && "怀表节奏",
+        tag(tr("抽牌")) > 0 && `抽牌 ${tag(tr("抽牌"))}`,
+        tag(tr("能量")) > 0 && `能量 ${tag(tr("能量"))}`,
+        tag(tr("回收")) > 0 && `回收 ${tag(tr("回收"))}`,
+        tag(tr("连锁")) > 0 && `连锁 ${tag(tr("连锁"))}`,
+        tag(tr("过载")) > 0 && `过载 ${tag(tr("过载"))}`,
+        hasBoon("scavenger_kit") && tr("开局回收"),
+        hasBoon("field_protocol") && tr("战地协议"),
+        hasBoon("triage_doctrine") && tr("战伤教范"),
+        hasBoon("ash_ledger") && tr("余烬账本"),
+        hasBoon("rhythm_meter") && tr("随身节拍器"),
+        hasBoon("chain_manual") && tr("连锁手册"),
+        hasBoon("heat_regulator") && tr("热控铭文"),
+        hasBoon("potion_catalyst") && tr("药水蓄能"),
+        hasRelic("echo_bell") && tr("回声铃"),
+        hasRelic("alchemy_stone") && tr("药水抽牌"),
+        hasRelic("pocket_watch") && tr("怀表节奏"),
       ),
     },
     {
       label: tr("净化压缩"),
       score:
-        tag("净化") * 2 +
-        tag("消耗堆") * 2 +
-        tag("散热") * 2 +
-        tag("蓄能") +
+        tag(tr("净化")) * 2 +
+        tag(tr("消耗堆")) * 2 +
+        tag(tr("散热")) * 2 +
+        tag(tr("蓄能")) +
         Math.min(4, summary.typeCounts.Status) +
         (hasBoon("armory_drill") ? 1 : 0) +
         (hasBoon("triage_doctrine") ? 3 : 0) +
         (hasBoon("ash_ledger") ? 2 : 0) +
         (hasBoon("heat_regulator") ? 2 : 0) +
-        potionTag("净化"),
+        potionTag(tr("净化")),
       detail: detail(
-        tag("净化") > 0 && `净化 ${tag("净化")}`,
-        tag("消耗堆") > 0 && `消耗堆 ${tag("消耗堆")}`,
-        tag("散热") > 0 && `散热 ${tag("散热")}`,
+        tag(tr("净化")) > 0 && `净化 ${tag(tr("净化"))}`,
+        tag(tr("消耗堆")) > 0 && `消耗堆 ${tag(tr("消耗堆"))}`,
+        tag(tr("散热")) > 0 && `散热 ${tag(tr("散热"))}`,
         summary.typeCounts.Status > 0 && `状态 ${summary.typeCounts.Status}`,
-        hasBoon("triage_doctrine") && "战伤教范",
-        hasBoon("heat_regulator") && "热控铭文",
-        potionTag("净化") > 0 && `净化药 ${potionTag("净化")}`,
+        hasBoon("triage_doctrine") && tr("战伤教范"),
+        hasBoon("heat_regulator") && tr("热控铭文"),
+        potionTag(tr("净化")) > 0 && `净化药 ${potionTag(tr("净化"))}`,
       ),
     },
   ];
@@ -5171,34 +5171,34 @@ function buildDeckHints(
   avgCost: number,
 ): string[] {
   const hints: string[] = [];
-  const blockDensity = (tagCounts.get("格挡") ?? 0) + (tagCounts.get("金属化") ?? 0) + (tagCounts.get("尖刺") ?? 0);
-  const drawDensity = tagCounts.get("抽牌") ?? 0;
-  const energyDensity = tagCounts.get("能量") ?? 0;
-  const recycleDensity = drawDensity + energyDensity + (tagCounts.get("回收") ?? 0);
-  const cleanseDensity = (tagCounts.get("净化") ?? 0) + (tagCounts.get("消耗堆") ?? 0);
+  const blockDensity = (tagCounts.get(tr("格挡")) ?? 0) + (tagCounts.get(tr("金属化")) ?? 0) + (tagCounts.get(tr("尖刺")) ?? 0);
+  const drawDensity = tagCounts.get(tr("抽牌")) ?? 0;
+  const energyDensity = tagCounts.get(tr("能量")) ?? 0;
+  const recycleDensity = drawDensity + energyDensity + (tagCounts.get(tr("回收")) ?? 0);
+  const cleanseDensity = (tagCounts.get(tr("净化")) ?? 0) + (tagCounts.get(tr("消耗堆")) ?? 0);
 
   if (total >= 10 && blockDensity < Math.max(3, Math.floor(total * 0.22))) {
-    hints.push("防御偏薄");
+    hints.push(tr("防御偏薄"));
   }
   if (total >= 12 && drawDensity === 0) {
-    hints.push("缺少抽牌");
+    hints.push(tr("缺少抽牌"));
   }
   if (total >= 14 && recycleDensity <= 1) {
-    hints.push("资源循环弱");
+    hints.push(tr("资源循环弱"));
   }
   if (avgCost > 1.45 && energyDensity === 0) {
-    hints.push("费用偏重");
+    hints.push(tr("费用偏重"));
   }
   if (typeCounts.Status >= 3 && cleanseDensity === 0) {
-    hints.push("污染偏高");
+    hints.push(tr("污染偏高"));
   } else if (typeCounts.Status >= 2 && cleanseDensity > 0) {
-    hints.push("状态可转化");
+    hints.push(tr("状态可转化"));
   }
   if (typeCounts.Power >= 3 && typeCounts.Attack <= 4) {
-    hints.push("启动偏慢");
+    hints.push(tr("启动偏慢"));
   }
 
-  return hints.length > 0 ? hints.slice(0, 3) : ["结构稳定"];
+  return hints.length > 0 ? hints.slice(0, 3) : [tr("结构稳定")];
 }
 
 function DeckList({ deck }: { deck: CardInstance[] }) {
@@ -5334,7 +5334,7 @@ function CombatInventoryBar({
               <Tooltip
                 key={potion.uid}
                 placement="bottom"
-                content={<TipCard title={def?.name ?? tr("药水")} tone="buff" body={def?.text ?? tr("效果未知")} footer="▶ 点击使用" />}
+                content={<TipCard title={def?.name ?? tr("药水")} tone="buff" body={def?.text ?? tr("效果未知")} footer={tr("▶ 点击使用")} />}
               >
                 <button
                   className={`combat-potion ${selectedPotionUid === potion.uid ? "is-selected" : ""}`}
@@ -5386,7 +5386,7 @@ function IntentBadge({ run, enemy }: { run: RunState; enemy: EnemyState }) {
     } else if (effect.type === "block") {
       lines.push(`为自己获得 ${effect.amount} 点格挡`);
     } else if (effect.type === "applyPower") {
-      const who = effect.target === "self" ? "自身" : "你";
+      const who = effect.target === "self" ? tr("自身") : tr("你");
       lines.push(`给${who}施加 ${effect.amount} 层${powerLabel(effect.power)}`);
     } else if (effect.type === "summon") {
       lines.push(`召唤 ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`);
@@ -5403,7 +5403,7 @@ function IntentBadge({ run, enemy }: { run: RunState; enemy: EnemyState }) {
           title={`${moveName(enemy.defId, move.id)}（${primary.label}）`}
           tone={primary.kind === "attack" || primary.kind === "debuff" ? "debuff" : primary.kind === "block" || primary.kind === "buff" ? "buff" : "engine"}
           body={lines.join("；")}
-          footer="敌方下回合行动"
+          footer={tr("敌方下回合行动")}
         />
       }
     >
@@ -5420,16 +5420,16 @@ function intentSummary(move: EnemyMove): string {
   return move.effects
     .map((effect) => {
       if (effect.type === "damage") {
-        return `${en ? "Attack" : "攻击"} ${effect.amount}${effect.hits && effect.hits > 1 ? `x${effect.hits}` : ""}`;
+        return `${en ? "Attack" : tr("攻击")} ${effect.amount}${effect.hits && effect.hits > 1 ? `x${effect.hits}` : ""}`;
       }
       if (effect.type === "block") {
-        return `${en ? "Block" : "格挡"} ${effect.amount}`;
+        return `${en ? "Block" : tr("格挡")} ${effect.amount}`;
       }
       if (effect.type === "applyPower") {
         return `${powerLabel(effect.power)} ${effect.amount}`;
       }
       if (effect.type === "summon") {
-        return `${en ? "Summon" : "召唤"} ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`;
+        return `${en ? "Summon" : tr("召唤")} ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`;
       }
       if (effect.type === "createCard") {
         return `${en ? "Add" : "加入"} ${cardName(effect.cardId)}`;
