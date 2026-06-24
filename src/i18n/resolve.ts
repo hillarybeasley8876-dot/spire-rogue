@@ -155,6 +155,7 @@ export function localizedDisabledReason(zhReason?: string): string | undefined {
 // engine 把 state.message 拼成中文（带 ${} 插值 + 内嵌中文物品名）。
 // 这里在渲染期把整条消息按模板翻成英文；匹配不上回落原文（零回归）。
 import { MESSAGE_TEMPLATES } from "./locales/messages.en";
+import { ADDLOG_TEMPLATES, INLINE_TERMS_EN } from "./locales/addlog.en";
 
 // 反向名称表：中文物品名 -> 英文名（卡 / 遗物 / 药水 / 常驻），懒构建一次。
 let NAME_EN: Map<string, string> | null = null;
@@ -180,6 +181,22 @@ function buildNameMap(): Map<string, string> {
     const en = getLocalizedBoon(id, "en")?.name;
     if (zh && en) map.set(zh, en);
   }
+  // 并入敌人名 + 敌人招式名（战斗日志里会出现）
+  for (const id of Object.keys(ENEMIES)) {
+    const e = (ENEMIES as Record<string, { name?: string; moves?: Array<{ id: string; name?: string }> }>)[id];
+    const zh = e?.name;
+    const en = getLocalizedEnemyName(id, "en");
+    if (zh && en) map.set(zh, en);
+    for (const mv of e?.moves ?? []) {
+      const mzh = mv.name;
+      const men = getLocalizedMoveName(id, mv.id, "en");
+      if (mzh && men) map.set(mzh, men);
+    }
+  }
+  // 并入 addLog 内嵌词（power 名 / 位置）
+  for (const [zh, en] of Object.entries(INLINE_TERMS_EN)) {
+    if (!map.has(zh)) map.set(zh, en);
+  }
   return map;
 }
 
@@ -198,7 +215,7 @@ function escapeRegex(s: string): string {
 }
 
 // 预编译模板：把相邻 {}{} 合并成单占位，按 zh 字面长度降序（更具体的先匹配）。
-const COMPILED_MESSAGES = MESSAGE_TEMPLATES.map(([zh, en]) => {
+const COMPILED_MESSAGES = [...MESSAGE_TEMPLATES, ...ADDLOG_TEMPLATES].map(([zh, en]) => {
   const zhMerged = zh.replace(/(\{\})+/g, "{}");
   const enMerged = en.replace(/(\{\})+/g, "{}");
   const literals = zhMerged.split("{}");

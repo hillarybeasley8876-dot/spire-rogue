@@ -2342,7 +2342,7 @@ function CombatScreen({
         >
           <ol className="combat-log__list">
             {combat.log.map((line, index) => (
-              <li key={`${line}-${index}`}>{line}</li>
+              <li key={`${line}-${index}`}>{translateMessage(line)}</li>
             ))}
           </ol>
         </FoldSection>
