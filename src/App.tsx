@@ -4062,10 +4062,10 @@ function RestScreen({
           const def = CARDS[card.cardId];
           return (
             <button className="upgrade-row" type="button" key={card.uid} onClick={() => onUpgrade(card.uid)}>
-              <span>{def.name}</span>
+              <span>{cardName(def.id)}</span>
               <small>
-                <b>{getCardLevel(card).text}</b>
-                <em>{bi(`升级后：${def.upgraded.text}`, `Upgrade → ${def.upgraded.text}`)}</em>
+                <b>{cardText(def.id, card.upgraded)}</b>
+                <em>{bi(`升级后：${def.upgraded.text}`, `Upgrade → ${cardText(def.id, true)}`)}</em>
               </small>
               <ChevronRight size={16} />
             </button>
@@ -4927,20 +4927,20 @@ function ResourcePotionSlot({
   }
   const tags = potionMechanicTags(potion).slice(0, 2);
   return (
-    <div className={`resource-slot ${canUsePotion ? "is-usable" : ""} ${selected ? "is-selected" : ""}`} title={def.text}>
+    <div className={`resource-slot ${canUsePotion ? "is-usable" : ""} ${selected ? "is-selected" : ""}`} title={potionInfo(potion.potionId)?.text ?? def.text}>
       <button
         className="resource-slot__main"
         type="button"
         disabled={!canUsePotion}
         onClick={() => onUsePotion?.(potion)}
-        aria-label={`${def.target === "enemy" ? bi("选择目标使用", "Choose target to use") : tr("使用")}${def.name}`}
+        aria-label={`${def.target === "enemy" ? bi("选择目标使用", "Choose target to use") : tr("使用")}${potionInfo(potion.potionId)?.name ?? def.name}`}
       >
         <FlaskConical size={14} />
-        <span>{def.name}</span>
+        <span>{potionInfo(potion.potionId)?.name ?? def.name}</span>
         <small>{tags.length > 0 ? tags.join(" · ") : tr("药水")}</small>
       </button>
       {onDiscardPotion && (
-        <button className="resource-slot__trash" type="button" aria-label={bi(`丢弃${def.name}`, `Discard ${def.name}`)} onClick={() => onDiscardPotion(potion.uid)}>
+        <button className="resource-slot__trash" type="button" aria-label={bi(`丢弃${def.name}`, `Discard ${potionInfo(potion.potionId)?.name ?? def.name}`)} onClick={() => onDiscardPotion(potion.uid)}>
           <Trash2 size={13} />
         </button>
       )}
@@ -5533,7 +5533,7 @@ function IntentBadge({ run, enemy }: { run: RunState; enemy: EnemyState }) {
       const who = effect.target === "self" ? tr("自身") : tr("你");
       lines.push(bi(`给${who}施加 ${effect.amount} 层${powerLabel(effect.power)}`, `Apply ${effect.amount} ${powerLabel(effect.power)} to ${who}`));
     } else if (effect.type === "summon") {
-      lines.push(bi(`召唤 ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`, `Summon ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`));
+      lines.push(bi(`召唤 ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`, `Summon ${enemyName(effect.enemyId) ?? tr("敌人")}`));
     } else if (effect.type === "createCard") {
       lines.push(bi(`往你牌堆塞入「${cardName(effect.cardId)}」`, `Shuffle "${cardName(effect.cardId)}" into your deck`));
     }
@@ -5573,7 +5573,7 @@ function intentSummary(move: EnemyMove): string {
         return `${powerLabel(effect.power)} ${effect.amount}`;
       }
       if (effect.type === "summon") {
-        return `${en ? "Summon" : tr("召唤")} ${ENEMIES[effect.enemyId]?.name ?? tr("敌人")}`;
+        return `${en ? "Summon" : tr("召唤")} ${en ? enemyName(effect.enemyId) : (ENEMIES[effect.enemyId]?.name ?? tr("敌人"))}`;
       }
       if (effect.type === "createCard") {
         return `${en ? "Add" : tr("加入")} ${cardName(effect.cardId)}`;
@@ -5743,7 +5743,7 @@ function PotionBelt({
               onClick={() => onPotionClick(potion)}
             >
               <FlaskConical size={15} />
-              <span>{def.name}</span>
+              <span>{potionInfo(potion.potionId)?.name ?? def.name}</span>
             </button>
           </Tooltip>
         );
@@ -5795,8 +5795,8 @@ function PotionInventory({
             <div className="potion-inventory__slot" key={potion.uid}>
               <FlaskConical size={15} />
               <div>
-                <strong>{def.name}</strong>
-                <span>{def.text}</span>
+                <strong>{potionInfo(potion.potionId)?.name ?? def.name}</strong>
+                <span>{potionInfo(potion.potionId)?.text ?? def.text}</span>
               </div>
               <button type="button" title={tr("丢弃药水")} onClick={() => onDiscard(potion.uid)}>
                 <Trash2 size={14} />
