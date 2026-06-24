@@ -17,6 +17,7 @@ import {
   localizedEventText,
   localizedEventOption,
   localizedDisabledReason,
+  translateMessage,
 } from "./i18n/resolve";
 import {
   nodeLabel,
@@ -831,7 +832,7 @@ function App() {
         </div>
       </header>
 
-      {run.message && run.phase !== "combat" && <div className="toast">{run.message}</div>}
+      {run.message && run.phase !== "combat" && <div className="toast">{translateMessage(run.message)}</div>}
 
       <main className={`screen screen--${run.phase}`}>
         {run.phase === "title" ? (
@@ -4367,7 +4368,7 @@ function EndScreen({
     <section className="end-layout">
       <div className={`end-badge end-badge--${result}`}>{result === "victory" ? <Flame size={52} /> : <Skull size={52} />}</div>
       <p>{result === "victory" ? tr("胜利") : tr("失败")}</p>
-      <h2>{run.message}</h2>
+      <h2>{translateMessage(run.message)}</h2>
       <div className="run-summary">
         <StatPill icon={<MapIcon size={17} />} label={bi(`幕 ${run.act ?? 1}`, `Act ${run.act ?? 1}`)} tone="floor" />
         <StatPill icon={<MapIcon size={17} />} label={bi(`节点 ${run.stats.nodesCleared}`, `Nodes ${run.stats.nodesCleared}`)} tone="floor" />

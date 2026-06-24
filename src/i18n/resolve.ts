@@ -150,3 +150,70 @@ export function localizedDisabledReason(zhReason?: string): string | undefined {
   if (currentLang === "en") return EVENT_DISABLED_REASON_EN[zhReason] ?? zhReason;
   return zhReason;
 }
+
+// —— 动作结果 toast / 结算页 message 本地化 ——
+// engine 把 state.message 拼成中文（带 ${} 插值 + 内嵌中文物品名）。
+// 这里在渲染期把整条消息按模板翻成英文；匹配不上回落原文（零回归）。
+import { MESSAGE_TEMPLATES } from "./locales/messages.en";
+
+// 反向名称表：中文物品名 -> 英文名（卡 / 遗物 / 药水 / 常驻），懒构建一次。
+let NAME_EN: Map<string, string> | null = null;
+function buildNameMap(): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const id of Object.keys(CARDS)) {
+    const zh = (CARDS as Record<string, { name: string }>)[id]?.name;
+    const en = getLocalizedCardName(id, "en");
+    if (zh && en) map.set(zh, en);
+  }
+  for (const id of Object.keys(RELICS)) {
+    const zh = (RELICS as Record<string, { name: string }>)[id]?.name;
+    const en = getLocalizedRelic(id, "en")?.name;
+    if (zh && en) map.set(zh, en);
+  }
+  for (const id of Object.keys(POTIONS)) {
+    const zh = (POTIONS as Record<string, { name: string }>)[id]?.name;
+    const en = getLocalizedPotion(id, "en")?.name;
+    if (zh && en) map.set(zh, en);
+  }
+  for (const id of Object.keys(BOONS)) {
+    const zh = (BOONS as Record<string, { name: string }>)[id]?.name;
+    const en = getLocalizedBoon(id, "en")?.name;
+    if (zh && en) map.set(zh, en);
+  }
+  return map;
+}
+
+function relocalizeName(captured: string): string {
+  if (!NAME_EN) NAME_EN = buildNameMap();
+  if (NAME_EN.has(captured)) return NAME_EN.get(captured)!;
+  // 处理升级标记后缀 "+"（如 "火球+"）
+  if (captured.endsWith("+") && NAME_EN.has(captured.slice(0, -1))) {
+    return NAME_EN.get(captured.slice(0, -1))! + "+";
+  }
+  return captured; // 数字 / 未知 / 已是英文 —— 原样透传
+}
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// 预编译模板：把相邻 {}{} 合并成单占位，按 zh 字面长度降序（更具体的先匹配）。
+const COMPILED_MESSAGES = MESSAGE_TEMPLATES.map(([zh, en]) => {
+  const zhMerged = zh.replace(/(\{\})+/g, "{}");
+  const enMerged = en.replace(/(\{\})+/g, "{}");
+  const literals = zhMerged.split("{}");
+  const pattern = "^" + literals.map(escapeRegex).join("(.+?)") + "$";
+  return { re: new RegExp(pattern), en: enMerged, slots: literals.length - 1 };
+}).sort((a, b) => b.re.source.length - a.re.source.length);
+
+export function translateMessage(zh?: string): string | undefined {
+  if (!zh || currentLang !== "en") return zh;
+  for (const t of COMPILED_MESSAGES) {
+    const m = zh.match(t.re);
+    if (!m) continue;
+    const caps = m.slice(1).map(relocalizeName);
+    let i = 0;
+    return t.en.replace(/\{\}/g, () => caps[i++] ?? "");
+  }
+  return zh; // 没匹配上：回落中文，保证不比现状差
+}
