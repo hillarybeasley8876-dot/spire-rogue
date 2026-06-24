@@ -13,6 +13,10 @@ import {
   powerLabel,
   powerHint,
   difficultyInfo,
+  localizedEventTitle,
+  localizedEventText,
+  localizedEventOption,
+  localizedDisabledReason,
 } from "./i18n/resolve";
 import {
   nodeLabel,
@@ -4276,11 +4280,12 @@ function EventScreen({ run, onChoose }: { run: RunState; onChoose: (optionId: st
     <section className="event-layout">
       <div className="event-copy">
         <p>{tr("事件")}</p>
-        <h2>{event.title}</h2>
-        <span>{event.text}</span>
+        <h2>{localizedEventTitle(event.id, event.title)}</h2>
+        <span>{localizedEventText(event.id, event.text)}</span>
       </div>
       <div className="event-options">
         {event.options.map((option) => {
+          const local = localizedEventOption(event.id, option.id, { label: option.label, text: option.text });
           const tags = eventOptionTags(option.text);
           return (
             <button
@@ -4290,7 +4295,7 @@ function EventScreen({ run, onChoose }: { run: RunState; onChoose: (optionId: st
               disabled={option.disabled}
               onClick={() => onChoose(option.id)}
             >
-              <strong>{option.label}</strong>
+              <strong>{local.label}</strong>
               {tags.length > 0 && (
                 <div className="event-option__tags">
                   {tags.map((tag) => (
@@ -4298,8 +4303,8 @@ function EventScreen({ run, onChoose }: { run: RunState; onChoose: (optionId: st
                   ))}
                 </div>
               )}
-              <span>{option.text}</span>
-              {option.disabled && <small>{option.disabledReason ?? tr("条件不足")}</small>}
+              <span>{local.text}</span>
+              {option.disabled && <small>{localizedDisabledReason(option.disabledReason) ?? tr("条件不足")}</small>}
               <ChevronRight size={17} />
             </button>
           );

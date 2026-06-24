@@ -413,3 +413,124 @@ button[class*="game-card"].is-selected {
   opacity: 0.6;
   cursor: progress;
 }
+
+
+/* ============================================================
+ * 12. Sprite 精细化：待机呼吸 / 眨眼 / 地面投影 / 受击帧 / 蓄力前倾
+ * ========================================================== */
+
+/* 整体待机呼吸：以脚底为支点轻微缩放 + 浮动，比纯 translateY 更有生命感。
+ * 用 sprite 容器本身，错开 player / enemy 的节拍避免整齐划一。 */
+.pixel-sprite {
+  transform-origin: 50% 92%;
+}
+.pixel-sprite:not(.is-dead) {
+  animation: sprite-breathe 2600ms ease-in-out infinite;
+}
+.pixel-sprite--enemy:not(.is-dead) {
+  animation-duration: 3000ms;
+  animation-delay: -700ms;
+}
+.pixel-sprite--enemy.pixel-sprite--tier-elite:not(.is-dead) { animation-duration: 2400ms; }
+.pixel-sprite--enemy.pixel-sprite--tier-boss:not(.is-dead) { animation-duration: 3600ms; }
+@keyframes sprite-breathe {
+  0%, 100% { transform: translateY(0) scaleY(1) scaleX(1); }
+  50%      { transform: translateY(-2px) scaleY(1.035) scaleX(0.99); }
+}
+
+/* 眨眼：眼睛周期性压扁（大部分时间睁着，偶尔眨一下）。
+ * 用很长的周期 + 末尾一小段压扁，模拟自然眨眼。 */
+.pixel-sprite:not(.is-dead) .pixel-sprite__eye {
+  animation: sprite-blink 5200ms steps(1, end) infinite;
+}
+.pixel-sprite--enemy:not(.is-dead) .pixel-sprite__eye--right {
+  animation-delay: 120ms; /* 双眼不完全同步，更自然 */
+}
+@keyframes sprite-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95%, 98%      { transform: scaleY(0.12); }
+}
+
+/* 地面投影：在脚底加一个椭圆阴影，随呼吸轻微缩放，增加立体感与重量。 */
+.pixel-sprite:not(.is-dead)::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  width: 46px;
+  height: 9px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.42), transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+  animation: sprite-shadow-breathe 2600ms ease-in-out infinite;
+}
+.pixel-sprite--enemy:not(.is-dead)::after { animation-duration: 3000ms; animation-delay: -700ms; }
+@keyframes sprite-shadow-breathe {
+  0%, 100% { transform: translateX(-50%) scaleX(1);    opacity: 0.55; }
+  50%      { transform: translateX(-50%) scaleX(0.9);  opacity: 0.42; }
+}
+
+/* 受击帧：HP 变化时 EnemyCard 加 has-combat-fx.is-damage，让 sprite 红闪 + 顿挫缩。 */
+.enemy-card.has-combat-fx.is-damage .pixel-sprite,
+.player-core.has-combat-fx.is-damage .pixel-sprite {
+  animation: sprite-hit-shock 360ms steps(2, end) 1 !important;
+}
+@keyframes sprite-hit-shock {
+  0%   { filter: brightness(2.6) saturate(0.3) drop-shadow(0 0 6px rgba(255,80,70,0.9)); transform: translateX(-3px) scaleY(0.94); }
+  50%  { filter: brightness(1.6) saturate(0.7); transform: translateX(3px) scaleY(1.02); }
+  100% { filter: none; transform: translateX(0) scaleY(1); }
+}
+
+/* 死亡：sprite 灰化 + 下沉塌缩。 */
+.pixel-sprite.is-dead {
+  filter: grayscale(1) brightness(0.5);
+  transform: translateY(6px) scaleY(0.82);
+  opacity: 0.5;
+  transition: transform 420ms ease, opacity 420ms ease, filter 420ms ease;
+}
+
+/* 出招蓄力时，攻击型敌人肢体前倾（配合 11 节的 lunge）。 */
+.enemy-card.is-acting--attack .pixel-sprite__arm--right,
+.enemy-card.is-acting--mixed .pixel-sprite__arm--right {
+  animation: sprite-arm-swing 480ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform-origin: 50% 0%;
+}
+@keyframes sprite-arm-swing {
+  0%   { transform: rotate(0deg); }
+  35%  { transform: rotate(-42deg); }
+  55%  { transform: rotate(28deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* 施法型敌人蓄力时火花/光点加速闪烁。 */
+.enemy-card.is-acting--buff .pixel-sprite__spark,
+.enemy-card.is-acting--summon .pixel-sprite__spark,
+.enemy-card.is-acting--debuff .pixel-sprite__spark {
+  animation: sprite-cast-spark 480ms steps(4, end) both !important;
+}
+@keyframes sprite-cast-spark {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50%      { opacity: 1;   transform: scale(1.4); }
+}
+
+/* 选中可攻击的敌人时，sprite 轻微急促颤动，提示"锁定中"。 */
+.enemy-card.is-targetable .pixel-sprite:not(.is-dead) {
+  animation: sprite-breathe 2600ms ease-in-out infinite, sprite-target-jitter 520ms ease-in-out infinite;
+}
+@keyframes sprite-target-jitter {
+  0%, 100% { margin-left: 0; }
+  25%      { margin-left: -1.5px; }
+  75%      { margin-left: 1.5px; }
+}
+
+/* prefers-reduced-motion：尊重系统无障碍设置，关掉持续动画。 */
+@media (prefers-reduced-motion: reduce) {
+  .pixel-sprite:not(.is-dead),
+  .pixel-sprite:not(.is-dead) .pixel-sprite__eye,
+  .pixel-sprite:not(.is-dead)::after,
+  .enemy-card.is-targetable .pixel-sprite:not(.is-dead) {
+    animation: none !important;
+  }
+}

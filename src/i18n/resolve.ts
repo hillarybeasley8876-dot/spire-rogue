@@ -117,3 +117,36 @@ export const boonInfo = (id: string) => getLocalizedBoon(id, currentLang);
 export const powerLabel = (p: PowerKey) => getLocalizedPowerLabel(p, currentLang);
 export const powerHint = (p: PowerKey) => getLocalizedPowerHint(p, currentLang);
 export const difficultyInfo = (id: DifficultyKey) => getLocalizedDifficulty(id, currentLang);
+
+// —— 事件（Event）本地化 ——
+// state 里的 event.title/text/options 是中文（engine 硬编码，为兼容旧存档不改）。
+// EN 模式按 event.id + option.id 查 EVENTS_EN；缺失则回落中文原文。
+import { EVENTS_EN, EVENT_DISABLED_REASON_EN } from "./locales/events.en";
+
+export function localizedEventTitle(eventId: string, zhTitle: string): string {
+  if (currentLang === "en") return EVENTS_EN[eventId]?.title ?? zhTitle;
+  return zhTitle;
+}
+
+export function localizedEventText(eventId: string, zhText: string): string {
+  if (currentLang === "en") return EVENTS_EN[eventId]?.text ?? zhText;
+  return zhText;
+}
+
+export function localizedEventOption(
+  eventId: string,
+  optionId: string,
+  zh: { label: string; text: string },
+): { label: string; text: string } {
+  if (currentLang === "en") {
+    const en = EVENTS_EN[eventId]?.options[optionId];
+    if (en) return en;
+  }
+  return zh;
+}
+
+export function localizedDisabledReason(zhReason?: string): string | undefined {
+  if (!zhReason) return zhReason;
+  if (currentLang === "en") return EVENT_DISABLED_REASON_EN[zhReason] ?? zhReason;
+  return zhReason;
+}
