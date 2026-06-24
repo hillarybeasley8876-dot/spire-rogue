@@ -129,13 +129,19 @@ button {
 .topbar {
   position: relative;
   z-index: 5;
-  display: flex;
+  /* 3 列 grid：brand 锁左、stats 锁正中、controls 锁右。
+   * 用 flex+space-between 时 stats 会因左右两块宽度不等而偏移，无法真正居中。 */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: 18px;
   min-width: 0;
   padding: 18px 28px 14px;
 }
+
+.topbar > .brand { grid-column: 1; justify-self: start; }
+.topbar > .topbar__stats { grid-column: 2; justify-self: center; }
+.topbar > .topbar__controls { grid-column: 3; justify-self: end; }
 
 .topbar::after {
   position: absolute;
