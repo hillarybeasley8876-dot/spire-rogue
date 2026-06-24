@@ -8800,7 +8800,10 @@ body {
 
 /* —— 顶栏改成游戏 HUD 横幅 —— */
 .topbar {
-  margin: 10px 14px 0;
+  /* 与 .screen 同宽同居中（min(1680px) + margin auto），否则 topbar 左对齐、
+   * 下方内容居中，会错位、右侧空一截。 */
+  width: min(1680px, calc(100vw - 28px));
+  margin: 10px auto 0;
   padding: 12px 22px;
   border-radius: 14px;
   border: 1px solid var(--gold-line);
