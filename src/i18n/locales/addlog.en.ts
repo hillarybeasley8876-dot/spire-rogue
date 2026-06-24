@@ -151,4 +151,5 @@ export const INLINE_TERMS_EN: Record<string, string> = {
   "流血": "Bleed", "破绽": "Mark", "金属化": "Plated Armor", "连击": "Combo",
   "蓄能": "Charge", "电弧": "Spark", "过载": "Overload",
   "手牌": "hand", "抽牌堆顶": "the top of the draw pile", "弃牌堆": "the discard pile",
+  "你": "You",
 };
