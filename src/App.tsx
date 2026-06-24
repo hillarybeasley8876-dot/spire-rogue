@@ -2356,6 +2356,7 @@ function EnemyCard({
     return () => window.clearTimeout(timer);
   }, [enemy.block, enemy.hp]);
   const combatFxClass = combatFx ? `has-combat-fx is-${combatFloatClass(combatFx.kind)}` : "";
+  const interactable = !dead && targetable;
 
   return (
     <button
@@ -2363,8 +2364,13 @@ function EnemyCard({
         targetable ? "is-targetable" : ""
       } ${hasVisiblePreview ? "has-preview" : ""} ${dead ? "is-dead" : ""} ${combatFxClass}`}
       type="button"
-      disabled={dead || !targetable}
-      onClick={onClick}
+      // 不用 disabled 属性 —— 它会吞掉整个子树的鼠标事件，导致敌人不可选时
+      // 头顶 IntentBadge 的 hover tooltip（出招预告 + 效果）失效。改用 aria-disabled
+      // + onClick 守卫，pointer 事件保持存活。
+      aria-disabled={!interactable}
+      onClick={() => {
+        if (interactable) onClick();
+      }}
     >
       <CombatFloatText fx={combatFx} />
       <PixelSprite
@@ -2701,7 +2707,7 @@ function CardInspectorPanel({ card, run }: { card: CardInstance; run: RunState }
       <div className="card-inspector__head">
         <strong>{cardDisplayName(card)}</strong>
         <span className={`game-card__target game-card__target--${level.target}`}>{actionTargetLabel(level.target)}</span>
-        <b>{level.cost}{tr("费")}</b>
+        <b>{level.cost}{bi(" 费", " Cost")}</b>
       </div>
       <p className={penalty ? "is-warning" : ""}>{penalty ?? cardTargetRuleLine(card, run)}</p>
       <div className="card-inspector__formula">

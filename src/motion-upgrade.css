@@ -138,12 +138,26 @@ main.screen > section {
   transform: translateY(-3px);
 }
 
+/* 选中辉光：挂在独立伪元素 ::before 上，绝不占用 .diff-card 自身的 animation
+ * 简写属性 —— 否则切换 .is-selected 会重置入场级联 title-cards-cascade，
+ * 表现为「当前卡消失一下再出现」。 */
 @keyframes diff-card-selected-glow {
   0%, 100% { box-shadow: 0 0 0 1px rgba(91, 213, 169, 0.42), 0 0 26px -8px rgba(91, 213, 169, 0.42); }
   50% { box-shadow: 0 0 0 1px rgba(91, 213, 169, 0.62), 0 0 38px -6px rgba(91, 213, 169, 0.6); }
 }
 
-.diff-card.is-selected {
+.diff-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+.diff-card.is-selected::before {
+  opacity: 1;
   animation: diff-card-selected-glow 2400ms ease-in-out infinite;
 }
 

@@ -5183,6 +5183,16 @@ button.inventory-chip:focus-visible {
     0 0 26px rgba(240, 190, 85, 0.16);
 }
 
+/* aria-disabled 取代原生 disabled：保留默认指针，但 pointer 事件保持存活，
+ * 这样头顶 IntentBadge 的 hover 出招预告仍可触发。 */
+.enemy-card[aria-disabled="true"] {
+  cursor: default;
+}
+.enemy-card.is-dead {
+  cursor: default;
+  opacity: 0.55;
+}
+
 .enemy-card.is-targetable::after {
   opacity: 1;
 }
