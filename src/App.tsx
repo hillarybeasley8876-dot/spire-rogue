@@ -567,6 +567,17 @@ function App() {
   const [inspectedCardUid, setInspectedCardUid] = useState<string>();
   const [selectedPotionUid, setSelectedPotionUid] = useState<string>();
   const [flyingCardUid, setFlyingCardUid] = useState<string>();
+  // 敌人回合演出：正在出招的敌人 uid + 玩家受击震屏标记 + 锁定输入
+  const [enemyActingUid, setEnemyActingUid] = useState<string>();
+  const [playerHitKey, setPlayerHitKey] = useState(0);
+  const [enemyTurnLock, setEnemyTurnLock] = useState(false);
+  const enemyTurnTimers = useRef<number[]>([]);
+
+  useEffect(() => {
+    return () => {
+      enemyTurnTimers.current.forEach((id) => window.clearTimeout(id));
+    };
+  }, []);
 
   useEffect(() => {
     setSelectedCardUid(undefined);
@@ -653,6 +664,68 @@ function App() {
       setRun((current) => playCard(current, cardUid, targetEnemyUid));
       setFlyingCardUid(undefined);
     }, 320);
+  }
+
+  // 敌人回合演出编排：
+  // engine.endTurn 是同步的"真相结算"，但我们先按当前 intent 逐个敌人播放
+  // 出招演出（突进 + 屏幕震 + 飘字），全部播完再把真相 commit 进 state。
+  function runEnemyTurn() {
+    const combat = run.combat;
+    if (!combat || enemyTurnLock) {
+      return;
+    }
+    const actors = combat.enemies.filter((enemy) => enemy.hp > 0);
+    // 没有敌人要动（理论上不会），直接结算
+    if (actors.length === 0) {
+      setRun((current) => endTurn(current));
+      return;
+    }
+
+    setEnemyTurnLock(true);
+    setSelectedCardUid(undefined);
+    setInspectedCardUid(undefined);
+    setSelectedPotionUid(undefined);
+
+    const STEP = 560; // 每个敌人出招节拍
+    const LUNGE_AT = 200; // 突进到冲击的延迟
+    const timers = enemyTurnTimers.current;
+
+    actors.forEach((enemy, index) => {
+      const base = index * STEP;
+      const willHitPlayer = enemy.intent.effects.some(
+        (effect) => effect.type === "damage" || (effect.type === "applyPower" && effect.target !== "self"),
+      );
+      // 该敌人开始出招：sprite 突进
+      timers.push(
+        window.setTimeout(() => {
+          setEnemyActingUid(enemy.uid);
+        }, base),
+      );
+      // 冲击点：玩家受击震屏
+      if (willHitPlayer) {
+        timers.push(
+          window.setTimeout(() => {
+            setPlayerHitKey((key) => key + 1);
+          }, base + LUNGE_AT),
+        );
+      }
+      // 收招
+      timers.push(
+        window.setTimeout(() => {
+          setEnemyActingUid((current) => (current === enemy.uid ? undefined : current));
+        }, base + STEP - 80),
+      );
+    });
+
+    // 全部播完：commit 真相 + 解锁
+    timers.push(
+      window.setTimeout(() => {
+        setEnemyActingUid(undefined);
+        setEnemyTurnLock(false);
+        enemyTurnTimers.current = [];
+        setRun((current) => endTurn(current));
+      }, actors.length * STEP + 120),
+    );
   }
 
   function handlePotionClick(potion: PotionInstance) {
@@ -785,6 +858,9 @@ function App() {
                   selectedPotion={selectedPotion}
                   selectedPotionUid={selectedPotionUid}
                   flyingCardUid={flyingCardUid}
+                  enemyActingUid={enemyActingUid}
+                  playerHitKey={playerHitKey}
+                  enemyTurnLock={enemyTurnLock}
                   onCardClick={handleCardClick}
                   onCardInspect={(card) => setInspectedCardUid(card.uid)}
                   onCardInspectEnd={(card) => setInspectedCardUid((current) => (current === card.uid ? undefined : current))}
@@ -792,7 +868,7 @@ function App() {
                   onEnemyClick={handleEnemyClick}
                   onUseSelectedPotion={handleUseSelectedPotion}
                   onClearSelection={handleClearSelection}
-                  onEndTurn={() => setRun((current) => endTurn(current))}
+                  onEndTurn={runEnemyTurn}
                 />
               )}
               {run.phase === "reward" && (
@@ -1914,6 +1990,9 @@ function CombatScreen({
   selectedPotion,
   selectedPotionUid,
   flyingCardUid,
+  enemyActingUid,
+  playerHitKey,
+  enemyTurnLock,
   onCardClick,
   onCardInspect,
   onCardInspectEnd,
@@ -1931,6 +2010,9 @@ function CombatScreen({
   selectedPotion?: PotionInstance;
   selectedPotionUid?: string;
   flyingCardUid?: string;
+  enemyActingUid?: string;
+  playerHitKey?: number;
+  enemyTurnLock?: boolean;
   onCardClick: (card: CardInstance) => void;
   onCardInspect: (card: CardInstance) => void;
   onCardInspectEnd: (card: CardInstance) => void;
@@ -2060,7 +2142,7 @@ function CombatScreen({
   const playerFxClass = playerFx ? `has-combat-fx is-${combatFloatClass(playerFx.kind)}` : "";
 
   return (
-    <section className={`combat-shell${isImpact ? " is-impact" : ""}`}>
+    <section className={`combat-shell${isImpact ? " is-impact" : ""}${enemyTurnLock ? " is-enemy-turn" : ""}`}>
       <div className="combat-stage combat-main">
         <div className="combat-setpiece" aria-hidden="true">
           <span className="combat-setpiece__moon" />
@@ -2104,6 +2186,7 @@ function CombatScreen({
               run={run}
               targetable={(selectedNeedsTarget || selectedPotionNeedsTarget) && enemy.hp > 0}
               preview={targetPreviews.get(enemy.uid)}
+              acting={enemyActingUid === enemy.uid}
               onClick={() => onEnemyClick(enemy)}
             />
           ))}
@@ -2137,6 +2220,7 @@ function CombatScreen({
 
         <div className="player-board">
           <div className={`player-core ${playerFxClass}`}>
+            {playerHitKey ? <span key={playerHitKey} className="player-core__hit-flash" aria-hidden="true" /> : null}
             <CombatFloatText fx={playerFx} />
             <div className="player-core__identity">
               <PixelSprite
@@ -2177,9 +2261,9 @@ function CombatScreen({
               selectedPotionUid={selectedPotionUid}
               onPotionClick={onPotionClick}
             />
-            <button className="end-turn-button" type="button" onClick={onEndTurn}>
+            <button className="end-turn-button" type="button" onClick={onEndTurn} disabled={enemyTurnLock}>
               <ChevronRight size={17} />
-              <span>{t("ui.combat.endTurn")}</span>
+              <span>{enemyTurnLock ? bi("敌方行动中…", "Enemy acting…") : t("ui.combat.endTurn")}</span>
             </button>
           </div>
         </div>
@@ -2311,12 +2395,14 @@ function EnemyCard({
   run,
   targetable,
   preview,
+  acting,
   onClick,
 }: {
   enemy: EnemyState;
   run: RunState;
   targetable: boolean;
   preview?: TargetPreview;
+  acting?: boolean;
   onClick: () => void;
 }) {
   const dead = enemy.hp <= 0;
@@ -2362,7 +2448,7 @@ function EnemyCard({
     <button
       className={`enemy-card enemy-card--${spriteTone(enemy.defId)} enemy-card--tier-${tier} ${
         targetable ? "is-targetable" : ""
-      } ${hasVisiblePreview ? "has-preview" : ""} ${dead ? "is-dead" : ""} ${combatFxClass}`}
+      } ${hasVisiblePreview ? "has-preview" : ""} ${dead ? "is-dead" : ""} ${acting ? `is-acting is-acting--${intentPrimaryKind(enemy.intent).kind}` : ""} ${combatFxClass}`}
       type="button"
       // 不用 disabled 属性 —— 它会吞掉整个子树的鼠标事件，导致敌人不可选时
       // 头顶 IntentBadge 的 hover tooltip（出招预告 + 效果）失效。改用 aria-disabled
@@ -3828,7 +3914,7 @@ function RewardScreen({
   return (
     <section className="choice-layout">
       <div className="choice-heading">
-        <p>{reward.title}</p>
+        <p>{tr(reward.title)}</p>
         <h2>{cardResolved ? tr("领取剩余奖励") : tr("选择战斗奖励")}</h2>
       </div>
       <div className="reward-strip">
@@ -3837,7 +3923,7 @@ function RewardScreen({
         </span>
         {reward.relicId && (
           <span>
-            <Award size={16} /> {RELICS[reward.relicId]?.name ?? tr("失效遗物")}
+            <Award size={16} /> {relicInfo(reward.relicId)?.name ?? tr("失效遗物")}
           </span>
         )}
       </div>
@@ -4345,7 +4431,7 @@ function CardView({
       onClick={onClick}
     >
       <div className="game-card__top">
-        <span className="game-card__cost">{level.cost}</span>
+        <span className="game-card__cost" data-cost-label={bi("费", "CO")}>{level.cost}</span>
         <strong>{cardName(def.id)}{card.upgraded ? "+" : ""}</strong>
       </div>
       {disabledReason && <span className="game-card__penalty">{disabledReason}</span>}

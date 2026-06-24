@@ -6131,7 +6131,7 @@ button.inventory-chip:focus-visible {
   height: 17px;
   place-items: center;
   color: #101216;
-  content: "费";
+  content: attr(data-cost-label);
   border: 1px solid rgba(255, 255, 255, 0.62);
   border-radius: 999px;
   background: #ffe0a3;

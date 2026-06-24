@@ -316,3 +316,100 @@ button[class*="game-card"].is-selected {
 .combat-shell .combat-setpiece {
   animation: combat-curtain-open 720ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
+
+
+/* ============================================================
+ * 11. 敌人回合演出：逐个敌人出招（突进 + 攻击闪 + 玩家受击震屏）
+ * ========================================================== */
+
+/* 攻击型出招：向下/向玩家方向突进 + 短促回弹 */
+@keyframes enemy-lunge-attack {
+  0%   { transform: translateY(0) scale(1); }
+  28%  { transform: translateY(14px) scale(1.06); }
+  42%  { transform: translateY(20px) scale(1.08); filter: brightness(1.25); }
+  60%  { transform: translateY(-4px) scale(0.98); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* 非攻击出招（加buff/格挡/召唤）：上浮蓄力 + 辉光 */
+@keyframes enemy-cast-charge {
+  0%   { transform: translateY(0) scale(1); }
+  35%  { transform: translateY(-10px) scale(1.05); filter: brightness(1.3) saturate(1.3); }
+  70%  { transform: translateY(-4px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.enemy-card.is-acting {
+  z-index: 5;
+}
+.enemy-card.is-acting--attack,
+.enemy-card.is-acting--mixed {
+  animation: enemy-lunge-attack 520ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+.enemy-card.is-acting--block,
+.enemy-card.is-acting--buff,
+.enemy-card.is-acting--summon,
+.enemy-card.is-acting--debuff,
+.enemy-card.is-acting--special {
+  animation: enemy-cast-charge 520ms cubic-bezier(0.34, 1.2, 0.64, 1) both;
+}
+
+/* 出招时 sprite 的 slash 闪一下 + intent 牌强调 */
+.enemy-card.is-acting .pixel-sprite__slash {
+  opacity: 1;
+  animation: enemy-act-slash 360ms ease-out both;
+}
+@keyframes enemy-act-slash {
+  0%   { opacity: 0; transform: scaleX(0.4) rotate(-18deg); }
+  40%  { opacity: 1; transform: scaleX(1.15) rotate(-8deg); }
+  100% { opacity: 0; transform: scaleX(1.3) rotate(0deg); }
+}
+.enemy-card.is-acting .intent-banner {
+  animation: intent-flare 520ms ease-out both;
+}
+@keyframes intent-flare {
+  0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 120, 100, 0); }
+  35%  { transform: scale(1.18); box-shadow: 0 0 16px 4px rgba(255, 120, 100, 0.55); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 120, 100, 0); }
+}
+
+/* 玩家受击闪屏层（key 变化时触发一次性动画） */
+.player-core { position: relative; }
+.player-core__hit-flash {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 6;
+  background: radial-gradient(ellipse at 50% 50%, rgba(255, 80, 70, 0.42), transparent 68%);
+  animation: player-hit-flash 420ms ease-out both;
+}
+@keyframes player-hit-flash {
+  0%   { opacity: 0; transform: scale(0.9); }
+  18%  { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+/* 敌人回合期间玩家面板被攻击的整体小震（跟随 hit-flash 同步触发更自然，
+ * 但这里用一个轻量级、由 hit-flash 兄弟元素的 key 重渲带动的抖动）。 */
+.player-core:has(.player-core__hit-flash) {
+  animation: player-recoil 360ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+@keyframes player-recoil {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(-7px); }
+  40%  { transform: translateX(5px); }
+  60%  { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+
+/* 敌人回合期间：手牌区轻微降透明度，提示"非玩家操作时机" */
+.combat-shell.is-enemy-turn .hand-dock {
+  opacity: 0.72;
+  filter: saturate(0.85);
+  transition: opacity 200ms ease, filter 200ms ease;
+}
+.combat-shell.is-enemy-turn .end-turn-button {
+  opacity: 0.6;
+  cursor: progress;
+}
