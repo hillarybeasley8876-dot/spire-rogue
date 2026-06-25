@@ -942,7 +942,7 @@ function RunSidebar({
       detail: bi(`第 ${actNum} 幕 · 层 ${floorNum}`, `Act ${actNum} · Floor ${floorNum}`),
     },
     { key: "combat", label: tr("战斗"), detail: run.combat?.encounterName ?? tr("下一场遭遇") },
-    { key: "reward", label: tr("战利品"), detail: run.reward?.title ?? tr("战斗后结算") },
+    { key: "reward", label: tr("战利品"), detail: run.reward?.title ? tr(run.reward.title) : tr("战斗后结算") },
     { key: "rest", label: tr("营火"), detail: tr("休息 / 升级 / 调配") },
     {
       key: "shop",
@@ -1123,7 +1123,7 @@ function RunPhaseStatus({ run }: { run: RunState }) {
     },
     reward: {
       title: tr("领取战利品"),
-      detail: run.reward?.title ?? tr("战斗奖励"),
+      detail: run.reward?.title ? tr(run.reward.title) : tr("战斗奖励"),
       icon: <Award size={16} />,
     },
     rest: {
@@ -3960,14 +3960,15 @@ function RewardScreen({
       {reward.potionId &&
         (() => {
           const potion = POTIONS[reward.potionId!];
+          const potionLoc = potion ? potionInfo(reward.potionId!) : null;
           const tags = potion ? potionMechanicTags({ uid: `reward-${reward.potionId}`, potionId: reward.potionId! }).slice(0, 4) : [];
           return (
             <div className="reward-section">
               <PanelTitle icon={<FlaskConical size={17} />} title={tr("药水")} />
               <button className="reward-potion" type="button" onClick={onPickPotion}>
                 <PackagePotionIcon />
-                <strong>{potion?.name ?? tr("失效药水")}</strong>
-                <span>{potion?.text ?? tr("这瓶药水来自旧数据，领取后会被清理。")}</span>
+                <strong>{potionLoc?.name ?? tr("失效药水")}</strong>
+                <span>{potionLoc?.text ?? tr("这瓶药水来自旧数据，领取后会被清理。")}</span>
                 {tags.length > 0 && (
                   <div className="offer-tags">
                     {tags.map((tag) => (

@@ -1,6 +1,10 @@
 // 自动生成：UI/文案 中文->英文 直查表（workflow 并发翻译产出）
 // 用于 tr(中文) 运行时把中文 UI 文案换成英文
 export const UI_STRINGS: Record<string, string> = {
+  // —— 审计补漏（tr key 缺失会静默漏译）——
+  "加入": "Add",
+  "基础牌组": "Base Deck",
+  "暂无遗物": "No relics",
   // —— hero / title screen 补漏 ——
   "裂隙尖塔": "Rift Spire",
   "卡牌肉鸽 · 随机爬塔原型": "Deckbuilder Roguelike · Procedural Climb",
